@@ -1,29 +1,33 @@
-# Supabase PostgreSQL Database Architecture & Data Layer
-**Module Lead:** CHANDAN KUMAR K (PES2UG24CS128) — Backend & Database Architect
+# Supabase PostgreSQL Database Architecture and Data Service
 
-## Overview
-This module provides the complete relational data persistence layer for SprintFlow. It implements a production-grade PostgreSQL database on Supabase, secured with Row Level Security (RLS) policies, and paired with an automatic zero-config offline fallback layer for seamless academic evaluations.
-
----
-
-## 1. Database Schema Specifications (`database/schema.sql`)
-- **`profiles` Table:** Stores user identity, USN, roles (Lead, Developer, Scrum Master, Evaluator), and avatar colors.
-- **`projects` Table:** Tracks project key (`PMS`), metadata, ownership, and target milestones.
-- **`project_members` Table:** Relational junction table mapping users to projects with role-based permissions.
-- **`sprints` Table:** Manages iteration schedules, sprint goals, total planned points, and completed velocity.
-- **`tasks` Table:** Stores agile work items, workflow stages (Backlog, Todo, In Progress, Review, Done), Fibonacci story points, priorities, and assignees.
-- **`comments` Table:** Threaded task discussions and feedback.
-- **`activity_logs` Table:** Immutable audit trail logging all state transitions with actor and timestamp.
+**Module Owner:** CHANDAN KUMAR K (PES2UG24CS128) — Backend and Database Architect  
+**Component Reference:** `database/schema.sql`, `src/services/supabaseClient.js`  
 
 ---
 
-## 2. Row Level Security (RLS) Policies
-PostgreSQL RLS policies are enabled across all tables to enforce data privacy and prevent unauthorized tenant access:
-- Public read access for team evaluation.
-- Authenticated write access for task modifications.
+## 1. Overview
+The persistence layer provides relational data management for project entities, user profiles, sprints, tasks, and audit records. It implements a dual-mode strategy ensuring high availability both in cloud-connected environments and offline assessment sessions.
 
 ---
 
-## 3. Dual-Mode DataService Architecture (`src/services/supabaseClient.js`)
-- **Cloud Mode:** Interacts directly with Supabase tables via `@supabase/supabase-js`.
-- **Offline / Local Mode:** Seamless fallback to browser `localStorage` ensuring 100% operational availability without network dependencies.
+## 2. Relational Schema Architecture (`database/schema.sql`)
+- **`profiles`:** User identities, USN identifiers, role designations, and avatar references.
+- **`projects`:** Project identification keys, metadata, ownership references, and milestone schedules.
+- **`project_members`:** Mapping table managing team member associations and permission levels.
+- **`sprints`:** Iteration tracking with planned points, completed points, and state enumerations (`planned`, `active`, `completed`).
+- **`tasks`:** Work items with status foreign keys, priority flags, Fibonacci points, and assignee associations.
+- **`comments`:** Threaded task discussions and feedback logs.
+- **`activity_logs`:** Append-only audit trail logging entity mutations, actor IDs, actions, and timestamps.
+
+---
+
+## 3. Security Specifications
+- **Row Level Security (RLS):** Enabled across all PostgreSQL tables to enforce multi-tenant isolation.
+- **Transport Encryption:** TLS 1.3 enforced for all external database transactions.
+
+---
+
+## 4. Dual-Mode Storage Engine
+`DataService` abstracts persistence operations:
+1. **Cloud Mode:** Direct query execution via `@supabase/supabase-js`.
+2. **Offline Fallback Mode:** Synchronous persistence to browser `localStorage` when credentials are absent, guaranteeing 100% feature availability during offline evaluations.
