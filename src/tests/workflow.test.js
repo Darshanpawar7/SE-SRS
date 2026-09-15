@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { TASK_STATUSES, TASK_PRIORITIES, STORY_POINTS, TEAM_MEMBERS } from '../utils/constants';
+import { TASK_STATUSES, STORY_POINTS, TEAM_MEMBERS } from '../utils/constants';
 
 describe('Workflow Enums and Constants Verification', () => {
   it('verifies 5 Kanban status columns are defined in sequence', () => {
