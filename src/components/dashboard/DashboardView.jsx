@@ -9,6 +9,20 @@ export default function DashboardView({ onNavigateKanban }) {
   const workload = calculateMemberWorkload(activeSprintTasks, TEAM_MEMBERS);
   const burndown = generateBurndownData(sprintMetrics.totalStoryPoints, sprintMetrics.completedStoryPoints);
 
+  // Chart geometry. The burndown polyline is derived from `burndown` so the chart
+  // tracks real sprint progress; it must never be hard-coded.
+  const CHART = { x0: 40, x1: 420, yTop: 25, yBase: 150 };
+  const maxPoints = Math.max(sprintMetrics.totalStoryPoints, 1);
+  const lastIndex = Math.max(burndown.length - 1, 1);
+  const chartX = (i) => CHART.x0 + ((CHART.x1 - CHART.x0) * i) / lastIndex;
+  const chartY = (points) =>
+    CHART.yBase - ((CHART.yBase - CHART.yTop) * Math.min(points, maxPoints)) / maxPoints;
+
+  const actualSeries = burndown
+    .map((d, i) => ({ ...d, i }))
+    .filter((d) => d.actual !== null);
+  const actualPath = actualSeries.map((d) => `${chartX(d.i)},${chartY(d.actual)}`).join(' ');
+
   return (
     <div className="dashboard-page">
       {/* Top Header */}
@@ -81,22 +95,29 @@ export default function DashboardView({ onNavigateKanban }) {
               <text x="32" y="150" fill="#94a3b8" fontSize="10" textAnchor="end">0</text>
 
               {/* Ideal Guideline */}
-              <line x1="40" y1="25" x2="420" y2="150" stroke="#6366f1" strokeWidth="2" strokeDasharray="4 4" />
-
-              {/* Actual Burndown Polyline */}
-              <polyline 
-                fill="none" 
-                stroke="#10b981" 
-                strokeWidth="3" 
-                points="40,25 110,38 180,60 250,90 280,105" 
+              <line
+                x1={chartX(0)}
+                y1={chartY(burndown[0].ideal)}
+                x2={chartX(lastIndex)}
+                y2={chartY(burndown[lastIndex].ideal)}
+                stroke="#6366f1"
+                strokeWidth="2"
+                strokeDasharray="4 4"
               />
-              
-              {/* Actual dots */}
-              <circle cx="40" cy="25" r="4" fill="#10b981" />
-              <circle cx="110" cy="38" r="4" fill="#10b981" />
-              <circle cx="180" cy="60" r="4" fill="#10b981" />
-              <circle cx="250" cy="90" r="4" fill="#10b981" />
-              <circle cx="280" cy="105" r="5" fill="#ec4899" />
+
+              {/* Actual Burndown Polyline, derived from live sprint data */}
+              <polyline fill="none" stroke="#10b981" strokeWidth="3" points={actualPath} />
+
+              {/* Actual dots; the final point marks progress today */}
+              {actualSeries.map((d, idx) => (
+                <circle
+                  key={d.day}
+                  cx={chartX(d.i)}
+                  cy={chartY(d.actual)}
+                  r={idx === actualSeries.length - 1 ? 5 : 4}
+                  fill={idx === actualSeries.length - 1 ? '#ec4899' : '#10b981'}
+                />
+              ))}
               
               {/* X-axis labels */}
               <text x="40" y="165" fill="#94a3b8" fontSize="10">D0</text>

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import { TEAM_MEMBERS } from '../utils/constants';
 
 const AuthContext = createContext();
@@ -8,7 +8,13 @@ export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(() => {
     const saved = localStorage.getItem('sprintflow_user');
     if (saved) {
-      try { return JSON.parse(saved); } catch (e) {}
+      try {
+        return JSON.parse(saved);
+      } catch (err) {
+        // Stored profile is corrupt: discard it and fall back to the default.
+        console.warn('Discarding unreadable stored user profile:', err);
+        localStorage.removeItem('sprintflow_user');
+      }
     }
     return TEAM_MEMBERS[0];
   });

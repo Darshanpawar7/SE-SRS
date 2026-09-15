@@ -41,29 +41,31 @@ export function calculateMemberWorkload(tasks = [], members = []) {
   });
 }
 
-export function generateBurndownData(totalPoints, completedPoints, daysInSprint = 10) {
-  const idealStep = totalPoints / daysInSprint;
+export function generateBurndownData(totalPoints, completedPoints, daysInSprint = 10, elapsedDays = null) {
+  const round1 = (n) => Math.round(n * 10) / 10;
+  const remaining = Math.max(0, totalPoints - completedPoints);
+  const idealStep = daysInSprint > 0 ? totalPoints / daysInSprint : 0;
+
+  // Only a current snapshot is stored, not per-day history, so the actual series
+  // is interpolated between the two points we genuinely know: the full backlog at
+  // day 0 and the remaining work today. It is plotted up to today and no further,
+  // which is why `actual` is null for future days.
+  const today = elapsedDays === null
+    ? Math.round(daysInSprint * 0.4)
+    : Math.max(0, Math.min(daysInSprint, Math.round(elapsedDays)));
+
   const data = [];
-  
   for (let day = 0; day <= daysInSprint; day++) {
-    const idealRemaining = Math.max(0, Math.round((totalPoints - (idealStep * day)) * 10) / 10);
-    
-    // Simulated realistic actual progression curve
-    let actualRemaining = totalPoints;
-    if (day <= 4) {
-      actualRemaining = Math.max(
-        totalPoints - completedPoints,
-        Math.round((totalPoints - (idealStep * day * 0.75)) * 10) / 10
-      );
-    } else {
-      actualRemaining = Math.max(0, totalPoints - completedPoints);
+    const ideal = Math.max(0, round1(totalPoints - idealStep * day));
+
+    let actual = null;
+    if (day <= today) {
+      const progress = today === 0 ? 1 : day / today;
+      actual = Math.max(0, round1(totalPoints - (totalPoints - remaining) * progress));
     }
-    
-    data.push({
-      day: `Day ${day}`,
-      ideal: idealRemaining,
-      actual: day <= 4 ? actualRemaining : null
-    });
+
+    data.push({ day: `Day ${day}`, ideal, actual });
   }
   return data;
 }
+
