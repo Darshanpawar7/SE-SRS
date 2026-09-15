@@ -62,7 +62,54 @@ The application adopts a decoupled, reactive architecture:
 
 ---
 
-## 4. Quick Start and Installation
+## 4. Application Screenshots
+
+Captured from the running production build in its default zero-configuration mode, with no
+database credentials supplied. Each screen is mapped to the SRS requirements it satisfies
+and the test cases that verify them in
+[docs/APPLICATION_SCREENSHOTS.md](docs/APPLICATION_SCREENSHOTS.md).
+
+### 4.1 Kanban Workflow Board
+
+Five lifecycle columns with drag-and-drop transitions, 1-click stage advancement, story
+point subtotals, tags, and combined assignee, priority and free-text filtering.
+Evidences PMS-F-002, PMS-F-003, PMS-F-004, PMS-F-005, PMS-F-007 and PMS-F-017.
+
+![Kanban workflow board](docs/screenshots/01-kanban-board.png)
+
+### 4.2 Executive Visibility Dashboard
+
+Sprint KPIs, the SVG burndown curve comparing ideal trajectory against actual points
+remaining, workflow distribution, per-student capacity, and the immutable audit trail.
+Evidences PMS-F-009, PMS-F-011, PMS-F-012, PMS-F-013 and PMS-F-014.
+
+![Executive visibility dashboard](docs/screenshots/02-dashboard-kpis.png)
+
+### 4.3 Sprint Management and Estimation
+
+Sprint lifecycle states with goal definition, date ranges, and Fibonacci capacity totals
+aggregated across assigned tasks. Evidences PMS-F-009 and PMS-F-010.
+
+![Sprint management and estimation](docs/screenshots/03-sprint-estimation.png)
+
+### 4.4 Task Creation and Fibonacci Estimation
+
+Task dialog with the Fibonacci scale offered as fixed choices (1, 2, 3, 5, 8, 13, 21), so
+a non-Fibonacci estimate cannot be entered. Evidences PMS-F-006, PMS-F-007 and PMS-F-008.
+
+![Task creation modal](docs/screenshots/04-task-modal.png)
+
+### 4.5 Database Configuration
+
+The dual-mode data layer, reporting that the system is running on persistent browser
+storage and accepting Supabase credentials to switch to cloud persistence.
+Evidences PMS-F-015 and PMS-F-016.
+
+![Database configuration panel](docs/screenshots/05-database-settings.png)
+
+---
+
+## 5. Quick Start and Installation
 
 ### Prerequisites
 - Node.js version 18.0.0 or higher
@@ -93,7 +140,7 @@ npm run build
 
 ---
 
-## 5. Database Configuration
+## 6. Database Configuration
 
 The application is architected to operate out-of-the-box in **Offline / Local Mode** with zero database setup required.
 
@@ -104,12 +151,13 @@ To connect a live Supabase PostgreSQL instance:
 
 ---
 
-## 6. Academic Documentation and Deliverables
+## 7. Academic Documentation and Deliverables
 
 - **Project Report (PDF):** `Team11_Project_Report.pdf` (11-page formal submission document)
 - **Project Report (Word):** `docs/Team11_Project_Report.docx`
 - **SRS Markdown Specification:** `docs/SRS_Document_Team11.md`
 - **Requirements Traceability Matrix:** Contained in Section 8 of the SRS document
 - **Team Work Breakdown and Viva Guide:** `docs/Team_Work_Division.md`
+- **Application Screenshots:** `docs/APPLICATION_SCREENSHOTS.md` (each screen mapped to its SRS requirements and test cases)
 - **Database DDL Schema:** `database/schema.sql`
 - **CI/CD Workflow Definition:** `.github/workflows/ci.yml`
