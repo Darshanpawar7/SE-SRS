@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
 import { useProject } from '../../context/ProjectContext';
-import { useAuth } from '../../context/AuthContext';
 import { calculateSprintMetrics } from '../../utils/estimation';
 
 export default function SprintManager() {
   const { sprints, tasks, addSprint, updateSprintStatus } = useProject();
-  const { currentUser } = useAuth();
 
   const [showNewSprintModal, setShowNewSprintModal] = useState(false);
   const [sprintName, setSprintName] = useState('');
