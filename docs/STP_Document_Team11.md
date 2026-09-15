@@ -205,16 +205,16 @@ Features mapped to SRS requirement IDs:
 
 | Milestone | Planned Date | Status |
 | :--- | :--- | :--- |
-| Test Plan finalization | 15-09-2026 | Complete |
-| Test case design and review | 16-09-2026 | Complete |
-| Test environment setup and validation | 16-09-2026 | Complete |
-| Unit test execution (Vitest automated suite) | 16-09-2026 | Complete |
-| Integration test execution | 17-09-2026 | Complete |
-| System test execution (end-to-end workflows) | 17-09-2026 | Complete |
-| Security validation execution | 18-09-2026 | Complete |
-| Performance test execution | 18-09-2026 | Complete |
-| User Acceptance Testing (UAT) | 19-09-2026 | Complete |
-| Test Summary Report generation | 19-09-2026 | Complete |
+| Test Plan finalization | 09-09-2026 | Complete |
+| Test case design and review | 10-09-2026 | Complete |
+| Test environment setup and validation | 10-09-2026 | Complete |
+| Unit test execution (Vitest automated suite) | 11-09-2026 | Complete |
+| Integration test execution | 11-09-2026 | Complete |
+| System test execution (end-to-end workflows) | 12-09-2026 | Complete |
+| Security validation execution | 12-09-2026 | Complete |
+| Performance test execution | 13-09-2026 | Complete |
+| User Acceptance Testing (UAT) | 14-09-2026 | Complete |
+| Test Summary Report generation | 15-09-2026 | Complete |
 
 ---
 
