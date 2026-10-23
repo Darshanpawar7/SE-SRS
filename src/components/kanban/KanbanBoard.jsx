@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useProject } from '../../context/ProjectContext';
 import { useAuth } from '../../context/AuthContext';
 import { TASK_STATUSES, TASK_PRIORITIES, TEAM_MEMBERS } from '../../utils/constants';
+import { getTaskAfterStatusDrop } from '../../utils/taskUpdates';
 
 export default function KanbanBoard({ onOpenTaskModal }) {
   const { 
@@ -45,10 +46,8 @@ export default function KanbanBoard({ onOpenTaskModal }) {
     e.preventDefault();
     const taskId = e.dataTransfer.getData('text/plain') || draggedTaskId;
     if (!taskId) return;
-    const task = activeSprintTasks.find(t => t.id === taskId);
-    if (task && task.status !== targetStatus) {
-      updateTask({ ...task, status: targetStatus }, currentUser.name);
-    }
+    const task = getTaskAfterStatusDrop(activeSprintTasks, taskId, targetStatus);
+    if (task) updateTask(task, currentUser.name);
     setDraggedTaskId(null);
   };
 
