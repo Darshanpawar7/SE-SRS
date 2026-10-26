@@ -462,6 +462,16 @@ export const DataService = {
     return ok;
   },
 
+  // Every known project's id and key, used to keep project keys unique. Locally there
+  // is only this browser's project; with Supabase, all rows in the projects table.
+  async listProjects() {
+    const local = readLocal(STORAGE_KEYS.PROJECT, INITIAL_PROJECT);
+    const supabase = getSupabase();
+    if (!supabase) return [local];
+    const { ok, data } = await runCloud('Checking project keys', () => supabase.from('projects').select('id, key'));
+    return ok && data?.length ? data : [local];
+  },
+
   async saveProject(project, auditRecord = null) {
     if (auditRecord) requireAuditRecord(auditRecord);
     writeLocal(STORAGE_KEYS.PROJECT, project);
