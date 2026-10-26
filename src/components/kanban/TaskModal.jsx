@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useProject } from '../../context/ProjectContext';
 import { useAuth } from '../../context/AuthContext';
 import { TASK_STATUSES, TASK_PRIORITIES, STORY_POINTS, TEAM_MEMBERS } from '../../utils/constants';
+import { buildTaskPayload, getTaskFormValues, mergeTaskPayload, validateTaskForm } from '../../utils/taskForm';
 
 export default function TaskModal({ task, isOpen, onClose }) {
   const { updateTask, addTask, deleteTask, activeSprintId, sprints } = useProject();
@@ -18,27 +19,20 @@ export default function TaskModal({ task, isOpen, onClose }) {
   const [sprintId, setSprintId] = useState('');
   const [labelInput, setLabelInput] = useState('');
   const [labels, setLabels] = useState([]);
+  const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (task) {
-      setTitle(task.title || '');
-      setDescription(task.description || '');
-      setStatus(task.status || 'todo');
-      setPriority(task.priority || 'medium');
-      setStoryPoints(task.story_points || 3);
-      setAssigneeId(task.assignee_id || 'u-1');
-      setSprintId(task.sprint_id || activeSprintId || '');
-      setLabels(task.labels || []);
-    } else {
-      setTitle('');
-      setDescription('');
-      setStatus('todo');
-      setPriority('medium');
-      setStoryPoints(3);
-      setAssigneeId(currentUser.id);
-      setSprintId(activeSprintId || '');
-      setLabels(['feature']);
-    }
+    setError('');
+    const values = getTaskFormValues(task, activeSprintId, currentUser);
+    setTitle(values.title);
+    setDescription(values.description);
+    setStatus(values.status);
+    setPriority(values.priority);
+    setStoryPoints(values.storyPoints);
+    setAssigneeId(values.assigneeId);
+    setSprintId(values.sprintId);
+    setLabels(values.labels);
   }, [task, activeSprintId, currentUser]);
 
   if (!isOpen) return null;
@@ -57,31 +51,36 @@ export default function TaskModal({ task, isOpen, onClose }) {
     setLabels(labels.filter(l => l !== lbl));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!title.trim()) return;
-
-    const assignedMember = TEAM_MEMBERS.find(m => m.id === assigneeId);
-
-    const taskPayload = {
-      title: title.trim(),
-      description: description.trim(),
+    const formValues = {
+      title,
+      description,
       status,
       priority,
-      story_points: Number(storyPoints),
-      assignee_id: assigneeId,
-      assignee_name: assignedMember ? assignedMember.name : 'Unassigned',
-      reporter_name: currentUser.name,
-      sprint_id: sprintId || null,
+      storyPoints,
+      assigneeId,
+      sprintId,
       labels
     };
+    if (!validateTaskForm(formValues)) return;
 
-    if (isEditing) {
-      updateTask({ ...task, ...taskPayload }, currentUser.name);
-    } else {
-      addTask(taskPayload, currentUser.name);
+    const taskPayload = buildTaskPayload(formValues, currentUser, TEAM_MEMBERS);
+
+    setError('');
+    setSaving(true);
+    try {
+      if (isEditing) {
+        await updateTask(mergeTaskPayload(task, taskPayload), currentUser.name);
+      } else {
+        await addTask(taskPayload, currentUser.name);
+      }
+      onClose();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
     }
-    onClose();
   };
 
   const handleDelete = () => {
@@ -102,6 +101,7 @@ export default function TaskModal({ task, isOpen, onClose }) {
         </div>
 
         <form onSubmit={handleSubmit} className="modal-form">
+          {error && <p role="alert">{error}</p>}
           <div className="form-group">
             <label className="form-label">Task Title *</label>
             <input
@@ -146,6 +146,7 @@ export default function TaskModal({ task, isOpen, onClose }) {
               <label className="form-label">Priority</label>
               <select 
                 className="form-select"
+                required
                 value={priority} 
                 onChange={(e) => setPriority(e.target.value)}
               >
@@ -181,6 +182,7 @@ export default function TaskModal({ task, isOpen, onClose }) {
                 <button
                   type="button"
                   key={pt}
+                  aria-pressed={storyPoints === pt}
                   className={`pt-pill ${storyPoints === pt ? 'selected' : ''}`}
                   onClick={() => setStoryPoints(pt)}
                 >
@@ -242,7 +244,7 @@ export default function TaskModal({ task, isOpen, onClose }) {
               <button type="button" className="btn btn-secondary" onClick={onClose}>
                 Cancel
               </button>
-              <button type="submit" className="btn btn-primary">
+              <button type="submit" className="btn btn-primary" disabled={saving}>
                 {isEditing ? 'Save Changes' : 'Create Task'}
               </button>
             </div>
@@ -252,3 +254,4 @@ export default function TaskModal({ task, isOpen, onClose }) {
     </div>
   );
 }
+

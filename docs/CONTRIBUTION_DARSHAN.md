@@ -1,14 +1,30 @@
-# Contribution Log -- Darshan P Pawar (PES2UG24CS143)
+# Engineering Contribution Record: Darshan P Pawar
 
-## Role: Team Lead & Full-Stack Architect
-
-### Branch: `feature/darshan-sad-architecture`
+- **USN:** PES2UG24CS143
+- **Role:** Team Lead and Full-Stack Architect
 
 ---
 
-## Contributions to SE-SRS-2
+## Phase 1 -- SRS and Core Implementation
+
+**Feature Branch:** `feature/darshan-core-auth-dashboard`
+
+### Subsystem Deliverables
+
+1. Core system architecture, Vite 5 build configuration, and modular component layout.
+2. Authentication and Role Profile state management context (`src/context/AuthContext.jsx`).
+3. Executive Visibility Dashboard with KPI metrics (`src/components/dashboard/DashboardView.jsx`).
+4. Team workload distribution and capacity balancing calculations.
+5. Compilation and maintenance of formal IEEE 830 Software Requirements Specification.
+
+---
+
+## Phase 2 -- SAD and STP (first developed in SE-SRS-2)
+
+**Feature Branch:** `feature/darshan-sad-architecture`
 
 ### Software Architecture & Design (SAD) Document
+
 - Authored Sections 1-3 of the SAD document covering Introduction, Document Overview, and Architecture
 - Defined architectural goals, constraints, and stakeholder concerns for SprintFlow
 - Designed and documented the component-based layered architecture pattern with detailed rationale
@@ -18,6 +34,7 @@
 - Mapped architecture components to SRS requirements for full traceability
 
 ### Project Leadership
+
 - Coordinated document ownership assignments across all 4 team members
 - Managed the Git branching strategy and Pull Request workflow
 - Ensured consistency between SAD, STP, and the original SRS document from SE-SRS
