@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { useProject } from '../../context/ProjectContext';
 import { useAuth } from '../../context/AuthContext';
-import { TASK_STATUSES, TASK_PRIORITIES, TEAM_MEMBERS } from '../../utils/constants';
+import { TASK_PRIORITIES, TEAM_MEMBERS } from '../../utils/constants';
+import { getKanbanColumns } from '../../utils/kanban';
+import { getTaskAfterStatusDrop } from '../../utils/taskUpdates';
+import { advanceTaskByOneStage, getNextTaskStatus } from '../../utils/workflow';
 
 export default function KanbanBoard({ onOpenTaskModal }) {
   const { 
@@ -30,6 +33,7 @@ export default function KanbanBoard({ onOpenTaskModal }) {
     }
     return true;
   });
+  const kanbanColumns = getKanbanColumns(filteredTasks);
 
   // Drag and Drop handlers
   const handleDragStart = (e, taskId) => {
@@ -45,10 +49,8 @@ export default function KanbanBoard({ onOpenTaskModal }) {
     e.preventDefault();
     const taskId = e.dataTransfer.getData('text/plain') || draggedTaskId;
     if (!taskId) return;
-    const task = activeSprintTasks.find(t => t.id === taskId);
-    if (task && task.status !== targetStatus) {
-      updateTask({ ...task, status: targetStatus }, currentUser.name);
-    }
+    const task = getTaskAfterStatusDrop(activeSprintTasks, taskId, targetStatus);
+    if (task) updateTask(task, currentUser.name);
     setDraggedTaskId(null);
   };
 
@@ -112,8 +114,8 @@ export default function KanbanBoard({ onOpenTaskModal }) {
 
       {/* Kanban 5-Column Board */}
       <div className="kanban-board-grid">
-        {TASK_STATUSES.map(col => {
-          const colTasks = filteredTasks.filter(t => t.status === col.id);
+        {kanbanColumns.map(col => {
+          const colTasks = col.tasks;
           const colPoints = colTasks.reduce((sum, t) => sum + (Number(t.story_points) || 0), 0);
 
           return (
@@ -127,7 +129,7 @@ export default function KanbanBoard({ onOpenTaskModal }) {
                 <div className="column-title-wrap">
                   <span className="column-dot" style={{ backgroundColor: col.color }}></span>
                   <h3 className="column-name">{col.label}</h3>
-                  <span className="column-count">{colTasks.length}</span>
+                  <span className="column-count">{col.count}</span>
                 </div>
                 <span className="column-points" title="Total Story Points">{colPoints} pts</span>
               </div>
@@ -142,6 +144,7 @@ export default function KanbanBoard({ onOpenTaskModal }) {
                   colTasks.map(task => {
                     const priorityObj = TASK_PRIORITIES.find(p => p.id === task.priority) || TASK_PRIORITIES[1];
                     const assignee = TEAM_MEMBERS.find(m => m.id === task.assignee_id);
+                    const nextStatus = getNextTaskStatus(task.status);
 
                     return (
                       <div
@@ -198,13 +201,10 @@ export default function KanbanBoard({ onOpenTaskModal }) {
                               title="Quick advance"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                const currentIndex = TASK_STATUSES.findIndex(s => s.id === col.id);
-                                if (currentIndex < TASK_STATUSES.length - 1) {
-                                  updateTask({ ...task, status: TASK_STATUSES[currentIndex + 1].id }, currentUser.name);
-                                }
+                                advanceTaskByOneStage(task, updateTask, currentUser.name);
                               }}
                               className="step-btn"
-                              disabled={col.id === 'done'}
+                              disabled={!nextStatus}
                             >
                               →
                             </button>
