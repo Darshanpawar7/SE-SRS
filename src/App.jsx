@@ -7,6 +7,7 @@ import SprintManager from './components/sprint/SprintManager';
 import DocsView from './components/docs/DocsView';
 import TaskModal from './components/kanban/TaskModal';
 import SettingsModal from './components/settings/SettingsModal';
+import ProjectSettingsModal from './components/settings/ProjectSettingsModal';
 import SignInView from './components/auth/SignInView';
 import { useAuth } from './context/AuthContext';
 
@@ -15,6 +16,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('kanban');
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isProjectSettingsOpen, setIsProjectSettingsOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
 
   // Unauthenticated visitors only ever see the sign-in view.
@@ -32,9 +34,10 @@ export default function App() {
 
   return (
     <div className="app-container">
-      <Navbar 
+      <Navbar
         onOpenSettings={() => setIsSettingsOpen(true)}
         onOpenNewTask={handleOpenNewTask}
+        onOpenProjectSettings={() => setIsProjectSettingsOpen(true)}
       />
 
       <div className="app-body">
@@ -69,10 +72,14 @@ export default function App() {
         onClose={() => setIsTaskModalOpen(false)}
       />
 
-      <SettingsModal 
+      <SettingsModal
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
       />
+
+      {isProjectSettingsOpen && (
+        <ProjectSettingsModal onClose={() => setIsProjectSettingsOpen(false)} />
+      )}
     </div>
   );
 }
