@@ -1,3 +1,4 @@
+import { recordDailyProgress } from '../utils/burndown';
 // Supabase Client with graceful Offline / Mock fallback
 import { createClient } from '@supabase/supabase-js';
 import { INITIAL_PROJECT, INITIAL_SPRINTS, INITIAL_TASKS, INITIAL_ACTIVITY } from './mockData';
@@ -47,11 +48,19 @@ const STORAGE_KEYS = {
   PROJECT: 'sprintflow_project',
   SPRINTS: 'sprintflow_sprints',
   TASKS: 'sprintflow_tasks',
-  ACTIVITY: 'sprintflow_activity'
+  ACTIVITY: 'sprintflow_activity',
+  BURNDOWN: 'sprintflow_burndown_history'
 };
 
 // Unified Data Service: operates on Supabase when connected, else localStorage
 export const DataService = {
+  recordBurndown(sprints, tasks, now = new Date()) {
+    const saved = localStorage.getItem(STORAGE_KEYS.BURNDOWN);
+    const history = recordDailyProgress(saved ? JSON.parse(saved) : {}, sprints, tasks, now);
+    localStorage.setItem(STORAGE_KEYS.BURNDOWN, JSON.stringify(history));
+    return history;
+  },
+
   async getProject() {
     const supabase = getSupabase();
     if (supabase) {
@@ -128,9 +137,11 @@ export const DataService = {
   },
 
   resetAllData() {
+    localStorage.removeItem(STORAGE_KEYS.BURNDOWN);
     localStorage.setItem(STORAGE_KEYS.PROJECT, JSON.stringify(INITIAL_PROJECT));
     localStorage.setItem(STORAGE_KEYS.SPRINTS, JSON.stringify(INITIAL_SPRINTS));
     localStorage.setItem(STORAGE_KEYS.TASKS, JSON.stringify(INITIAL_TASKS));
     localStorage.setItem(STORAGE_KEYS.ACTIVITY, JSON.stringify(INITIAL_ACTIVITY));
   }
 };
+
