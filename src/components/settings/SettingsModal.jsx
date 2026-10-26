@@ -4,24 +4,30 @@ import { useAuth } from '../../context/AuthContext';
 import { saveSupabaseConfig, clearSupabaseConfig } from '../../services/supabaseClient';
 
 export default function SettingsModal({ isOpen, onClose }) {
-  const { supabaseConfig, refreshConfig, resetData } = useProject();
+  const { supabaseConfig, syncStatus, refreshConfig, resetData } = useProject();
   const { currentUser } = useAuth();
 
   const [url, setUrl] = useState(supabaseConfig.url || '');
   const [key, setKey] = useState(supabaseConfig.key || '');
   const [copied, setCopied] = useState(false);
   const [savedMsg, setSavedMsg] = useState(false);
+  const [configError, setConfigError] = useState('');
 
   if (!isOpen) return null;
 
+  // Invalid credentials are rejected with a message; the previous configuration stays in use.
   const handleSave = (e) => {
     e.preventDefault();
-    if (url && key) {
+    try {
       saveSupabaseConfig(url, key);
-      setSavedMsg(true);
-      setTimeout(() => setSavedMsg(false), 2000);
-      refreshConfig();
+    } catch (err) {
+      setConfigError(err.message);
+      return;
     }
+    setConfigError('');
+    setSavedMsg(true);
+    setTimeout(() => setSavedMsg(false), 2000);
+    refreshConfig();
   };
 
   const handleDisconnect = () => {
@@ -68,7 +74,12 @@ export default function SettingsModal({ isOpen, onClose }) {
             </div>
           </div>
 
-          <form onSubmit={handleSave} className="modal-form">
+          {supabaseConfig.isConfigured && syncStatus.state === 'error' && (
+            <p role="alert" className="form-error">{syncStatus.message}</p>
+          )}
+
+          <form onSubmit={handleSave} className="modal-form" noValidate>
+            {configError && <p role="alert" className="form-error">{configError}</p>}
             <div className="form-group">
               <label className="form-label">Supabase Project URL</label>
               <input

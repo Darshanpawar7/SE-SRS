@@ -181,6 +181,12 @@ body {
   border-color: rgba(59, 130, 246, 0.25);
 }
 
+.status-pill.error {
+  background: rgba(239, 68, 68, 0.12);
+  color: #f87171;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
 .status-dot {
   width: 8px;
   height: 8px;
@@ -1098,7 +1104,9 @@ body {
   width: 100%;
   max-width: 580px;
   box-shadow: var(--shadow-card);
-  overflow: hidden;
+  /* A dialog taller than the window scrolls instead of being cut off at both ends. */
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
 }
 
 .modal-card.modal-lg {
@@ -1404,6 +1412,25 @@ body {
 }
 
 /* Settings Modal Elements */
+/* Database Settings content lines up with the dialog's header and footer. */
+.settings-body {
+  padding: 20px;
+}
+
+.settings-body .modal-form {
+  padding: 0;
+}
+
+.settings-body .sql-helper-box,
+.settings-body .danger-zone-box {
+  gap: 16px;
+}
+
+.settings-body .sql-helper-box .btn,
+.settings-body .danger-zone-box .btn {
+  flex-shrink: 0;
+}
+
 .status-banner {
   display: flex;
   align-items: flex-start;
