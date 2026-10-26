@@ -1,3 +1,8 @@
+// A null selection is an empty sprint, never an implicit project-wide scope.
+export function selectSprintTasks(tasks = [], sprintId) {
+  return sprintId ? tasks.filter(task => task.sprint_id === sprintId) : [];
+}
+
 // Agile Estimation & Velocity Utilities
 export function calculateSprintMetrics(tasks = []) {
   const totalTasks = tasks.length;
@@ -68,4 +73,5 @@ export function generateBurndownData(totalPoints, completedPoints, daysInSprint 
   }
   return data;
 }
+
 
