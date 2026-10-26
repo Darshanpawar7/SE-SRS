@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useProject } from '../../context/ProjectContext';
-import { calculateSprintMetrics } from '../../utils/estimation';
+import { calculateSprintMetrics, selectSprintTasks } from '../../utils/estimation';
 
 export default function SprintManager() {
   const { sprints, tasks, addSprint, updateSprintStatus } = useProject();
@@ -43,7 +43,7 @@ export default function SprintManager() {
       {/* Sprints List */}
       <div className="sprints-grid">
         {sprints.map(sprint => {
-          const sprintTasks = tasks.filter(t => t.sprint_id === sprint.id);
+          const sprintTasks = selectSprintTasks(tasks, sprint.id);
           const metrics = calculateSprintMetrics(sprintTasks);
 
           return (
@@ -202,3 +202,4 @@ export default function SprintManager() {
     </div>
   );
 }
+
