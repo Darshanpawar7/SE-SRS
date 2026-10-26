@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { DataService, getSupabaseConfig } from '../services/supabaseClient';
 import { validateStoryPoints } from '../utils/storyPoints';
 import { calculateSprintMetrics } from '../utils/estimation';
+import { applyTaskUpdate, createStatusChangeActivity } from '../utils/taskUpdates';
 
 const ProjectContext = createContext();
 
@@ -48,20 +49,18 @@ export function ProjectProvider({ children }) {
   // Update a task (e.g. drag & drop status change, edit)
   const updateTask = async (updatedTask, authorName = 'Team Member') => {
     validateStoryPoints(updatedTask.story_points);
-    const prevTask = tasks.find(t => t.id === updatedTask.id);
-    const newTasks = tasks.map(t => t.id === updatedTask.id ? { ...updatedTask, updated_at: new Date().toISOString() } : t);
+    const { previousTask, tasks: newTasks, durationMs } = applyTaskUpdate(tasks, updatedTask);
     setTasks(newTasks);
     await DataService.saveTasks(newTasks);
 
-    if (prevTask && prevTask.status !== updatedTask.status) {
-      const updatedActs = await DataService.logActivity({
-        user: authorName,
-        action: 'moved task',
-        target: updatedTask.title,
-        to: updatedTask.status
-      });
+    if (previousTask && previousTask.status !== updatedTask.status) {
+      const updatedActs = await DataService.logActivity(
+        createStatusChangeActivity(previousTask, updatedTask, authorName)
+      );
       setActivities(updatedActs);
     }
+
+    return { durationMs };
   };
 
   // Create a new task
