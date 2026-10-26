@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { DataService, getSupabaseConfig } from '../services/supabaseClient';
-import { calculateSprintMetrics } from '../utils/estimation';
+import { calculateSprintMetrics, selectSprintTasks } from '../utils/estimation';
 
 const ProjectContext = createContext();
 
@@ -8,6 +8,9 @@ export function ProjectProvider({ children }) {
   const [project, setProject] = useState(null);
   const [sprints, setSprints] = useState([]);
   const [tasks, setTasks] = useState([]);
+  const tasksRef = useRef([]);
+  const sprintsRef = useRef([]);
+  const [burndownHistory, setBurndownHistory] = useState({});
   const [activities, setActivities] = useState([]);
   const [activeSprintId, setActiveSprintId] = useState(null);
   const [filterAssignee, setFilterAssignee] = useState('all');
@@ -27,8 +30,11 @@ export function ProjectProvider({ children }) {
         DataService.getActivity()
       ]);
       setProject(projData);
+      sprintsRef.current = sprintsData;
       setSprints(sprintsData);
+      tasksRef.current = tasksData;
       setTasks(tasksData);
+      setBurndownHistory(DataService.recordBurndown(sprintsData, tasksData));
       setActivities(actData);
       
       const activeSprint = sprintsData.find(s => s.status === 'active') || sprintsData[0];
@@ -46,9 +52,11 @@ export function ProjectProvider({ children }) {
 
   // Update a task (e.g. drag & drop status change, edit)
   const updateTask = async (updatedTask, authorName = 'Team Member') => {
-    const prevTask = tasks.find(t => t.id === updatedTask.id);
-    const newTasks = tasks.map(t => t.id === updatedTask.id ? { ...updatedTask, updated_at: new Date().toISOString() } : t);
+    const prevTask = tasksRef.current.find(t => t.id === updatedTask.id);
+    const newTasks = tasksRef.current.map(t => t.id === updatedTask.id ? { ...updatedTask, updated_at: new Date().toISOString() } : t);
+    tasksRef.current = newTasks;
     setTasks(newTasks);
+    setBurndownHistory(DataService.recordBurndown(sprintsRef.current, newTasks));
     await DataService.saveTasks(newTasks);
 
     if (prevTask && prevTask.status !== updatedTask.status) {
@@ -70,8 +78,10 @@ export function ProjectProvider({ children }) {
       updated_at: new Date().toISOString(),
       ...taskData
     };
-    const newTasks = [newTask, ...tasks];
+    const newTasks = [newTask, ...tasksRef.current];
+    tasksRef.current = newTasks;
     setTasks(newTasks);
+    setBurndownHistory(DataService.recordBurndown(sprintsRef.current, newTasks));
     await DataService.saveTasks(newTasks);
 
     const updatedActs = await DataService.logActivity({
@@ -86,9 +96,11 @@ export function ProjectProvider({ children }) {
 
   // Delete a task
   const deleteTask = async (taskId, authorName = 'Team Member') => {
-    const taskToDelete = tasks.find(t => t.id === taskId);
-    const newTasks = tasks.filter(t => t.id !== taskId);
+    const taskToDelete = tasksRef.current.find(t => t.id === taskId);
+    const newTasks = tasksRef.current.filter(t => t.id !== taskId);
+    tasksRef.current = newTasks;
     setTasks(newTasks);
+    setBurndownHistory(DataService.recordBurndown(sprintsRef.current, newTasks));
     await DataService.saveTasks(newTasks);
 
     if (taskToDelete) {
@@ -111,15 +123,19 @@ export function ProjectProvider({ children }) {
       status: 'planned',
       ...sprintData
     };
-    const newSprints = [...sprints, newSprint];
+    const newSprints = [...sprintsRef.current, newSprint];
+    sprintsRef.current = newSprints;
     setSprints(newSprints);
+    setBurndownHistory(DataService.recordBurndown(newSprints, tasksRef.current));
     await DataService.saveSprints(newSprints);
     return newSprint;
   };
 
   const updateSprintStatus = async (sprintId, status) => {
-    const newSprints = sprints.map(s => s.id === sprintId ? { ...s, status } : s);
+    const newSprints = sprintsRef.current.map(s => s.id === sprintId ? { ...s, status } : s);
+    sprintsRef.current = newSprints;
     setSprints(newSprints);
+    setBurndownHistory(DataService.recordBurndown(newSprints, tasksRef.current));
     await DataService.saveSprints(newSprints);
   };
 
@@ -134,9 +150,7 @@ export function ProjectProvider({ children }) {
   };
 
   // Compute metrics for active sprint or all tasks
-  const activeSprintTasks = activeSprintId 
-    ? tasks.filter(t => t.sprint_id === activeSprintId)
-    : tasks;
+  const activeSprintTasks = selectSprintTasks(tasks, activeSprintId);
   const sprintMetrics = calculateSprintMetrics(activeSprintTasks);
 
   return (
@@ -145,6 +159,7 @@ export function ProjectProvider({ children }) {
       sprints,
       tasks,
       activities,
+      burndownHistory,
       activeSprintId,
       setActiveSprintId,
       activeSprintTasks,
@@ -171,3 +186,4 @@ export function ProjectProvider({ children }) {
 }
 
 export const useProject = () => useContext(ProjectContext);
+
