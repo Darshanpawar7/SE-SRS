@@ -85,7 +85,7 @@ describe('Workflow Enums and Constants Verification', () => {
     });
 
     try {
-      const tasks = [{ id: 'task-3', status: 'in_progress', title: 'Persist this move', story_points: 3 }];
+      const tasks = [{ id: 'task-3', status: 'in_progress', title: 'Persist this move' }];
       await DataService.saveTasks(tasks);
 
       expect(await DataService.getTasks()).toEqual(tasks);

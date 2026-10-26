@@ -1,21 +1,16 @@
-import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { DataService, getSupabaseConfig } from '../services/supabaseClient';
-import { validateStoryPoints } from '../utils/storyPoints';
-import { calculateSprintMetrics, selectSprintTasks } from '../utils/estimation';
+import { calculateSprintMetrics } from '../utils/estimation';
 import { applyTaskUpdate, createStatusChangeActivity } from '../utils/taskUpdates';
-import { validateSprint, transitionSprint, resolveSelectedSprint } from '../utils/sprintLifecycle';
 
 const ProjectContext = createContext();
 
 export function ProjectProvider({ children }) {
   const [project, setProject] = useState(null);
   const [sprints, setSprints] = useState([]);
-  const sprintsRef = useRef([]);
   const [tasks, setTasks] = useState([]);
-  const tasksRef = useRef([]);
-  const [burndownHistory, setBurndownHistory] = useState({});
   const [activities, setActivities] = useState([]);
-  const [activeSprintId, setSelectedSprintId] = useState(null);
+  const [activeSprintId, setActiveSprintId] = useState(null);
   const [filterAssignee, setFilterAssignee] = useState('all');
   const [filterPriority, setFilterPriority] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -33,14 +28,12 @@ export function ProjectProvider({ children }) {
         DataService.getActivity()
       ]);
       setProject(projData);
-      sprintsRef.current = sprintsData;
       setSprints(sprintsData);
-      tasksRef.current = tasksData;
       setTasks(tasksData);
-      setBurndownHistory(DataService.recordBurndown(sprintsData, tasksData));
       setActivities(actData);
       
-      setSelectedSprintId(resolveSelectedSprint(sprintsData, DataService.getSelectedSprint()));
+      const activeSprint = sprintsData.find(s => s.status === 'active') || sprintsData[0];
+      if (activeSprint) setActiveSprintId(activeSprint.id);
     } catch (err) {
       console.error('Failed to load project data:', err);
     } finally {
@@ -54,11 +47,8 @@ export function ProjectProvider({ children }) {
 
   // Update a task (e.g. drag & drop status change, edit)
   const updateTask = async (updatedTask, authorName = 'Team Member') => {
-    validateStoryPoints(updatedTask.story_points);
-    const { previousTask, tasks: newTasks, durationMs } = applyTaskUpdate(tasksRef.current, updatedTask);
-    tasksRef.current = newTasks;
+    const { previousTask, tasks: newTasks, durationMs } = applyTaskUpdate(tasks, updatedTask);
     setTasks(newTasks);
-    setBurndownHistory(DataService.recordBurndown(sprintsRef.current, newTasks));
     await DataService.saveTasks(newTasks);
 
     if (previousTask && previousTask.status !== updatedTask.status) {
@@ -73,17 +63,14 @@ export function ProjectProvider({ children }) {
 
   // Create a new task
   const addTask = async (taskData, authorName = 'Team Member') => {
-    validateStoryPoints(taskData.story_points);
     const newTask = {
       id: 'task-' + Date.now(),
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       ...taskData
     };
-    const newTasks = [newTask, ...tasksRef.current];
-    tasksRef.current = newTasks;
+    const newTasks = [newTask, ...tasks];
     setTasks(newTasks);
-    setBurndownHistory(DataService.recordBurndown(sprintsRef.current, newTasks));
     await DataService.saveTasks(newTasks);
 
     const updatedActs = await DataService.logActivity({
@@ -98,11 +85,9 @@ export function ProjectProvider({ children }) {
 
   // Delete a task
   const deleteTask = async (taskId, authorName = 'Team Member') => {
-    const taskToDelete = tasksRef.current.find(t => t.id === taskId);
-    const newTasks = tasksRef.current.filter(t => t.id !== taskId);
-    tasksRef.current = newTasks;
+    const taskToDelete = tasks.find(t => t.id === taskId);
+    const newTasks = tasks.filter(t => t.id !== taskId);
     setTasks(newTasks);
-    setBurndownHistory(DataService.recordBurndown(sprintsRef.current, newTasks));
     await DataService.saveTasks(newTasks);
 
     if (taskToDelete) {
@@ -118,38 +103,23 @@ export function ProjectProvider({ children }) {
 
   // Add or update sprint
   const addSprint = async (sprintData) => {
-    const validated = validateSprint(sprintData);
     const newSprint = {
-      id: crypto.randomUUID(),
+      id: 'sprint-' + Date.now(),
       total_points: 0,
       completed_points: 0,
-      ...validated,
-      project_id: project?.id,
-      status: 'planned'
+      status: 'planned',
+      ...sprintData
     };
-    const newSprints = [...sprintsRef.current, newSprint];
-    sprintsRef.current = newSprints;
+    const newSprints = [...sprints, newSprint];
     setSprints(newSprints);
-    setBurndownHistory(DataService.recordBurndown(newSprints, tasksRef.current));
-    if (!activeSprintId) setActiveSprintId(newSprint.id);
     await DataService.saveSprints(newSprints);
     return newSprint;
   };
 
   const updateSprintStatus = async (sprintId, status) => {
-    const newSprints = transitionSprint(sprintsRef.current, sprintId, status);
-    sprintsRef.current = newSprints;
+    const newSprints = sprints.map(s => s.id === sprintId ? { ...s, status } : s);
     setSprints(newSprints);
-    setBurndownHistory(DataService.recordBurndown(newSprints, tasksRef.current));
-    // Starting a sprint selects its board and metrics; completing keeps its report visible.
-    if (status === 'active') setActiveSprintId(sprintId);
     await DataService.saveSprints(newSprints);
-  };
-
-  const setActiveSprintId = (sprintId) => {
-    if (!sprintsRef.current.some(sprint => sprint.id === sprintId)) return;
-    DataService.saveSelectedSprint(sprintId);
-    setSelectedSprintId(sprintId);
   };
 
   const refreshConfig = () => {
@@ -163,7 +133,9 @@ export function ProjectProvider({ children }) {
   };
 
   // Compute metrics for active sprint or all tasks
-  const activeSprintTasks = selectSprintTasks(tasks, activeSprintId);
+  const activeSprintTasks = activeSprintId 
+    ? tasks.filter(t => t.sprint_id === activeSprintId)
+    : tasks;
   const sprintMetrics = calculateSprintMetrics(activeSprintTasks);
 
   return (
@@ -172,7 +144,6 @@ export function ProjectProvider({ children }) {
       sprints,
       tasks,
       activities,
-      burndownHistory,
       activeSprintId,
       setActiveSprintId,
       activeSprintTasks,
@@ -199,4 +170,3 @@ export function ProjectProvider({ children }) {
 }
 
 export const useProject = () => useContext(ProjectContext);
-

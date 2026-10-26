@@ -1,51 +1,30 @@
 import React, { useState } from 'react';
 import { useProject } from '../../context/ProjectContext';
-import { calculateSprintMetrics, selectSprintTasks } from '../../utils/estimation';
+import { calculateSprintMetrics } from '../../utils/estimation';
 
 export default function SprintManager() {
-  const { sprints, tasks, addSprint, updateSprintStatus, activeSprintId, setActiveSprintId } = useProject();
+  const { sprints, tasks, addSprint, updateSprintStatus } = useProject();
 
   const [showNewSprintModal, setShowNewSprintModal] = useState(false);
   const [sprintName, setSprintName] = useState('');
   const [sprintGoal, setSprintGoal] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [error, setError] = useState('');
-  const [busy, setBusy] = useState(false);
 
-  const handleCreateSprint = async (e) => {
+  const handleCreateSprint = (e) => {
     e.preventDefault();
-    setError('');
-    setBusy(true);
-    try {
-      await addSprint({
-        name: sprintName.trim(),
-        goal: sprintGoal.trim(),
-        start_date: startDate || new Date().toISOString().slice(0, 10),
-        end_date: endDate || new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10)
-      });
-      setSprintName('');
-      setSprintGoal('');
-      setStartDate('');
-      setEndDate('');
-      setShowNewSprintModal(false);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setBusy(false);
-    }
-  };
+    if (!sprintName.trim()) return;
 
-  const handleTransition = async (id, status) => {
-    setError('');
-    setBusy(true);
-    try {
-      await updateSprintStatus(id, status);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setBusy(false);
-    }
+    addSprint({
+      name: sprintName.trim(),
+      goal: sprintGoal.trim(),
+      start_date: startDate || new Date().toISOString().split('T')[0],
+      end_date: endDate || new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0]
+    });
+
+    setSprintName('');
+    setSprintGoal('');
+    setShowNewSprintModal(false);
   };
 
   return (
@@ -55,18 +34,16 @@ export default function SprintManager() {
           <h2 className="view-title">Sprint Management & Agile Planning</h2>
           <p className="view-subtitle">Plan iterations, track velocity, and monitor burndown milestones</p>
         </div>
-        <button className="btn btn-primary" onClick={() => { setError(''); setShowNewSprintModal(true); }}>
+        <button className="btn btn-primary" onClick={() => setShowNewSprintModal(true)}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           <span>Create Sprint</span>
         </button>
       </div>
 
-      {error && !showNewSprintModal && <p role="alert">{error}</p>}
-
       {/* Sprints List */}
       <div className="sprints-grid">
         {sprints.map(sprint => {
-          const sprintTasks = selectSprintTasks(tasks, sprint.id);
+          const sprintTasks = tasks.filter(t => t.sprint_id === sprint.id);
           const metrics = calculateSprintMetrics(sprintTasks);
 
           return (
@@ -81,14 +58,10 @@ export default function SprintManager() {
                 </div>
 
                 <div className="sprint-actions">
-                  <button className="btn btn-sm btn-secondary" onClick={() => setActiveSprintId(sprint.id)} aria-pressed={activeSprintId === sprint.id}>
-                    {activeSprintId === sprint.id ? 'Selected sprint' : 'View sprint'}
-                  </button>
                   {sprint.status === 'planned' && (
                     <button 
                       className="btn btn-sm btn-primary"
-                      disabled={busy}
-                      onClick={() => handleTransition(sprint.id, 'active')}
+                      onClick={() => updateSprintStatus(sprint.id, 'active')}
                     >
                       Start Sprint
                     </button>
@@ -96,8 +69,7 @@ export default function SprintManager() {
                   {sprint.status === 'active' && (
                     <button 
                       className="btn btn-sm btn-secondary"
-                      disabled={busy}
-                      onClick={() => handleTransition(sprint.id, 'completed')}
+                      onClick={() => updateSprintStatus(sprint.id, 'completed')}
                     >
                       Complete Sprint
                     </button>
@@ -171,7 +143,6 @@ export default function SprintManager() {
               <button className="close-btn" onClick={() => setShowNewSprintModal(false)}>✕</button>
             </div>
             <form onSubmit={handleCreateSprint} className="modal-form">
-              {error && <p role="alert">{error}</p>}
               <div className="form-group">
                 <label className="form-label">Sprint Name *</label>
                 <input
@@ -220,7 +191,7 @@ export default function SprintManager() {
                 <button type="button" className="btn btn-secondary" onClick={() => setShowNewSprintModal(false)}>
                   Cancel
                 </button>
-                <button type="submit" className="btn btn-primary" disabled={busy}>
+                <button type="submit" className="btn btn-primary">
                   Create Sprint
                 </button>
               </div>
@@ -231,4 +202,3 @@ export default function SprintManager() {
     </div>
   );
 }
-
