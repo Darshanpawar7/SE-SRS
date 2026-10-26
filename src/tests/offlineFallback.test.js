@@ -7,6 +7,8 @@ import { ProjectProvider } from '../context/ProjectContext';
 import Navbar from '../components/layout/Navbar';
 import { INITIAL_PROJECT, INITIAL_SPRINTS } from '../services/mockData';
 import { auditTaskCreated } from '../utils/auditTrail';
+import { signIn } from '../services/authService';
+import { TEAM_MEMBERS } from '../utils/constants';
 import { createFakeSupabase } from './helpers/fakeSupabase';
 
 const makeTask = (n, changes = {}) => ({
@@ -213,7 +215,9 @@ describe('PMS-F-016 offline CRUD fallback', () => {
     expect(cloud.db.tasks[0].title).toBe('v2');
   });
 
-  it('shows waiting changes in the navbar instead of "Supabase Connected"', () => {
+  it('shows waiting changes in the navbar instead of "Supabase Connected"', async () => {
+    setSupabaseClient(null);
+    await signIn(TEAM_MEMBERS[0].email, TEAM_MEMBERS[0].usn); // the navbar is only shown after sign-in
     storage.set('supabase_url', 'https://team11.supabase.co');
     storage.set('supabase_key', 'anon-key');
     storage.set('sprintflow_pending_sync', JSON.stringify({ seq: 1, tables: { tasks: 1 }, deletedTaskIds: [], activity: [] }));

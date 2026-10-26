@@ -55,7 +55,7 @@ Rows sent to Supabase carry only columns that exist in `database/schema.sql`; cl
 | `activity_logs` | `id, project_id, user_name, action, entity_type, entity_title, details, created_at` | `details` holds the record type, entity id, before/after values and field changes as JSON. |
 
 ### 5.3 Identifiers
-All `id` columns are `UUID`. New tasks and sprints get `crypto.randomUUID()` identifiers, and the seed data uses fixed UUIDs; the seeded project and Sprint 1 use the same IDs as the seed rows in `database/schema.sql`. Data created by an older build of the app (IDs such as `task-101`) cannot be stored in these columns: the sync error is shown and the data stays in the browser. Use **Reset Seed Data** in Database Settings to start from UUID-based seed data.
+All `id` columns are `UUID`. New tasks and sprints get `crypto.randomUUID()` identifiers, and the seed data uses fixed UUIDs; the seeded project and Sprint 1 use the same IDs as the seed rows in `database/schema.sql`. Data created by an older build of the app (IDs such as `task-101`) cannot be stored in these columns: the sync error is shown and the data stays in the browser. To start from UUID-based seed data, disconnect Supabase, let the team lead use **Reset Seed Data** in Database Settings, then connect again. (The reset is only available in local demo mode, so it never replaces the team's shared cloud data.)
 
 ### 5.4 Offline fallback and pending changes (PMS-F-016)
 - Without credentials, every create, read, update and delete uses `localStorage` only and survives reloads and closed tabs.
