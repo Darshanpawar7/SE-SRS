@@ -1,6 +1,7 @@
 import { recordDailyProgress } from '../utils/burndown';
 // Supabase Client with graceful Offline / Mock fallback
 import { validateStoryPoints } from '../utils/storyPoints';
+import { isAuditRecord } from '../utils/auditTrail';
 import { createClient } from '@supabase/supabase-js';
 import { INITIAL_PROJECT, INITIAL_SPRINTS, INITIAL_TASKS, INITIAL_ACTIVITY } from './mockData';
 
@@ -52,6 +53,14 @@ const STORAGE_KEYS = {
   ACTIVITY: 'sprintflow_activity',
   SELECTED_SPRINT: 'sprintflow_selected_sprint',
   BURNDOWN: 'sprintflow_burndown_history'
+};
+
+// Audit records come back frozen: the application can read them but never edit them.
+const readActivity = () => {
+  const local = localStorage.getItem(STORAGE_KEYS.ACTIVITY);
+  if (!local) localStorage.setItem(STORAGE_KEYS.ACTIVITY, JSON.stringify(INITIAL_ACTIVITY));
+  const records = local ? JSON.parse(local) : INITIAL_ACTIVITY;
+  return records.map(record => Object.freeze({ ...record }));
 };
 
 // Unified Data Service: operates on Supabase when connected, else localStorage
@@ -134,26 +143,29 @@ export const DataService = {
   },
 
   async getActivity() {
-    const local = localStorage.getItem(STORAGE_KEYS.ACTIVITY);
-    if (local) return JSON.parse(local);
-    localStorage.setItem(STORAGE_KEYS.ACTIVITY, JSON.stringify(INITIAL_ACTIVITY));
-    return INITIAL_ACTIVITY;
+    return readActivity();
   },
 
-  async logActivity(item) {
-    const current = await this.getActivity();
-    const updated = [{ id: 'act-' + Date.now(), time: 'Just now', ...item }, ...current.slice(0, 19)];
+  // Append-only: a new record goes on top and the history is never truncated.
+  // The read and the write happen in one synchronous step, so two records logged at
+  // the same time cannot overwrite each other. There is deliberately no method to
+  // edit or remove an audit record.
+  async logActivity(record) {
+    if (!isAuditRecord(record)) {
+      throw new Error('Only complete audit records (actor, type, timestamp) can be logged.');
+    }
+    const updated = [Object.freeze({ ...record }), ...readActivity()];
     localStorage.setItem(STORAGE_KEYS.ACTIVITY, JSON.stringify(updated));
     return updated;
   },
 
+  // Resets the demo board but keeps the audit trail, which must survive every change.
   resetAllData() {
     localStorage.removeItem(STORAGE_KEYS.SELECTED_SPRINT);
     localStorage.removeItem(STORAGE_KEYS.BURNDOWN);
     localStorage.setItem(STORAGE_KEYS.PROJECT, JSON.stringify(INITIAL_PROJECT));
     localStorage.setItem(STORAGE_KEYS.SPRINTS, JSON.stringify(INITIAL_SPRINTS));
     localStorage.setItem(STORAGE_KEYS.TASKS, JSON.stringify(INITIAL_TASKS));
-    localStorage.setItem(STORAGE_KEYS.ACTIVITY, JSON.stringify(INITIAL_ACTIVITY));
   }
 };
 
