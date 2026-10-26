@@ -5,6 +5,7 @@ import { calculateMemberWorkload } from '../../utils/estimation';
 
 import { generateRecordedBurndown } from '../../utils/burndown';
 import BurndownChart from './BurndownChart';
+import KpiCards from './KpiCards';
 
 export default function DashboardView({ onNavigateKanban }) {
   const { activeSprintTasks, sprintMetrics, activities, sprints, activeSprintId, burndownHistory } = useProject();
@@ -29,33 +30,7 @@ export default function DashboardView({ onNavigateKanban }) {
       </div>
 
       {/* KPI Stats Cards */}
-      <div className="stats-grid">
-        <div className="stat-card">
-          <div className="stat-label">Total Story Points</div>
-          <div className="stat-value text-indigo">{sprintMetrics.totalStoryPoints} <span className="stat-unit">pts</span></div>
-          <div className="stat-meta">{sprintMetrics.totalTasks} tasks in active scope</div>
-        </div>
-
-        <div className="stat-card">
-          <div className="stat-label">Delivered Velocity</div>
-          <div className="stat-value text-emerald">{sprintMetrics.completedStoryPoints} <span className="stat-unit">pts</span></div>
-          <div className="stat-meta">{sprintMetrics.completedTasks} items completed</div>
-        </div>
-
-        <div className="stat-card">
-          <div className="stat-label">Sprint Completion</div>
-          <div className="stat-value text-amber">{sprintMetrics.progressPercentage}%</div>
-          <div className="progress-bar-container">
-            <div className="progress-bar-fill" style={{ width: `${sprintMetrics.progressPercentage}%` }}></div>
-          </div>
-        </div>
-
-        <div className="stat-card">
-          <div className="stat-label">Remaining Workload</div>
-          <div className="stat-value text-purple">{sprintMetrics.remainingStoryPoints} <span className="stat-unit">pts</span></div>
-          <div className="stat-meta">{sprintMetrics.totalTasks - sprintMetrics.completedTasks} tasks pending</div>
-        </div>
-      </div>
+      <KpiCards metrics={sprintMetrics} />
 
       {/* Visual Analytics Grid */}
       <div className="charts-grid">
