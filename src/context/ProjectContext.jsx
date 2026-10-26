@@ -9,8 +9,10 @@ import {
 import { validateStoryPoints } from '../utils/storyPoints';
 import { calculateSprintMetrics, selectSprintTasks } from '../utils/estimation';
 import { applyTaskUpdate } from '../utils/taskUpdates';
+import { validateProjectMetadata } from '../utils/projectMetadata';
 import {
   auditDemoReset,
+  auditProjectUpdated,
   auditSprintCreated,
   auditSprintTransition,
   auditTaskCreated,
@@ -182,6 +184,23 @@ export function ProjectProvider({ children }) {
     setSelectedSprintId(sprintId);
   };
 
+  // Only the team lead may edit project details. Values are validated (unique key,
+  // name, date range), shown in every project view, and saved together with their
+  // audit record before anything is sent to Supabase.
+  const updateProject = async (values, member) => {
+    if (!can(member, PERMISSIONS.EDIT_PROJECT)) {
+      throw new Error('Only the team lead can edit project details.');
+    }
+    if (!project) throw new Error('The project is still loading. Try again in a moment.');
+    const otherProjects = (await DataService.listProjects()).filter(item => item.id !== project.id);
+    const updated = { ...project, ...validateProjectMetadata(values, otherProjects) };
+    const auditRecord = auditProjectUpdated(project, updated, member.name);
+    setProject(updated);
+    await DataService.saveProject(updated, auditRecord);
+    await refreshActivities();
+    return updated;
+  };
+
   const refreshConfig = () => {
     setSupabaseConfig(getSupabaseConfig());
     loadData();
@@ -215,6 +234,7 @@ export function ProjectProvider({ children }) {
   return (
     <ProjectContext.Provider value={{
       project,
+      updateProject,
       sprints,
       tasks,
       activities,

@@ -2,14 +2,16 @@ import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useProject } from '../../context/ProjectContext';
 import { ACCESS_ROLE_LABELS } from '../../services/authService';
+import { describeProject } from '../../utils/projectMetadata';
 
-export default function Navbar({ onOpenSettings, onOpenNewTask }) {
+export default function Navbar({ onOpenSettings, onOpenNewTask, onOpenProjectSettings }) {
   const { currentUser, signOut } = useAuth();
   const { project, supabaseConfig, syncStatus, pendingChanges, sprints, activeSprintId, setActiveSprintId } = useProject();
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const syncFailed = supabaseConfig.isConfigured && syncStatus.state === 'error';
   // A later successful read must not hide changes that are still waiting to sync.
   const syncWaiting = supabaseConfig.isConfigured && !syncFailed && pendingChanges > 0;
+  const projectSummary = describeProject(project);
   const syncTitle = pendingChanges > 0
     ? `${syncStatus.message} ${pendingChanges} change(s) are waiting to sync.`.trim()
     : syncStatus.message;
@@ -36,10 +38,15 @@ export default function Navbar({ onOpenSettings, onOpenNewTask }) {
           </div>
         </div>
 
-        <div className="project-badge">
-          <span className="badge-key">{project?.key || 'PMS'}</span>
-          <span className="badge-name">{project?.name || 'Project Management'}</span>
-        </div>
+        <button
+          type="button"
+          className="project-badge"
+          onClick={onOpenProjectSettings}
+          title={projectSummary.dates ? `Project details (${projectSummary.dates})` : 'Project details'}
+        >
+          <span className="badge-key">{projectSummary.key}</span>
+          <span className="badge-name">{projectSummary.name}</span>
+        </button>
 
         {/* Sprint Selector */}
         <div className="sprint-selector-pill">
