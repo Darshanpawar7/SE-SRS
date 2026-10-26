@@ -54,6 +54,7 @@ describe('PMS-F-015 Supabase synchronisation', () => {
 
   afterEach(() => {
     setSupabaseClient(undefined);
+    vi.useRealTimers();
     vi.restoreAllMocks();
   });
 
@@ -106,6 +107,7 @@ describe('PMS-F-015 Supabase synchronisation', () => {
   });
 
   it('stores a change and its audit record locally before the request, even if it never answers', () => {
+    vi.useFakeTimers(); // the request's 15-second time limit never fires after this test
     const cloud = createFakeSupabase();
     cloud.hang = true;
     setSupabaseClient(cloud);
