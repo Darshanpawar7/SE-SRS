@@ -57,6 +57,12 @@ The detailed work breakdown, SAD and STP section ownership, and viva guide are i
 | SAD Report (Word) | `docs/Team11_SAD_Report.docx` |
 | STP Report (Word) | `docs/Team11_STP_Report.docx` |
 
+### Sprint 1 -- Implementation (19-23 October 2026)
+
+- **Sprint 1 Demo Video (57 seconds):** [`docs/demo/SprintFlow_Sprint1_Demo.webm`](docs/demo/SprintFlow_Sprint1_Demo.webm), a captioned walkthrough of every Sprint 1 backlog item in the merged build
+- **Sprint Backlog:** `docs/BACKLOG.md`, tracked on the [SprintFlow Backlog project board](https://github.com/users/Darshanpawar7/projects/1)
+- **Verification Notes:** `docs/ISSUE_*_VERIFICATION.md`, one per backlog item (what changed, its automated tests and a manual check)
+
 ### Common to All Phases
 
 - **Team Work Breakdown and Viva Guide:** `docs/Team_Work_Division.md`
