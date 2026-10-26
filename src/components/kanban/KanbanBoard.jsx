@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useProject } from '../../context/ProjectContext';
 import { useAuth } from '../../context/AuthContext';
-import { TASK_STATUSES, TASK_PRIORITIES, TEAM_MEMBERS } from '../../utils/constants';
+import { TASK_PRIORITIES, TEAM_MEMBERS } from '../../utils/constants';
 import { getKanbanColumns } from '../../utils/kanban';
 import { getTaskAfterStatusDrop } from '../../utils/taskUpdates';
+import { advanceTaskByOneStage, getNextTaskStatus } from '../../utils/workflow';
 
 export default function KanbanBoard({ onOpenTaskModal }) {
   const { 
@@ -143,6 +144,7 @@ export default function KanbanBoard({ onOpenTaskModal }) {
                   colTasks.map(task => {
                     const priorityObj = TASK_PRIORITIES.find(p => p.id === task.priority) || TASK_PRIORITIES[1];
                     const assignee = TEAM_MEMBERS.find(m => m.id === task.assignee_id);
+                    const nextStatus = getNextTaskStatus(task.status);
 
                     return (
                       <div
@@ -199,13 +201,10 @@ export default function KanbanBoard({ onOpenTaskModal }) {
                               title="Quick advance"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                const currentIndex = TASK_STATUSES.findIndex(s => s.id === col.id);
-                                if (currentIndex < TASK_STATUSES.length - 1) {
-                                  updateTask({ ...task, status: TASK_STATUSES[currentIndex + 1].id }, currentUser.name);
-                                }
+                                advanceTaskByOneStage(task, updateTask, currentUser.name);
                               }}
                               className="step-btn"
-                              disabled={col.id === 'done'}
+                              disabled={!nextStatus}
                             >
                               →
                             </button>
