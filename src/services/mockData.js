@@ -1,6 +1,13 @@
 // Pre-populated initial dataset for Team 11
+// IDs are UUIDs so the seed data matches database/schema.sql and can be synced to
+// Supabase as-is. The project and Sprint 1 IDs are the schema's own seed rows.
+const PROJECT_ID = '11111111-1111-1111-1111-111111111111';
+const SPRINT_1_ID = '22222222-2222-2222-2222-222222222222';
+const SPRINT_2_ID = '33333333-3333-3333-3333-333333333333';
+const taskId = (number) => `00000000-0000-4000-8000-000000000${number}`;
+
 export const INITIAL_PROJECT = {
-  id: 'proj-team-11',
+  id: PROJECT_ID,
   name: 'SprintFlow - Project Management System',
   key: 'PMS',
   description: 'Enterprise project tracking suite with automated workflows, Fibonacci estimation, interactive Kanban boards, and burndown visibility.',
@@ -12,8 +19,8 @@ export const INITIAL_PROJECT = {
 
 export const INITIAL_SPRINTS = [
   {
-    id: 'sprint-1',
-    project_id: 'proj-team-11',
+    id: SPRINT_1_ID,
+    project_id: PROJECT_ID,
     name: 'Sprint 1: Architecture & Core Workflow',
     goal: 'Deliver working authentication, Supabase cloud sync, drag-and-drop Kanban, and story estimation.',
     status: 'active',
@@ -23,8 +30,8 @@ export const INITIAL_SPRINTS = [
     completed_points: 13
   },
   {
-    id: 'sprint-2',
-    project_id: 'proj-team-11',
+    id: SPRINT_2_ID,
+    project_id: PROJECT_ID,
     name: 'Sprint 2: Analytics & Release Candidate',
     goal: 'Build team velocity metrics, exportable reports, and full CI/CD deployment.',
     status: 'planned',
@@ -37,9 +44,9 @@ export const INITIAL_SPRINTS = [
 
 export const INITIAL_TASKS = [
   {
-    id: 'task-101',
-    project_id: 'proj-team-11',
-    sprint_id: 'sprint-1',
+    id: taskId(101),
+    project_id: PROJECT_ID,
+    sprint_id: SPRINT_1_ID,
     title: 'Design Supabase PostgreSQL Database Schema',
     description: 'Create relational tables for projects, sprints, tasks, and audit logs with RLS policies and foreign keys.',
     status: 'done',
@@ -53,9 +60,9 @@ export const INITIAL_TASKS = [
     updated_at: '2026-09-03T16:30:00Z'
   },
   {
-    id: 'task-102',
-    project_id: 'proj-team-11',
-    sprint_id: 'sprint-1',
+    id: taskId(102),
+    project_id: PROJECT_ID,
+    sprint_id: SPRINT_1_ID,
     title: 'Implement Interactive Kanban Board with Drag & Drop',
     description: 'Develop responsive Kanban view with status columns: Backlog, To Do, In Progress, Review, and Done.',
     status: 'done',
@@ -69,9 +76,9 @@ export const INITIAL_TASKS = [
     updated_at: '2026-09-04T14:15:00Z'
   },
   {
-    id: 'task-103',
-    project_id: 'proj-team-11',
-    sprint_id: 'sprint-1',
+    id: taskId(103),
+    project_id: PROJECT_ID,
+    sprint_id: SPRINT_1_ID,
     title: 'Build Agile Story Point Estimation Engine',
     description: 'Implement Fibonacci scale selection (1, 2, 3, 5, 8, 13) and live sprint capacity calculations.',
     status: 'in_progress',
@@ -85,9 +92,9 @@ export const INITIAL_TASKS = [
     updated_at: '2026-09-05T08:00:00Z'
   },
   {
-    id: 'task-104',
-    project_id: 'proj-team-11',
-    sprint_id: 'sprint-1',
+    id: taskId(104),
+    project_id: PROJECT_ID,
+    sprint_id: SPRINT_1_ID,
     title: 'Setup GitHub Actions CI/CD Pipeline',
     description: 'Configure automated linting, Vitest unit test runner, and build gate as per Actions Guide.pdf.',
     status: 'in_progress',
@@ -101,9 +108,9 @@ export const INITIAL_TASKS = [
     updated_at: '2026-09-05T09:30:00Z'
   },
   {
-    id: 'task-105',
-    project_id: 'proj-team-11',
-    sprint_id: 'sprint-1',
+    id: taskId(105),
+    project_id: PROJECT_ID,
+    sprint_id: SPRINT_1_ID,
     title: 'Create Executive Visibility Dashboard',
     description: 'Develop real-time KPI metrics, burndown visualizer, task completion ratios, and workload cards.',
     status: 'review',
@@ -117,9 +124,9 @@ export const INITIAL_TASKS = [
     updated_at: '2026-09-05T11:00:00Z'
   },
   {
-    id: 'task-106',
-    project_id: 'proj-team-11',
-    sprint_id: 'sprint-1',
+    id: taskId(106),
+    project_id: PROJECT_ID,
+    sprint_id: SPRINT_1_ID,
     title: 'Draft Formal IEEE 830 SRS Document',
     description: 'Produce complete SRS document with 15+ FRs, 5 NFRs, 2 UML diagrams, and Requirements Traceability Matrix.',
     status: 'todo',
@@ -133,8 +140,8 @@ export const INITIAL_TASKS = [
     updated_at: '2026-09-04T09:00:00Z'
   },
   {
-    id: 'task-107',
-    project_id: 'proj-team-11',
+    id: taskId(107),
+    project_id: PROJECT_ID,
     sprint_id: null,
     title: 'Implement Dark/Light Mode Theme Customization',
     description: 'Add persistent theme toggle supporting glassmorphic dark styling and high-contrast accessibility.',
@@ -160,7 +167,7 @@ export const INITIAL_ACTIVITY = [
     actor: 'Darshan P Pawar',
     action: 'moved task',
     entity_type: 'task',
-    entity_id: 'task-105',
+    entity_id: taskId(105),
     target: 'Create Executive Visibility Dashboard',
     from: 'in_progress',
     to: 'review',
@@ -174,7 +181,7 @@ export const INITIAL_ACTIVITY = [
     actor: 'Gurubelli Yekambar Eshwar Rao',
     action: 'updated estimation on',
     entity_type: 'task',
-    entity_id: 'task-103',
+    entity_id: taskId(103),
     target: 'Build Agile Story Point Estimation Engine',
     from: null,
     to: '5 Story Points',
@@ -188,7 +195,7 @@ export const INITIAL_ACTIVITY = [
     actor: 'Chandan Kumar K',
     action: 'completed task',
     entity_type: 'task',
-    entity_id: 'task-101',
+    entity_id: taskId(101),
     target: 'Design Supabase Database Schema',
     from: 'review',
     to: 'done',
@@ -202,7 +209,7 @@ export const INITIAL_ACTIVITY = [
     actor: 'Dhatri Shivaprasad',
     action: 'completed task',
     entity_type: 'task',
-    entity_id: 'task-102',
+    entity_id: taskId(102),
     target: 'Implement Interactive Kanban Board',
     from: 'review',
     to: 'done',
