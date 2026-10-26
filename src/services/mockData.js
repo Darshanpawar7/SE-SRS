@@ -19,7 +19,7 @@ export const INITIAL_SPRINTS = [
     status: 'active',
     start_date: '2026-09-01',
     end_date: '2026-09-15',
-    total_points: 34,
+    total_points: 33,
     completed_points: 13
   },
   {
@@ -124,7 +124,7 @@ export const INITIAL_TASKS = [
     description: 'Produce complete SRS document with 15+ FRs, 5 NFRs, 2 UML diagrams, and Requirements Traceability Matrix.',
     status: 'todo',
     priority: 'critical',
-    story_points: 6,
+    story_points: 5,
     assignee_id: 'u-1',
     assignee_name: 'Darshan P Pawar',
     reporter_name: 'Darshan P Pawar',
