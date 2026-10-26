@@ -1,15 +1,18 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { DataService, getSupabaseConfig } from '../services/supabaseClient';
-import { calculateSprintMetrics } from '../utils/estimation';
+import { calculateSprintMetrics, selectSprintTasks } from '../utils/estimation';
+
+import { validateSprint, transitionSprint, resolveSelectedSprint } from '../utils/sprintLifecycle';
 
 const ProjectContext = createContext();
 
 export function ProjectProvider({ children }) {
   const [project, setProject] = useState(null);
   const [sprints, setSprints] = useState([]);
+  const sprintsRef = useRef([]);
   const [tasks, setTasks] = useState([]);
   const [activities, setActivities] = useState([]);
-  const [activeSprintId, setActiveSprintId] = useState(null);
+  const [activeSprintId, setSelectedSprintId] = useState(null);
   const [filterAssignee, setFilterAssignee] = useState('all');
   const [filterPriority, setFilterPriority] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -27,12 +30,12 @@ export function ProjectProvider({ children }) {
         DataService.getActivity()
       ]);
       setProject(projData);
+      sprintsRef.current = sprintsData;
       setSprints(sprintsData);
       setTasks(tasksData);
       setActivities(actData);
       
-      const activeSprint = sprintsData.find(s => s.status === 'active') || sprintsData[0];
-      if (activeSprint) setActiveSprintId(activeSprint.id);
+      setSelectedSprintId(resolveSelectedSprint(sprintsData, DataService.getSelectedSprint()));
     } catch (err) {
       console.error('Failed to load project data:', err);
     } finally {
@@ -104,23 +107,36 @@ export function ProjectProvider({ children }) {
 
   // Add or update sprint
   const addSprint = async (sprintData) => {
+    const validated = validateSprint(sprintData);
     const newSprint = {
-      id: 'sprint-' + Date.now(),
+      id: crypto.randomUUID(),
       total_points: 0,
       completed_points: 0,
-      status: 'planned',
-      ...sprintData
+      ...validated,
+      project_id: project?.id,
+      status: 'planned'
     };
-    const newSprints = [...sprints, newSprint];
+    const newSprints = [...sprintsRef.current, newSprint];
+    sprintsRef.current = newSprints;
     setSprints(newSprints);
+    if (!activeSprintId) setActiveSprintId(newSprint.id);
     await DataService.saveSprints(newSprints);
     return newSprint;
   };
 
   const updateSprintStatus = async (sprintId, status) => {
-    const newSprints = sprints.map(s => s.id === sprintId ? { ...s, status } : s);
+    const newSprints = transitionSprint(sprintsRef.current, sprintId, status);
+    sprintsRef.current = newSprints;
     setSprints(newSprints);
+    // Starting a sprint selects its board and metrics; completing keeps its report visible.
+    if (status === 'active') setActiveSprintId(sprintId);
     await DataService.saveSprints(newSprints);
+  };
+
+  const setActiveSprintId = (sprintId) => {
+    if (!sprintsRef.current.some(sprint => sprint.id === sprintId)) return;
+    DataService.saveSelectedSprint(sprintId);
+    setSelectedSprintId(sprintId);
   };
 
   const refreshConfig = () => {
@@ -134,9 +150,7 @@ export function ProjectProvider({ children }) {
   };
 
   // Compute metrics for active sprint or all tasks
-  const activeSprintTasks = activeSprintId 
-    ? tasks.filter(t => t.sprint_id === activeSprintId)
-    : tasks;
+  const activeSprintTasks = selectSprintTasks(tasks, activeSprintId);
   const sprintMetrics = calculateSprintMetrics(activeSprintTasks);
 
   return (
@@ -171,3 +185,4 @@ export function ProjectProvider({ children }) {
 }
 
 export const useProject = () => useContext(ProjectContext);
+

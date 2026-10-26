@@ -47,11 +47,20 @@ const STORAGE_KEYS = {
   PROJECT: 'sprintflow_project',
   SPRINTS: 'sprintflow_sprints',
   TASKS: 'sprintflow_tasks',
-  ACTIVITY: 'sprintflow_activity'
+  ACTIVITY: 'sprintflow_activity',
+  SELECTED_SPRINT: 'sprintflow_selected_sprint'
 };
 
 // Unified Data Service: operates on Supabase when connected, else localStorage
 export const DataService = {
+  getSelectedSprint() {
+    return localStorage.getItem(STORAGE_KEYS.SELECTED_SPRINT);
+  },
+
+  saveSelectedSprint(sprintId) {
+    localStorage.setItem(STORAGE_KEYS.SELECTED_SPRINT, sprintId);
+  },
+
   async getProject() {
     const supabase = getSupabase();
     if (supabase) {
@@ -128,9 +137,11 @@ export const DataService = {
   },
 
   resetAllData() {
+    localStorage.removeItem(STORAGE_KEYS.SELECTED_SPRINT);
     localStorage.setItem(STORAGE_KEYS.PROJECT, JSON.stringify(INITIAL_PROJECT));
     localStorage.setItem(STORAGE_KEYS.SPRINTS, JSON.stringify(INITIAL_SPRINTS));
     localStorage.setItem(STORAGE_KEYS.TASKS, JSON.stringify(INITIAL_TASKS));
     localStorage.setItem(STORAGE_KEYS.ACTIVITY, JSON.stringify(INITIAL_ACTIVITY));
   }
 };
+
