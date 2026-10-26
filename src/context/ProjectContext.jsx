@@ -1,5 +1,11 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
-import { DataService, getSupabaseConfig, getSyncStatus, subscribeSyncStatus } from '../services/supabaseClient';
+import {
+  DataService,
+  getPendingChangeCount,
+  getSupabaseConfig,
+  getSyncStatus,
+  subscribeSyncStatus
+} from '../services/supabaseClient';
 import { validateStoryPoints } from '../utils/storyPoints';
 import { calculateSprintMetrics, selectSprintTasks } from '../utils/estimation';
 import { applyTaskUpdate } from '../utils/taskUpdates';
@@ -33,6 +39,13 @@ export function ProjectProvider({ children }) {
 
   // Cloud sync errors are surfaced to the UI as they happen.
   useEffect(() => subscribeSyncStatus(setSyncStatus), []);
+
+  // Changes saved while Supabase was unreachable are sent as soon as the browser is back online.
+  useEffect(() => {
+    const sendPendingChanges = () => DataService.flushPending();
+    window.addEventListener('online', sendPendingChanges);
+    return () => window.removeEventListener('online', sendPendingChanges);
+  }, []);
 
   // Load initial data
   const loadData = async () => {
@@ -180,6 +193,12 @@ export function ProjectProvider({ children }) {
     await loadData();
   };
 
+  // Manual retry for changes that are saved locally but not yet in Supabase.
+  const retrySync = () => DataService.flushPending();
+
+  // Re-read on every render; sync status changes trigger the re-render.
+  const pendingChanges = getPendingChangeCount();
+
   // Compute metrics for active sprint or all tasks
   const activeSprintTasks = selectSprintTasks(tasks, activeSprintId);
   const sprintMetrics = calculateSprintMetrics(activeSprintTasks);
@@ -209,6 +228,8 @@ export function ProjectProvider({ children }) {
       updateSprintStatus,
       supabaseConfig,
       syncStatus,
+      pendingChanges,
+      retrySync,
       refreshConfig,
       resetData
     }}>

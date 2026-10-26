@@ -4,9 +4,21 @@ import { useProject } from '../../context/ProjectContext';
 
 export default function Navbar({ onOpenSettings, onOpenNewTask }) {
   const { currentUser, switchUser, teamMembers } = useAuth();
-  const { project, supabaseConfig, syncStatus, sprints, activeSprintId, setActiveSprintId } = useProject();
+  const { project, supabaseConfig, syncStatus, pendingChanges, sprints, activeSprintId, setActiveSprintId } = useProject();
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const syncFailed = supabaseConfig.isConfigured && syncStatus.state === 'error';
+  // A later successful read must not hide changes that are still waiting to sync.
+  const syncWaiting = supabaseConfig.isConfigured && !syncFailed && pendingChanges > 0;
+  const syncTitle = pendingChanges > 0
+    ? `${syncStatus.message} ${pendingChanges} change(s) are waiting to sync.`.trim()
+    : syncStatus.message;
+  const syncPill = syncFailed
+    ? { className: 'error', label: 'Supabase Sync Error' }
+    : syncWaiting
+      ? { className: 'pending', label: `Sync pending (${pendingChanges})` }
+      : supabaseConfig.isConfigured
+        ? { className: 'connected', label: 'Supabase Connected' }
+        : { className: 'offline', label: 'Local / Demo Mode' };
 
   return (
     <header className="app-navbar">
@@ -50,13 +62,11 @@ export default function Navbar({ onOpenSettings, onOpenNewTask }) {
         {/* Supabase Status Indicator */}
         <button
           onClick={onOpenSettings}
-          className={`status-pill ${syncFailed ? 'error' : supabaseConfig.isConfigured ? 'connected' : 'offline'}`}
-          title={syncFailed ? syncStatus.message : 'Click to configure Supabase Connection'}
+          className={`status-pill ${syncPill.className}`}
+          title={syncFailed || syncWaiting ? syncTitle : 'Click to configure Supabase Connection'}
         >
           <span className="status-dot"></span>
-          <span>
-            {syncFailed ? 'Supabase Sync Error' : supabaseConfig.isConfigured ? 'Supabase Connected' : 'Local / Demo Mode'}
-          </span>
+          <span>{syncPill.label}</span>
         </button>
 
         {/* New Task Button */}
