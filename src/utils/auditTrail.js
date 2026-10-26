@@ -144,6 +144,23 @@ export function auditSprintTransition(before, after, actor, timestamp) {
   });
 }
 
+const PROJECT_FIELDS = ['key', 'name', 'start_date', 'target_date'];
+
+// Returns null when nothing changed, so saving untouched details adds no record.
+export function auditProjectUpdated(before, after, actor, timestamp) {
+  const changed = PROJECT_FIELDS.filter(field => (before?.[field] ?? null) !== (after?.[field] ?? null));
+  if (changed.length === 0) return null;
+  return createAuditRecord({
+    actor, timestamp,
+    type: AUDIT_TYPES.UPDATE,
+    action: 'updated project',
+    entityType: 'project',
+    entityId: after.id,
+    target: after.name,
+    details: changed.map(field => `${field}: ${formatValue(before?.[field])} → ${formatValue(after?.[field])}`).join('; ')
+  });
+}
+
 export function auditDemoReset(actor, timestamp) {
   return createAuditRecord({
     actor, timestamp,

@@ -3,14 +3,16 @@ import { useProject } from '../../context/ProjectContext';
 import { TEAM_MEMBERS, TASK_STATUSES } from '../../utils/constants';
 
 import { generateRecordedBurndown } from '../../utils/burndown';
+import { describeProject } from '../../utils/projectMetadata';
 import BurndownChart from './BurndownChart';
 import KpiCards from './KpiCards';
 import WorkloadList from './WorkloadList';
 import AuditTrail from './AuditTrail';
 
 export default function DashboardView({ onNavigateKanban }) {
-  const { activeSprintTasks, sprintMetrics, activities, sprints, activeSprintId, burndownHistory } = useProject();
+  const { project, activeSprintTasks, sprintMetrics, activities, sprints, activeSprintId, burndownHistory } = useProject();
   const activeSprint = sprints.find(s => s.id === activeSprintId);
+  const projectSummary = describeProject(project);
   const burndown = generateRecordedBurndown(activeSprint, burndownHistory[activeSprintId]);
 
   return (
@@ -19,6 +21,9 @@ export default function DashboardView({ onNavigateKanban }) {
       <div className="view-header">
         <div>
           <h2 className="view-title">Executive Visibility & Metrics</h2>
+          <p className="view-subtitle">
+            {projectSummary.key} · {projectSummary.name}{projectSummary.dates && ` · ${projectSummary.dates}`}
+          </p>
           <p className="view-subtitle">
             Agile visibility, team workload balancing, velocity tracking, and audit feed for {activeSprint?.name}
           </p>

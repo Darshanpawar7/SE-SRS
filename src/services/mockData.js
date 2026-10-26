@@ -14,6 +14,8 @@ export const INITIAL_PROJECT = {
   owner_id: 'u-1',
   owner_name: 'Darshan P Pawar',
   status: 'active',
+  start_date: '2026-09-01',
+  target_date: '2026-10-30',
   created_at: new Date().toISOString()
 };
 
@@ -24,8 +26,8 @@ export const INITIAL_SPRINTS = [
     name: 'Sprint 1: Architecture & Core Workflow',
     goal: 'Deliver working authentication, Supabase cloud sync, drag-and-drop Kanban, and story estimation.',
     status: 'active',
-    start_date: '2026-09-01',
-    end_date: '2026-09-15',
+    start_date: '2026-10-19',
+    end_date: '2026-10-23',
     total_points: 33,
     completed_points: 13
   },
@@ -35,8 +37,8 @@ export const INITIAL_SPRINTS = [
     name: 'Sprint 2: Analytics & Release Candidate',
     goal: 'Build team velocity metrics, exportable reports, and full CI/CD deployment.',
     status: 'planned',
-    start_date: '2026-09-16',
-    end_date: '2026-09-30',
+    start_date: '2026-10-26',
+    end_date: '2026-10-30',
     total_points: 21,
     completed_points: 0
   }
