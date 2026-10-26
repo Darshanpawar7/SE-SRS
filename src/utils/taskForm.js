@@ -13,7 +13,7 @@ export function getTaskFormValues(task, activeSprintId, currentUser) {
       description: task.description || '',
       status: task.status || 'todo',
       priority: task.priority || 'medium',
-      storyPoints: task.story_points || 3,
+      storyPoints: task.story_points ?? 3,
       assigneeId: task.assignee_id || 'u-1',
       sprintId: task.sprint_id || activeSprintId || '',
       labels: task.labels || []
