@@ -4,8 +4,9 @@ import { useProject } from '../../context/ProjectContext';
 
 export default function Navbar({ onOpenSettings, onOpenNewTask }) {
   const { currentUser, switchUser, teamMembers } = useAuth();
-  const { project, supabaseConfig, sprints, activeSprintId, setActiveSprintId } = useProject();
+  const { project, supabaseConfig, syncStatus, sprints, activeSprintId, setActiveSprintId } = useProject();
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const syncFailed = supabaseConfig.isConfigured && syncStatus.state === 'error';
 
   return (
     <header className="app-navbar">
@@ -47,13 +48,15 @@ export default function Navbar({ onOpenSettings, onOpenNewTask }) {
 
       <div className="navbar-right">
         {/* Supabase Status Indicator */}
-        <button 
+        <button
           onClick={onOpenSettings}
-          className={`status-pill ${supabaseConfig.isConfigured ? 'connected' : 'offline'}`}
-          title="Click to configure Supabase Connection"
+          className={`status-pill ${syncFailed ? 'error' : supabaseConfig.isConfigured ? 'connected' : 'offline'}`}
+          title={syncFailed ? syncStatus.message : 'Click to configure Supabase Connection'}
         >
           <span className="status-dot"></span>
-          <span>{supabaseConfig.isConfigured ? 'Supabase Connected' : 'Local / Demo Mode'}</span>
+          <span>
+            {syncFailed ? 'Supabase Sync Error' : supabaseConfig.isConfigured ? 'Supabase Connected' : 'Local / Demo Mode'}
+          </span>
         </button>
 
         {/* New Task Button */}
