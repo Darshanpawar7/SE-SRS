@@ -1,32 +1,33 @@
 import React, { createContext, useContext, useState } from 'react';
 import { TEAM_MEMBERS } from '../utils/constants';
+import { can, restoreSession, signIn as signInWithPassword, signOut as endSession } from '../services/authService';
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  // Default to Darshan (Team Lead) for instant demo
-  const [currentUser, setCurrentUser] = useState(() => {
-    const saved = localStorage.getItem('sprintflow_user');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (err) {
-        // Stored profile is corrupt: discard it and fall back to the default.
-        console.warn('Discarding unreadable stored user profile:', err);
-        localStorage.removeItem('sprintflow_user');
-      }
-    }
-    return TEAM_MEMBERS[0];
-  });
+  // The session survives reloads; without one the app shows the sign-in view.
+  const [currentUser, setCurrentUser] = useState(() => restoreSession());
 
-  const switchUser = (memberId) => {
-    const member = TEAM_MEMBERS.find(m => m.id === memberId) || TEAM_MEMBERS[0];
+  const signIn = async (email, password) => {
+    const member = await signInWithPassword(email, password);
     setCurrentUser(member);
-    localStorage.setItem('sprintflow_user', JSON.stringify(member));
+    return member;
+  };
+
+  // Switching profile means signing out and signing in as another team member.
+  const signOut = async () => {
+    await endSession();
+    setCurrentUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ currentUser, switchUser, teamMembers: TEAM_MEMBERS }}>
+    <AuthContext.Provider value={{
+      currentUser,
+      teamMembers: TEAM_MEMBERS,
+      signIn,
+      signOut,
+      can: (permission) => can(currentUser, permission)
+    }}>
       {children}
     </AuthContext.Provider>
   );

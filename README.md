@@ -195,6 +195,8 @@ npm run dev
 ```
 Navigate to `http://localhost:5173` in a web browser. The system initializes immediately with pre-configured seed data.
 
+**Signing in:** choose a Team 11 profile on the sign-in screen. In the default demo mode (no Supabase credentials) the password is that member's USN, for example `PES2UG24CS143` for Darshan P Pawar. When Supabase is configured, members sign in with their Supabase Auth accounts; if those accounts are not set up yet, choose **Use local demo mode instead** on the sign-in screen. Only the team lead can edit project details or reset the demo data (in local demo mode).
+
 ### Automated Testing
 ```bash
 # Execute Vitest test suite
