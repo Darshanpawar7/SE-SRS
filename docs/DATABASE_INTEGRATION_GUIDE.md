@@ -56,3 +56,12 @@ Rows sent to Supabase carry only columns that exist in `database/schema.sql`; cl
 
 ### 5.3 Identifiers
 All `id` columns are `UUID`. New tasks and sprints get `crypto.randomUUID()` identifiers, and the seed data uses fixed UUIDs; the seeded project and Sprint 1 use the same IDs as the seed rows in `database/schema.sql`. Data created by an older build of the app (IDs such as `task-101`) cannot be stored in these columns: the sync error is shown and the data stays in the browser. Use **Reset Seed Data** in Database Settings to start from UUID-based seed data.
+
+### 5.4 Offline fallback and pending changes (PMS-F-016)
+- Without credentials, every create, read, update and delete uses `localStorage` only and survives reloads and closed tabs.
+- With credentials, every change is recorded under `sprintflow_pending_sync` before it is sent: the table that changed (with a version number), the IDs of deleted tasks, and audit records not yet inserted. An entry is cleared only when Supabase confirms it, and a table's entry only when the confirmed send is the latest one, so an older request that finishes late cannot clear a newer change that failed.
+- While a table has an entry, loading uses the local copy instead of the (older) cloud rows, so a reload never undoes an unsent change, even if the tab was closed during a slow request.
+- The queue is sent in the background on the next load, when the browser comes back online, or from **Retry sync now** in Database Settings, in foreign-key order: project, sprints, tasks, deletes, then audit records. Only one retry runs at a time.
+- A request with no answer after 15 seconds counts as failed: the change stays queued and the next retry is not blocked.
+- While changes are waiting, the navbar shows "Sync pending (n)" (or "Supabase Sync Error" after a failure) instead of "Supabase Connected", and Database Settings shows the count.
+- Data entered in local-only mode is not merged into a Supabase project that already has data; connecting to such a project loads the cloud data.

@@ -187,6 +187,12 @@ body {
   border-color: rgba(239, 68, 68, 0.3);
 }
 
+.status-pill.pending {
+  background: rgba(245, 158, 11, 0.12);
+  color: #fbbf24;
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
 .status-dot {
   width: 8px;
   height: 8px;
@@ -1429,6 +1435,11 @@ body {
 .settings-body .sql-helper-box .btn,
 .settings-body .danger-zone-box .btn {
   flex-shrink: 0;
+}
+
+/* The row of changes waiting to sync, above the connection form. */
+.settings-body > .form-actions-row {
+  margin-bottom: 16px;
 }
 
 .status-banner {

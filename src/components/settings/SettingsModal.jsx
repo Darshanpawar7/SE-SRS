@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { saveSupabaseConfig, clearSupabaseConfig } from '../../services/supabaseClient';
 
 export default function SettingsModal({ isOpen, onClose }) {
-  const { supabaseConfig, syncStatus, refreshConfig, resetData } = useProject();
+  const { supabaseConfig, syncStatus, pendingChanges, retrySync, refreshConfig, resetData } = useProject();
   const { currentUser } = useAuth();
 
   const [url, setUrl] = useState(supabaseConfig.url || '');
@@ -76,6 +76,17 @@ export default function SettingsModal({ isOpen, onClose }) {
 
           {supabaseConfig.isConfigured && syncStatus.state === 'error' && (
             <p role="alert" className="form-error">{syncStatus.message}</p>
+          )}
+
+          {supabaseConfig.isConfigured && pendingChanges > 0 && (
+            <div className="form-actions-row">
+              <span className="card-subtitle">
+                {pendingChanges} change(s) are saved in this browser and waiting to sync.
+              </span>
+              <button type="button" className="btn btn-secondary btn-sm" onClick={retrySync}>
+                Retry sync now
+              </button>
+            </div>
           )}
 
           <form onSubmit={handleSave} className="modal-form" noValidate>
