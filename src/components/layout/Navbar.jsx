@@ -34,7 +34,6 @@ export default function Navbar({ onOpenSettings, onOpenNewTask }) {
             value={activeSprintId || ''} 
             onChange={(e) => setActiveSprintId(e.target.value)}
             className="sprint-select"
-            aria-label="Selected sprint"
           >
             {sprints.map(s => (
               <option key={s.id} value={s.id}>
@@ -109,4 +108,3 @@ export default function Navbar({ onOpenSettings, onOpenNewTask }) {
     </header>
   );
 }
-

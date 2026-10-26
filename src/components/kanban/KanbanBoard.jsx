@@ -5,7 +5,6 @@ import { TASK_PRIORITIES, TEAM_MEMBERS } from '../../utils/constants';
 import { getKanbanColumns } from '../../utils/kanban';
 import { getTaskAfterStatusDrop } from '../../utils/taskUpdates';
 import { advanceTaskByOneStage, getNextTaskStatus } from '../../utils/workflow';
-import LabelPills from './LabelPills';
 
 export default function KanbanBoard({ onOpenTaskModal }) {
   const { 
@@ -20,12 +19,6 @@ export default function KanbanBoard({ onOpenTaskModal }) {
   } = useProject();
   const { currentUser } = useAuth();
   const [draggedTaskId, setDraggedTaskId] = useState(null);
-  const [boardError, setBoardError] = useState('');
-
-  // Board moves report a failed save on the board instead of failing silently.
-  const saveTask = (task, authorName) => updateTask(task, authorName)
-    .then(() => setBoardError(''))
-    .catch(err => setBoardError(err.message));
 
   // Filter tasks
   const filteredTasks = activeSprintTasks.filter(task => {
@@ -57,7 +50,7 @@ export default function KanbanBoard({ onOpenTaskModal }) {
     const taskId = e.dataTransfer.getData('text/plain') || draggedTaskId;
     if (!taskId) return;
     const task = getTaskAfterStatusDrop(activeSprintTasks, taskId, targetStatus);
-    if (task) saveTask(task, currentUser.name);
+    if (task) updateTask(task, currentUser.name);
     setDraggedTaskId(null);
   };
 
@@ -118,8 +111,6 @@ export default function KanbanBoard({ onOpenTaskModal }) {
           )}
         </div>
       </div>
-
-      {boardError && <p role="alert" className="form-error">{boardError}</p>}
 
       {/* Kanban 5-Column Board */}
       <div className="kanban-board-grid">
@@ -183,7 +174,13 @@ export default function KanbanBoard({ onOpenTaskModal }) {
                         )}
 
                         {/* Labels */}
-                        <LabelPills labels={task.labels} />
+                        {task.labels && task.labels.length > 0 && (
+                          <div className="task-labels">
+                            {task.labels.map((lbl, idx) => (
+                              <span key={idx} className="label-tag">#{lbl}</span>
+                            ))}
+                          </div>
+                        )}
 
                         {/* Card Footer */}
                         <div className="card-footer-row">
@@ -204,7 +201,7 @@ export default function KanbanBoard({ onOpenTaskModal }) {
                               title="Quick advance"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                advanceTaskByOneStage(task, saveTask, currentUser.name);
+                                advanceTaskByOneStage(task, updateTask, currentUser.name);
                               }}
                               className="step-btn"
                               disabled={!nextStatus}

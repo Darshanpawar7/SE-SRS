@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { calculateSprintMetrics, calculateMemberWorkload } from '../utils/estimation';
+import { calculateSprintMetrics, calculateMemberWorkload, generateBurndownData } from '../utils/estimation';
 
 describe('Agile Estimation & Metric Utilities', () => {
   const sampleTasks = [
@@ -38,4 +38,31 @@ describe('Agile Estimation & Metric Utilities', () => {
     expect(workload[0].completionRate).toBe(63);
   });
 
+  it('generates 11 burndown steps for 10-day sprint', () => {
+    const burndown = generateBurndownData(21, 10, 10);
+    expect(burndown.length).toBe(11);
+    expect(burndown[0].ideal).toBe(21);
+    expect(burndown[10].ideal).toBe(0);
+  });
+
+  // Guards TC-BURN-01. The dashboard previously drew the burndown polyline from
+  // hard-coded SVG coordinates, so the chart did not move when work completed.
+  it('lowers the actual burndown line as story points are completed', () => {
+    const none = generateBurndownData(21, 0, 10);
+    const some = generateBurndownData(21, 10, 10);
+    const all = generateBurndownData(21, 21, 10);
+
+    const lastActual = (data) =>
+      data.filter((d) => d.actual !== null).slice(-1)[0].actual;
+
+    expect(lastActual(none)).toBeGreaterThan(lastActual(some));
+    expect(lastActual(some)).toBeGreaterThan(lastActual(all));
+    expect(lastActual(all)).toBe(0);
+  });
+
+  it('keeps the ideal trajectory independent of completed work', () => {
+    const behind = generateBurndownData(21, 0, 10);
+    const ahead = generateBurndownData(21, 21, 10);
+    expect(behind.map((d) => d.ideal)).toEqual(ahead.map((d) => d.ideal));
+  });
 });

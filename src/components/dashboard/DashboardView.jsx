@@ -1,16 +1,27 @@
 import React from 'react';
 import { useProject } from '../../context/ProjectContext';
 import { TEAM_MEMBERS, TASK_STATUSES } from '../../utils/constants';
-import { calculateMemberWorkload } from '../../utils/estimation';
-
-import { generateRecordedBurndown } from '../../utils/burndown';
-import BurndownChart from './BurndownChart';
+import { calculateMemberWorkload, generateBurndownData } from '../../utils/estimation';
 
 export default function DashboardView({ onNavigateKanban }) {
-  const { activeSprintTasks, sprintMetrics, activities, sprints, activeSprintId, burndownHistory } = useProject();
-  const activeSprint = sprints.find(s => s.id === activeSprintId);
+  const { activeSprintTasks, sprintMetrics, activities, sprints, activeSprintId } = useProject();
+  const activeSprint = sprints.find(s => s.id === activeSprintId) || sprints[0];
   const workload = calculateMemberWorkload(activeSprintTasks, TEAM_MEMBERS);
-  const burndown = generateRecordedBurndown(activeSprint, burndownHistory[activeSprintId]);
+  const burndown = generateBurndownData(sprintMetrics.totalStoryPoints, sprintMetrics.completedStoryPoints);
+
+  // Chart geometry. The burndown polyline is derived from `burndown` so the chart
+  // tracks real sprint progress; it must never be hard-coded.
+  const CHART = { x0: 40, x1: 420, yTop: 25, yBase: 150 };
+  const maxPoints = Math.max(sprintMetrics.totalStoryPoints, 1);
+  const lastIndex = Math.max(burndown.length - 1, 1);
+  const chartX = (i) => CHART.x0 + ((CHART.x1 - CHART.x0) * i) / lastIndex;
+  const chartY = (points) =>
+    CHART.yBase - ((CHART.yBase - CHART.yTop) * Math.min(points, maxPoints)) / maxPoints;
+
+  const actualSeries = burndown
+    .map((d, i) => ({ ...d, i }))
+    .filter((d) => d.actual !== null);
+  const actualPath = actualSeries.map((d) => `${chartX(d.i)},${chartY(d.actual)}`).join(' ');
 
   return (
     <div className="dashboard-page">
@@ -72,7 +83,51 @@ export default function DashboardView({ onNavigateKanban }) {
             </div>
           </div>
 
-          <BurndownChart data={burndown} />
+          {/* SVG Burndown Visualizer */}
+          <div className="burndown-svg-wrap">
+            <svg viewBox="0 0 450 180" className="burndown-svg">
+              <line x1="40" y1="20" x2="40" y2="150" stroke="#334155" strokeWidth="1" />
+              <line x1="40" y1="150" x2="430" y2="150" stroke="#334155" strokeWidth="1" />
+              
+              {/* Y-axis labels */}
+              <text x="32" y="25" fill="#94a3b8" fontSize="10" textAnchor="end">{sprintMetrics.totalStoryPoints}p</text>
+              <text x="32" y="85" fill="#94a3b8" fontSize="10" textAnchor="end">{Math.round(sprintMetrics.totalStoryPoints / 2)}p</text>
+              <text x="32" y="150" fill="#94a3b8" fontSize="10" textAnchor="end">0</text>
+
+              {/* Ideal Guideline */}
+              <line
+                x1={chartX(0)}
+                y1={chartY(burndown[0].ideal)}
+                x2={chartX(lastIndex)}
+                y2={chartY(burndown[lastIndex].ideal)}
+                stroke="#6366f1"
+                strokeWidth="2"
+                strokeDasharray="4 4"
+              />
+
+              {/* Actual Burndown Polyline, derived from live sprint data */}
+              <polyline fill="none" stroke="#10b981" strokeWidth="3" points={actualPath} />
+
+              {/* Actual dots; the final point marks progress today */}
+              {actualSeries.map((d, idx) => (
+                <circle
+                  key={d.day}
+                  cx={chartX(d.i)}
+                  cy={chartY(d.actual)}
+                  r={idx === actualSeries.length - 1 ? 5 : 4}
+                  fill={idx === actualSeries.length - 1 ? '#ec4899' : '#10b981'}
+                />
+              ))}
+              
+              {/* X-axis labels */}
+              <text x="40" y="165" fill="#94a3b8" fontSize="10">D0</text>
+              <text x="110" y="165" fill="#94a3b8" fontSize="10">D2</text>
+              <text x="180" y="165" fill="#94a3b8" fontSize="10">D4</text>
+              <text x="250" y="165" fill="#94a3b8" fontSize="10">D6</text>
+              <text x="320" y="165" fill="#94a3b8" fontSize="10">D8</text>
+              <text x="420" y="165" fill="#94a3b8" fontSize="10">D10 (Goal)</text>
+            </svg>
+          </div>
         </div>
 
         {/* Workflow Status Distribution */}
@@ -168,4 +223,3 @@ export default function DashboardView({ onNavigateKanban }) {
     </div>
   );
 }
-
