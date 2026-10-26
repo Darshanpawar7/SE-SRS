@@ -6,6 +6,7 @@ import { generateRecordedBurndown } from '../../utils/burndown';
 import BurndownChart from './BurndownChart';
 import KpiCards from './KpiCards';
 import WorkloadList from './WorkloadList';
+import AuditTrail from './AuditTrail';
 
 export default function DashboardView({ onNavigateKanban }) {
   const { activeSprintTasks, sprintMetrics, activities, sprints, activeSprintId, burndownHistory } = useProject();
@@ -100,19 +101,7 @@ export default function DashboardView({ onNavigateKanban }) {
               <p className="card-subtitle">Project visibility & accountability log</p>
             </div>
           </div>
-          <div className="activity-feed">
-            {activities.slice(0, 7).map((act, idx) => (
-              <div key={act.id || idx} className="activity-item">
-                <div className="activity-icon-bullet"></div>
-                <div className="activity-body">
-                  <p className="activity-text">
-                    <strong>{act.user}</strong> {act.action} <span className="highlight-tag">{act.target}</span> {act.to ? `→ ${act.to}` : ''}
-                  </p>
-                  <span className="activity-timestamp">{act.time}</span>
-                </div>
-              </div>
-            ))}
-          </div>
+          <AuditTrail records={activities} />
         </div>
       </div>
     </div>

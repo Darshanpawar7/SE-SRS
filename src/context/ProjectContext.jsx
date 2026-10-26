@@ -2,7 +2,15 @@ import React, { createContext, useContext, useState, useEffect, useRef } from 'r
 import { DataService, getSupabaseConfig } from '../services/supabaseClient';
 import { validateStoryPoints } from '../utils/storyPoints';
 import { calculateSprintMetrics, selectSprintTasks } from '../utils/estimation';
-import { applyTaskUpdate, createStatusChangeActivity } from '../utils/taskUpdates';
+import { applyTaskUpdate } from '../utils/taskUpdates';
+import {
+  auditDemoReset,
+  auditSprintCreated,
+  auditSprintTransition,
+  auditTaskCreated,
+  auditTaskDeleted,
+  auditTaskUpdated
+} from '../utils/auditTrail';
 import { validateSprint, transitionSprint, resolveSelectedSprint } from '../utils/sprintLifecycle';
 
 const ProjectContext = createContext();
@@ -52,6 +60,14 @@ export function ProjectProvider({ children }) {
     loadData();
   }, []);
 
+  // Appends one audit record; the feed always mirrors the stored, append-only history.
+  const recordAudit = async (record) => {
+    if (!record) return;
+    await DataService.logActivity(record);
+    // Show the stored history, which includes every record even when saves finish out of order.
+    setActivities(await DataService.getActivity());
+  };
+
   // Update a task (e.g. drag & drop status change, edit)
   const updateTask = async (updatedTask, authorName = 'Team Member') => {
     validateStoryPoints(updatedTask.story_points);
@@ -61,12 +77,7 @@ export function ProjectProvider({ children }) {
     setBurndownHistory(DataService.recordBurndown(sprintsRef.current, newTasks));
     await DataService.saveTasks(newTasks);
 
-    if (previousTask && previousTask.status !== updatedTask.status) {
-      const updatedActs = await DataService.logActivity(
-        createStatusChangeActivity(previousTask, updatedTask, authorName)
-      );
-      setActivities(updatedActs);
-    }
+    if (previousTask) await recordAudit(auditTaskUpdated(previousTask, updatedTask, authorName));
 
     return { durationMs };
   };
@@ -86,13 +97,7 @@ export function ProjectProvider({ children }) {
     setBurndownHistory(DataService.recordBurndown(sprintsRef.current, newTasks));
     await DataService.saveTasks(newTasks);
 
-    const updatedActs = await DataService.logActivity({
-      user: authorName,
-      action: 'created task',
-      target: newTask.title,
-      to: newTask.status
-    });
-    setActivities(updatedActs);
+    await recordAudit(auditTaskCreated(newTask, authorName));
     return newTask;
   };
 
@@ -105,19 +110,11 @@ export function ProjectProvider({ children }) {
     setBurndownHistory(DataService.recordBurndown(sprintsRef.current, newTasks));
     await DataService.saveTasks(newTasks);
 
-    if (taskToDelete) {
-      const updatedActs = await DataService.logActivity({
-        user: authorName,
-        action: 'deleted task',
-        target: taskToDelete.title,
-        to: 'removed'
-      });
-      setActivities(updatedActs);
-    }
+    if (taskToDelete) await recordAudit(auditTaskDeleted(taskToDelete, authorName));
   };
 
   // Add or update sprint
-  const addSprint = async (sprintData) => {
+  const addSprint = async (sprintData, authorName = 'Team Member') => {
     const validated = validateSprint(sprintData);
     const newSprint = {
       id: crypto.randomUUID(),
@@ -133,10 +130,12 @@ export function ProjectProvider({ children }) {
     setBurndownHistory(DataService.recordBurndown(newSprints, tasksRef.current));
     if (!activeSprintId) setActiveSprintId(newSprint.id);
     await DataService.saveSprints(newSprints);
+    await recordAudit(auditSprintCreated(newSprint, authorName));
     return newSprint;
   };
 
-  const updateSprintStatus = async (sprintId, status) => {
+  const updateSprintStatus = async (sprintId, status, authorName = 'Team Member') => {
+    const previousSprint = sprintsRef.current.find(sprint => sprint.id === sprintId);
     const newSprints = transitionSprint(sprintsRef.current, sprintId, status);
     sprintsRef.current = newSprints;
     setSprints(newSprints);
@@ -144,6 +143,7 @@ export function ProjectProvider({ children }) {
     // Starting a sprint selects its board and metrics; completing keeps its report visible.
     if (status === 'active') setActiveSprintId(sprintId);
     await DataService.saveSprints(newSprints);
+    await recordAudit(auditSprintTransition(previousSprint, newSprints.find(sprint => sprint.id === sprintId), authorName));
   };
 
   const setActiveSprintId = (sprintId) => {
@@ -157,9 +157,11 @@ export function ProjectProvider({ children }) {
     loadData();
   };
 
-  const resetData = () => {
+  // The board is reset, but the audit trail is kept and records who reset it.
+  const resetData = async (authorName = 'Team Member') => {
     DataService.resetAllData();
-    loadData();
+    await recordAudit(auditDemoReset(authorName));
+    await loadData();
   };
 
   // Compute metrics for active sprint or all tasks

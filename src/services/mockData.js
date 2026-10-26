@@ -150,37 +150,62 @@ export const INITIAL_TASKS = [
   }
 ];
 
+// Seed audit records, newest first, in the same shape createAuditRecord produces.
 export const INITIAL_ACTIVITY = [
   {
     id: 'act-1',
-    time: '10 mins ago',
+    type: 'UPDATE',
+    timestamp: '2026-09-05T10:50:00.000Z',
     user: 'Darshan P Pawar',
+    actor: 'Darshan P Pawar',
     action: 'moved task',
+    entity_type: 'task',
+    entity_id: 'task-105',
     target: 'Create Executive Visibility Dashboard',
-    to: 'Code Review'
+    from: 'in_progress',
+    to: 'review',
+    details: null
   },
   {
     id: 'act-2',
-    time: '45 mins ago',
+    type: 'UPDATE',
+    timestamp: '2026-09-05T10:15:00.000Z',
     user: 'Gurubelli Yekambar Eshwar Rao',
+    actor: 'Gurubelli Yekambar Eshwar Rao',
     action: 'updated estimation on',
+    entity_type: 'task',
+    entity_id: 'task-103',
     target: 'Build Agile Story Point Estimation Engine',
-    to: '5 Story Points'
+    from: null,
+    to: '5 Story Points',
+    details: null
   },
   {
     id: 'act-3',
-    time: '2 hours ago',
+    type: 'UPDATE',
+    timestamp: '2026-09-05T09:00:00.000Z',
     user: 'Chandan Kumar K',
+    actor: 'Chandan Kumar K',
     action: 'completed task',
+    entity_type: 'task',
+    entity_id: 'task-101',
     target: 'Design Supabase Database Schema',
-    to: 'Done'
+    from: 'review',
+    to: 'done',
+    details: null
   },
   {
     id: 'act-4',
-    time: 'Yesterday',
+    type: 'UPDATE',
+    timestamp: '2026-09-04T11:00:00.000Z',
     user: 'Dhatri Shivaprasad',
+    actor: 'Dhatri Shivaprasad',
     action: 'completed task',
+    entity_type: 'task',
+    entity_id: 'task-102',
     target: 'Implement Interactive Kanban Board',
-    to: 'Done'
+    from: 'review',
+    to: 'done',
+    details: null
   }
 ];
