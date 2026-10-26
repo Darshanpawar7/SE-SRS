@@ -18,6 +18,7 @@ import {
   auditTaskUpdated
 } from '../utils/auditTrail';
 import { validateSprint, transitionSprint, resolveSelectedSprint } from '../utils/sprintLifecycle';
+import { can, PERMISSIONS } from '../services/authService';
 
 const ProjectContext = createContext();
 
@@ -186,10 +187,18 @@ export function ProjectProvider({ children }) {
     loadData();
   };
 
-  // The board is reset, but the audit trail is kept and records who reset it.
-  const resetData = async (authorName = 'Team Member') => {
+  // Only the team lead may reset, and only in local demo mode: with Supabase connected the
+  // shared cloud data would be loaded again at once, so the reset would change nothing but
+  // still be recorded. The board is reset, but the audit trail is kept and records who reset it.
+  const resetData = async (member) => {
+    if (!can(member, PERMISSIONS.RESET_DEMO_DATA)) {
+      throw new Error('Only the team lead can reset the demo data.');
+    }
+    if (getSupabaseConfig().isConfigured) {
+      throw new Error('Disconnect Supabase to reset: the reset only replaces the demo data in this browser.');
+    }
     DataService.resetAllData();
-    await recordAudit(auditDemoReset(authorName));
+    await recordAudit(auditDemoReset(member.name));
     await loadData();
   };
 

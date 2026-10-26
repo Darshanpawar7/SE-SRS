@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useProject } from '../../context/ProjectContext';
+import { ACCESS_ROLE_LABELS } from '../../services/authService';
 
 export default function Navbar({ onOpenSettings, onOpenNewTask }) {
-  const { currentUser, switchUser, teamMembers } = useAuth();
+  const { currentUser, signOut } = useAuth();
   const { project, supabaseConfig, syncStatus, pendingChanges, sprints, activeSprintId, setActiveSprintId } = useProject();
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const syncFailed = supabaseConfig.isConfigured && syncStatus.state === 'error';
@@ -75,18 +76,21 @@ export default function Navbar({ onOpenSettings, onOpenNewTask }) {
           <span>New Task</span>
         </button>
 
-        {/* User Switcher Dropdown */}
+        {/* Signed-in Profile Menu */}
         <div className="user-dropdown-container">
-          <button 
+          <button
             className="user-profile-btn"
             onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+            aria-expanded={userDropdownOpen}
           >
             <div className="user-avatar" style={{ backgroundColor: currentUser.color }}>
               {currentUser.initials}
             </div>
             <div className="user-meta">
               <span className="user-name">{currentUser.name.split(' ')[0]}</span>
-              <span className="user-role-tag">{currentUser.usn}</span>
+              <span className="user-role-tag" title={currentUser.role}>
+                {ACCESS_ROLE_LABELS[currentUser.accessRole]}
+              </span>
             </div>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"/></svg>
           </button>
@@ -94,27 +98,32 @@ export default function Navbar({ onOpenSettings, onOpenNewTask }) {
           {userDropdownOpen && (
             <div className="dropdown-menu">
               <div className="dropdown-header">
-                <strong>Switch Teammate View</strong>
-                <p>Simulate actions as any team member</p>
+                <strong>Signed in as {currentUser.name}</strong>
+                <p>{currentUser.usn} • {currentUser.role}</p>
               </div>
-              {teamMembers.map(m => (
-                <button
-                  key={m.id}
-                  className={`dropdown-item ${m.id === currentUser.id ? 'active' : ''}`}
-                  onClick={() => {
-                    switchUser(m.id);
-                    setUserDropdownOpen(false);
-                  }}
-                >
-                  <div className="user-avatar-sm" style={{ backgroundColor: m.color }}>
-                    {m.initials}
-                  </div>
-                  <div className="item-text">
-                    <span className="item-title">{m.name}</span>
-                    <span className="item-sub">{m.usn} • {m.role}</span>
-                  </div>
-                </button>
-              ))}
+              <button
+                className="dropdown-item"
+                onClick={() => {
+                  setUserDropdownOpen(false);
+                  signOut();
+                }}
+              >
+                <div className="item-text">
+                  <span className="item-title">Switch profile</span>
+                  <span className="item-sub">Sign out and sign in as another team member</span>
+                </div>
+              </button>
+              <button
+                className="dropdown-item"
+                onClick={() => {
+                  setUserDropdownOpen(false);
+                  signOut();
+                }}
+              >
+                <div className="item-text">
+                  <span className="item-title">Sign out</span>
+                </div>
+              </button>
             </div>
           )}
         </div>

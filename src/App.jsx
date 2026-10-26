@@ -7,12 +7,18 @@ import SprintManager from './components/sprint/SprintManager';
 import DocsView from './components/docs/DocsView';
 import TaskModal from './components/kanban/TaskModal';
 import SettingsModal from './components/settings/SettingsModal';
+import SignInView from './components/auth/SignInView';
+import { useAuth } from './context/AuthContext';
 
 export default function App() {
+  const { currentUser } = useAuth();
   const [activeTab, setActiveTab] = useState('kanban');
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
+
+  // Unauthenticated visitors only ever see the sign-in view.
+  if (!currentUser) return <SignInView />;
 
   const handleOpenNewTask = () => {
     setSelectedTask(null);
