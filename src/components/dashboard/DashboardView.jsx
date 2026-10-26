@@ -1,16 +1,15 @@
 import React from 'react';
 import { useProject } from '../../context/ProjectContext';
 import { TEAM_MEMBERS, TASK_STATUSES } from '../../utils/constants';
-import { calculateMemberWorkload } from '../../utils/estimation';
 
 import { generateRecordedBurndown } from '../../utils/burndown';
 import BurndownChart from './BurndownChart';
 import KpiCards from './KpiCards';
+import WorkloadList from './WorkloadList';
 
 export default function DashboardView({ onNavigateKanban }) {
   const { activeSprintTasks, sprintMetrics, activities, sprints, activeSprintId, burndownHistory } = useProject();
   const activeSprint = sprints.find(s => s.id === activeSprintId);
-  const workload = calculateMemberWorkload(activeSprintTasks, TEAM_MEMBERS);
   const burndown = generateRecordedBurndown(activeSprint, burndownHistory[activeSprintId]);
 
   return (
@@ -90,31 +89,7 @@ export default function DashboardView({ onNavigateKanban }) {
               <p className="card-subtitle">Story points assigned vs completed per student</p>
             </div>
           </div>
-          <div className="workload-list">
-            {workload.map(m => (
-              <div key={m.id} className="workload-item">
-                <div className="member-avatar" style={{ backgroundColor: m.color }}>
-                  {m.initials}
-                </div>
-                <div className="workload-details">
-                  <div className="workload-name-row">
-                    <span className="member-name">{m.name}</span>
-                    <span className="member-usn">{m.usn}</span>
-                  </div>
-                  <div className="workload-metrics-row">
-                    <span>{m.taskCount} tasks • {m.assignedPoints} story points assigned</span>
-                    <span className="text-emerald">{m.completedPoints} pts done ({m.completionRate}%)</span>
-                  </div>
-                  <div className="mini-progress-track">
-                    <div 
-                      className="mini-progress-fill" 
-                      style={{ width: `${m.completionRate}%`, backgroundColor: m.color }}
-                    ></div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <WorkloadList tasks={activeSprintTasks} members={TEAM_MEMBERS} />
         </div>
 
         {/* Real-time Activity Log (Audit Trail) */}
