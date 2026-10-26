@@ -1,9 +1,9 @@
 # Application Screenshots
 
-## SprintFlow -- Project Management System
+## SprintFlow -- Agile Project Management System
 
 **Team 11 | Section 5C | PES University**
-**Related Document:** `docs/SRS_Document_Team11.md`
+**Related Documents:** `docs/SRS_Document_Team11.md`, `docs/SAD_Document_Team11.md`, `docs/STP_Document_Team11.md`
 
 ---
 
@@ -12,7 +12,22 @@
 This document provides visual evidence that the requirements specified in the Software
 Requirements Specification are implemented in working software. Each screen is mapped to
 the functional requirements it satisfies and the test cases that verify them, using the
-identifiers from the SRS Requirements Traceability Matrix.
+identifiers from the SRS Requirements Traceability Matrix. Each screen is also linked to
+the architecture components specified in the SAD and the test cases specified in the STP,
+so an evaluator can confirm that the documented requirements and design correspond to
+working software.
+
+### 1.1 Requirement Numbering
+
+Requirement IDs in this document follow the SRS Requirements Traceability Matrix
+(`docs/SRS_Document_Team11.md`, Section 8). The product backlog and the GitHub issues use
+the same numbering.
+
+The STP traceability matrix (`docs/STP_Document_Team11.md`) numbers the functional
+requirements differently. Only PMS-F-001 and PMS-F-003 to PMS-F-005 refer to the same
+feature in both documents; PMS-F-002 and PMS-F-006 to PMS-F-018 do not. For that reason
+the STP test cases for each screen are listed separately, by name, under
+"Design and test reference".
 
 ## 2. Capture Conditions
 
@@ -47,8 +62,15 @@ label, the story point estimate, categorization tags, and the assignee.
 | PMS-F-007 | Categorization labels and tags on work items | TC-TASK-02 |
 | PMS-F-017 | Multi-attribute filtering by assignee, priority and free-text query | TC-FILT-01 |
 
+| Design and test reference | Detail |
+| :--- | :--- |
+| Component | `KanbanBoard.jsx` (SAD 3.4) |
+| SAD reference | Section 4.2.1, Figure 4.1 -- task creation and state transition |
+| STP test cases | TC-KAN-01 (five-column render), TC-KAN-02 (drag-and-drop), TC-FILT-01 (filtering) |
+
 Visible detail: the Backlog column renders an explicit empty state ("Drop tasks here")
-rather than appearing blank, so an empty column cannot be mistaken for missing data.
+rather than appearing blank, so an empty column cannot be mistaken for missing data. This
+is the behaviour specified in the UX design specification.
 
 ---
 
@@ -67,6 +89,12 @@ SVG burndown chart plotting the ideal guideline against actual points remaining.
 | PMS-F-012 | Executive dashboard widgets (Total Points, Velocity, Progress) | TC-DASH-01 |
 | PMS-F-013 | Student workload distribution and capacity balancing | TC-WORK-01 |
 | PMS-F-014 | Immutable audit trail of entity state mutations | TC-LOG-01 |
+
+| Design and test reference | Detail |
+| :--- | :--- |
+| Component | `DashboardView.jsx` (SAD 3.4) |
+| SAD reference | Section 4.2.2, Figure 4.2 -- estimation and burndown generation |
+| STP test cases | TC-DASH-01 (KPI metrics), TC-BURN-01 (burndown), TC-WORK-01 (workload) |
 
 The figures are internally consistent, which is what TC-BURN-01 verifies: 34 total story
 points, 13 delivered, and the actual burndown line terminating at 21 points remaining,
@@ -91,6 +119,12 @@ story points of assigned tasks.
 | PMS-F-009 | Dynamic capacity and completion computation | TC-EST-02 |
 | PMS-F-010 | Sprint lifecycle states: planned, active, completed | TC-SPR-01 |
 
+| Design and test reference | Detail |
+| :--- | :--- |
+| Component | `SprintManager.jsx` (SAD 3.4) |
+| SAD reference | Section 4.1 Design Overview; ADR-005 (Fibonacci estimation) |
+| STP test cases | TC-SPR-01 (sprint creation), TC-EST-02 (capacity calculation) |
+
 ---
 
 ## 6. Task Creation and Fibonacci Estimation
@@ -106,10 +140,17 @@ both. Title is required; description, assignee and labels are optional.
 | PMS-F-007 | Categorization labels and tags | TC-TASK-02 |
 | PMS-F-008 | Fibonacci story point scale (1, 2, 3, 5, 8, 13, 21) | TC-EST-01 |
 
+| Design and test reference | Detail |
+| :--- | :--- |
+| Component | `TaskModal.jsx` (SAD 3.4) |
+| SAD reference | Section 4.3.1 Tasks API -- field contracts |
+| STP test cases | TC-TASK-01 (creation), TC-TASK-02 (priority), TC-TASK-03 (empty title rejected), TC-EST-01 (story points) |
+
 Note the story point control: the seven Fibonacci values are presented as fixed choices
 rather than a free numeric input. An invalid estimate is therefore unrepresentable in the
 interface rather than being accepted and rejected afterwards. This is how PMS-F-008 is
-enforced at the point of entry, and what TC-EST-01 verifies.
+enforced at the point of entry (the design decision recorded in ADR-005), and what
+TC-EST-01 verifies.
 
 ---
 
@@ -117,34 +158,40 @@ enforced at the point of entry, and what TC-EST-01 verifies.
 
 ![Database configuration panel](screenshots/05-database-settings.png)
 
-The dual-mode data layer. The panel states plainly which mode is active, so the user
-always knows where their data is stored.
+The dual-mode data layer described in ADR-003. The panel states plainly which mode is
+active, so the user always knows where their data is stored.
 
 | Requirement | Description | Test Case |
 | :--- | :--- | :--- |
 | PMS-F-015 | Synchronisation with Supabase Cloud PostgreSQL | TC-SUPA-01 |
 | PMS-F-016 | Transparent offline operation when no cloud keys are configured | TC-OFF-01 |
 
+| Design and test reference | Detail |
+| :--- | :--- |
+| Component | `SettingsModal.jsx`, `supabaseClient.js` (SAD 3.4) |
+| SAD reference | Section 3.6 Technology Stack and Data Stores; Section 3.9 Security Architecture |
+| STP test cases | TC-SET-01 (mode switch), TC-SUPA-01 (cloud persistence), TC-OFF-01 (offline persistence) |
+
 The banner confirms the system is running in zero-setup offline mode on persistent browser
 storage. Supplying a Project URL and anon key switches the `DataService` abstraction to
 Supabase PostgreSQL with no change at the call sites.
 
 Only the anonymous public key is accepted here. Authorisation is enforced by PostgreSQL
-Row Level Security at the database tier (PMS-SR-001), not in client code, because the anon
-key is public by design and any client-side check could be bypassed with a direct API
-call.
+Row Level Security at the database tier (PMS-SR-001, ADR-004), not in client code, because
+the anon key is public by design and any client-side check could be bypassed with a direct
+API call.
 
 ---
 
 ## 8. Coverage Summary
 
-| Screen | Requirements Evidenced |
-| :--- | :--- |
-| Kanban board | PMS-F-002, 003, 004, 005, 007, 017 |
-| Executive dashboard | PMS-F-009, 011, 012, 013, 014 |
-| Sprint manager | PMS-F-009, 010 |
-| Task modal | PMS-F-006, 007, 008 |
-| Database settings | PMS-F-015, 016 |
+| Screen | SAD Components Evidenced | Requirements Evidenced |
+| :--- | :--- | :--- |
+| Kanban board | KanbanBoard, ProjectContext | PMS-F-002, 003, 004, 005, 007, 017 |
+| Executive dashboard | DashboardView, Estimation Utilities | PMS-F-009, 011, 012, 013, 014 |
+| Sprint manager | SprintManager, Estimation Utilities | PMS-F-009, 010 |
+| Task modal | TaskModal | PMS-F-006, 007, 008 |
+| Database settings | SettingsModal, SupabaseClient | PMS-F-015, 016 |
 
 Sixteen of the eighteen functional requirements are visible across these five screens. The
 remaining two are demonstrated elsewhere: PMS-F-001 (authentication and profile switching)

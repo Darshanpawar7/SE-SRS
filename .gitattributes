@@ -1,0 +1,14 @@
+# Normalise text files, but never line-ending-convert binaries.
+# Without this, core.autocrlf=true rewrites LF -> CRLF inside PDFs, Word
+# documents and images on checkout, corrupting them for anyone who clones.
+* text=auto
+
+*.pdf  binary
+*.docx binary
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.woff binary
+*.woff2 binary
