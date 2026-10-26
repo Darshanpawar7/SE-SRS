@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { DataService, getSupabaseConfig } from '../services/supabaseClient';
+import { validateStoryPoints } from '../utils/storyPoints';
 import { calculateSprintMetrics } from '../utils/estimation';
 
 const ProjectContext = createContext();
@@ -46,6 +47,7 @@ export function ProjectProvider({ children }) {
 
   // Update a task (e.g. drag & drop status change, edit)
   const updateTask = async (updatedTask, authorName = 'Team Member') => {
+    validateStoryPoints(updatedTask.story_points);
     const prevTask = tasks.find(t => t.id === updatedTask.id);
     const newTasks = tasks.map(t => t.id === updatedTask.id ? { ...updatedTask, updated_at: new Date().toISOString() } : t);
     setTasks(newTasks);
@@ -64,6 +66,7 @@ export function ProjectProvider({ children }) {
 
   // Create a new task
   const addTask = async (taskData, authorName = 'Team Member') => {
+    validateStoryPoints(taskData.story_points);
     const newTask = {
       id: 'task-' + Date.now(),
       created_at: new Date().toISOString(),
@@ -171,3 +174,4 @@ export function ProjectProvider({ children }) {
 }
 
 export const useProject = () => useContext(ProjectContext);
+

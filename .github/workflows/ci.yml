@@ -59,6 +59,9 @@ jobs:
         with:
           node-version: '20'
 
+      - name: Install Dependencies
+        run: npm ci
+
       - name: Run Linting
         run: npm run lint
 
@@ -77,3 +80,4 @@ jobs:
 
       - name: Run NPM Security Audit
         run: npm audit --audit-level=high || true
+
