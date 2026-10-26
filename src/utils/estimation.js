@@ -45,3 +45,18 @@ export function calculateMemberWorkload(tasks = [], members = []) {
     };
   });
 }
+
+// Per-member workload plus the points no team member owns, so the member totals
+// always reconcile with the sprint total (TC-WORK-01).
+export function summarizeWorkload(tasks = [], members = []) {
+  const memberIds = new Set(members.map(member => member.id));
+  const perMember = calculateMemberWorkload(tasks, members);
+  const unowned = tasks.filter(task => !memberIds.has(task.assignee_id));
+
+  return {
+    members: perMember,
+    assignedPoints: perMember.reduce((sum, member) => sum + member.assignedPoints, 0),
+    unassignedTasks: unowned.length,
+    unassignedPoints: unowned.reduce((sum, task) => sum + (Number(task.story_points) || 0), 0)
+  };
+}

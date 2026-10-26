@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useProject } from '../../context/ProjectContext';
+import { useAuth } from '../../context/AuthContext';
 import { saveSupabaseConfig, clearSupabaseConfig } from '../../services/supabaseClient';
 
 export default function SettingsModal({ isOpen, onClose }) {
   const { supabaseConfig, refreshConfig, resetData } = useProject();
+  const { currentUser } = useAuth();
 
   const [url, setUrl] = useState(supabaseConfig.url || '');
   const [key, setKey] = useState(supabaseConfig.key || '');
@@ -127,8 +129,8 @@ export default function SettingsModal({ isOpen, onClose }) {
             <button 
               className="btn btn-secondary btn-sm"
               onClick={() => {
-                if (window.confirm('Reset all tasks and sprint boards to default?')) {
-                  resetData();
+                if (window.confirm('Reset all tasks and sprint boards to default? The audit trail is kept.')) {
+                  resetData(currentUser.name);
                   onClose();
                 }
               }}

@@ -1,15 +1,16 @@
 import React from 'react';
 import { useProject } from '../../context/ProjectContext';
 import { TEAM_MEMBERS, TASK_STATUSES } from '../../utils/constants';
-import { calculateMemberWorkload } from '../../utils/estimation';
 
 import { generateRecordedBurndown } from '../../utils/burndown';
 import BurndownChart from './BurndownChart';
+import KpiCards from './KpiCards';
+import WorkloadList from './WorkloadList';
+import AuditTrail from './AuditTrail';
 
 export default function DashboardView({ onNavigateKanban }) {
   const { activeSprintTasks, sprintMetrics, activities, sprints, activeSprintId, burndownHistory } = useProject();
   const activeSprint = sprints.find(s => s.id === activeSprintId);
-  const workload = calculateMemberWorkload(activeSprintTasks, TEAM_MEMBERS);
   const burndown = generateRecordedBurndown(activeSprint, burndownHistory[activeSprintId]);
 
   return (
@@ -29,33 +30,7 @@ export default function DashboardView({ onNavigateKanban }) {
       </div>
 
       {/* KPI Stats Cards */}
-      <div className="stats-grid">
-        <div className="stat-card">
-          <div className="stat-label">Total Story Points</div>
-          <div className="stat-value text-indigo">{sprintMetrics.totalStoryPoints} <span className="stat-unit">pts</span></div>
-          <div className="stat-meta">{sprintMetrics.totalTasks} tasks in active scope</div>
-        </div>
-
-        <div className="stat-card">
-          <div className="stat-label">Delivered Velocity</div>
-          <div className="stat-value text-emerald">{sprintMetrics.completedStoryPoints} <span className="stat-unit">pts</span></div>
-          <div className="stat-meta">{sprintMetrics.completedTasks} items completed</div>
-        </div>
-
-        <div className="stat-card">
-          <div className="stat-label">Sprint Completion</div>
-          <div className="stat-value text-amber">{sprintMetrics.progressPercentage}%</div>
-          <div className="progress-bar-container">
-            <div className="progress-bar-fill" style={{ width: `${sprintMetrics.progressPercentage}%` }}></div>
-          </div>
-        </div>
-
-        <div className="stat-card">
-          <div className="stat-label">Remaining Workload</div>
-          <div className="stat-value text-purple">{sprintMetrics.remainingStoryPoints} <span className="stat-unit">pts</span></div>
-          <div className="stat-meta">{sprintMetrics.totalTasks - sprintMetrics.completedTasks} tasks pending</div>
-        </div>
-      </div>
+      <KpiCards metrics={sprintMetrics} />
 
       {/* Visual Analytics Grid */}
       <div className="charts-grid">
@@ -115,31 +90,7 @@ export default function DashboardView({ onNavigateKanban }) {
               <p className="card-subtitle">Story points assigned vs completed per student</p>
             </div>
           </div>
-          <div className="workload-list">
-            {workload.map(m => (
-              <div key={m.id} className="workload-item">
-                <div className="member-avatar" style={{ backgroundColor: m.color }}>
-                  {m.initials}
-                </div>
-                <div className="workload-details">
-                  <div className="workload-name-row">
-                    <span className="member-name">{m.name}</span>
-                    <span className="member-usn">{m.usn}</span>
-                  </div>
-                  <div className="workload-metrics-row">
-                    <span>{m.taskCount} tasks • {m.assignedPoints} story points assigned</span>
-                    <span className="text-emerald">{m.completedPoints} pts done ({m.completionRate}%)</span>
-                  </div>
-                  <div className="mini-progress-track">
-                    <div 
-                      className="mini-progress-fill" 
-                      style={{ width: `${m.completionRate}%`, backgroundColor: m.color }}
-                    ></div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <WorkloadList tasks={activeSprintTasks} members={TEAM_MEMBERS} />
         </div>
 
         {/* Real-time Activity Log (Audit Trail) */}
@@ -150,19 +101,7 @@ export default function DashboardView({ onNavigateKanban }) {
               <p className="card-subtitle">Project visibility & accountability log</p>
             </div>
           </div>
-          <div className="activity-feed">
-            {activities.slice(0, 7).map((act, idx) => (
-              <div key={act.id || idx} className="activity-item">
-                <div className="activity-icon-bullet"></div>
-                <div className="activity-body">
-                  <p className="activity-text">
-                    <strong>{act.user}</strong> {act.action} <span className="highlight-tag">{act.target}</span> {act.to ? `→ ${act.to}` : ''}
-                  </p>
-                  <span className="activity-timestamp">{act.time}</span>
-                </div>
-              </div>
-            ))}
-          </div>
+          <AuditTrail records={activities} />
         </div>
       </div>
     </div>

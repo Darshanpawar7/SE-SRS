@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useProject } from '../../context/ProjectContext';
+import { useAuth } from '../../context/AuthContext';
 import { calculateSprintMetrics, selectSprintTasks } from '../../utils/estimation';
 
 export default function SprintManager() {
   const { sprints, tasks, addSprint, updateSprintStatus, activeSprintId, setActiveSprintId } = useProject();
+  const { currentUser } = useAuth();
 
   const [showNewSprintModal, setShowNewSprintModal] = useState(false);
   const [sprintName, setSprintName] = useState('');
@@ -23,7 +25,7 @@ export default function SprintManager() {
         goal: sprintGoal.trim(),
         start_date: startDate || new Date().toISOString().slice(0, 10),
         end_date: endDate || new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10)
-      });
+      }, currentUser.name);
       setSprintName('');
       setSprintGoal('');
       setStartDate('');
@@ -40,7 +42,7 @@ export default function SprintManager() {
     setError('');
     setBusy(true);
     try {
-      await updateSprintStatus(id, status);
+      await updateSprintStatus(id, status, currentUser.name);
     } catch (err) {
       setError(err.message);
     } finally {
