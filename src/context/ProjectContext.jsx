@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { DataService, getSupabaseConfig } from '../services/supabaseClient';
-import { calculateSprintMetrics } from '../utils/estimation';
+import { calculateSprintMetrics, selectSprintTasks } from '../utils/estimation';
 
 const ProjectContext = createContext();
 
@@ -134,9 +134,7 @@ export function ProjectProvider({ children }) {
   };
 
   // Compute metrics for active sprint or all tasks
-  const activeSprintTasks = activeSprintId 
-    ? tasks.filter(t => t.sprint_id === activeSprintId)
-    : tasks;
+  const activeSprintTasks = selectSprintTasks(tasks, activeSprintId);
   const sprintMetrics = calculateSprintMetrics(activeSprintTasks);
 
   return (
@@ -171,3 +169,4 @@ export function ProjectProvider({ children }) {
 }
 
 export const useProject = () => useContext(ProjectContext);
+
