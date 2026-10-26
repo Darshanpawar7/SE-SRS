@@ -1,9 +1,13 @@
 // Team 11 Constants & Agile Enums
+// Each member signs in with their email (the same accounts as database/schema.sql).
+// accessRole decides permissions: only the lead may change project-wide settings.
 export const TEAM_MEMBERS = [
   {
     id: 'u-1',
     name: 'Darshan P Pawar',
     usn: 'PES2UG24CS143',
+    email: 'darshan@pes.edu',
+    accessRole: 'lead',
     role: 'Lead & Full-Stack Architect',
     initials: 'DP',
     color: '#6366f1' // Indigo
@@ -12,6 +16,8 @@ export const TEAM_MEMBERS = [
     id: 'u-2',
     name: 'Dhatri Shivaprasad',
     usn: 'PES2UG24CS158',
+    email: 'dhatri@pes.edu',
+    accessRole: 'developer',
     role: 'Frontend & UI/UX Lead',
     initials: 'DS',
     color: '#ec4899' // Pink
@@ -20,6 +26,8 @@ export const TEAM_MEMBERS = [
     id: 'u-3',
     name: 'Chandan Kumar K',
     usn: 'PES2UG24CS128',
+    email: 'chandan@pes.edu',
+    accessRole: 'developer',
     role: 'Backend & Supabase Architect',
     initials: 'CK',
     color: '#10b981' // Emerald
@@ -28,6 +36,8 @@ export const TEAM_MEMBERS = [
     id: 'u-4',
     name: 'Gurubelli Yekambar Eshwar Rao',
     usn: 'PES2UG24CS173',
+    email: 'eshwar@pes.edu',
+    accessRole: 'developer',
     role: 'Full-Stack & DevOps/Testing Lead',
     initials: 'GE',
     color: '#f59e0b' // Amber

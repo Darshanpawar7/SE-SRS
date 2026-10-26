@@ -2,10 +2,18 @@ import React, { useState } from 'react';
 import { useProject } from '../../context/ProjectContext';
 import { useAuth } from '../../context/AuthContext';
 import { saveSupabaseConfig, clearSupabaseConfig } from '../../services/supabaseClient';
+import { PERMISSIONS } from '../../services/authService';
 
 export default function SettingsModal({ isOpen, onClose }) {
   const { supabaseConfig, syncStatus, pendingChanges, retrySync, refreshConfig, resetData } = useProject();
-  const { currentUser } = useAuth();
+  const { currentUser, can } = useAuth();
+  // The reset only replaces the demo data in this browser, never the team's shared cloud data.
+  const resetBlockedReason = !can(PERMISSIONS.RESET_DEMO_DATA)
+    ? 'Only the team lead can reset the demo data.'
+    : supabaseConfig.isConfigured
+      ? 'Disconnect Supabase to reset: the reset only replaces the demo data in this browser, never the shared cloud data.'
+      : '';
+  const [resetError, setResetError] = useState('');
 
   const [url, setUrl] = useState(supabaseConfig.url || '');
   const [key, setKey] = useState(supabaseConfig.key || '');
@@ -146,14 +154,19 @@ export default function SettingsModal({ isOpen, onClose }) {
           <div className="danger-zone-box">
             <div>
               <h4>Reset Demo Data</h4>
-              <p>Re-populate the board with original Team 11 mock tasks and sprints</p>
+              <p>{resetBlockedReason || 'Re-populate the board with original Team 11 mock tasks and sprints'}</p>
+              {resetError && <p role="alert" className="form-error">{resetError}</p>}
             </div>
-            <button 
+            <button
               className="btn btn-secondary btn-sm"
-              onClick={() => {
-                if (window.confirm('Reset all tasks and sprint boards to default? The audit trail is kept.')) {
-                  resetData(currentUser.name);
+              disabled={Boolean(resetBlockedReason)}
+              onClick={async () => {
+                if (!window.confirm('Reset all tasks and sprint boards to default? The audit trail is kept.')) return;
+                try {
+                  await resetData(currentUser);
                   onClose();
+                } catch (err) {
+                  setResetError(err.message);
                 }
               }}
             >

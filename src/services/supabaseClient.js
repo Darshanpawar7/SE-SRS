@@ -15,7 +15,8 @@ export const isValidSupabaseUrl = (value) => {
   }
 };
 
-// Retrieve credentials from localStorage or environment variables
+// Retrieve credentials from localStorage or environment variables. Credentials saved in
+// this browser take priority; `isBuiltIn` means the deployment itself provides them.
 export const getSupabaseConfig = () => {
   const envUrl = import.meta.env.VITE_SUPABASE_URL || '';
   const envKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
@@ -24,7 +25,8 @@ export const getSupabaseConfig = () => {
   const localKey = localStorage.getItem('supabase_key') || envKey;
 
   const isConfigured = Boolean(localUrl && localKey && isValidSupabaseUrl(localUrl));
-  return { url: localUrl, key: localKey, isConfigured };
+  const isBuiltIn = Boolean(envUrl && envKey && isValidSupabaseUrl(envUrl));
+  return { url: localUrl, key: localKey, isConfigured, isBuiltIn };
 };
 
 // Unusable credentials are rejected before anything is saved, so a typo never
