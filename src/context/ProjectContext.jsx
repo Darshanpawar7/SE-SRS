@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
-import { DataService, getSupabaseConfig } from '../services/supabaseClient';
+import { DataService, getSupabaseConfig, getSyncStatus, subscribeSyncStatus } from '../services/supabaseClient';
 import { validateStoryPoints } from '../utils/storyPoints';
 import { calculateSprintMetrics, selectSprintTasks } from '../utils/estimation';
 import { applyTaskUpdate } from '../utils/taskUpdates';
@@ -29,17 +29,21 @@ export function ProjectProvider({ children }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [supabaseConfig, setSupabaseConfig] = useState(getSupabaseConfig());
+  const [syncStatus, setSyncStatus] = useState(getSyncStatus());
+
+  // Cloud sync errors are surfaced to the UI as they happen.
+  useEffect(() => subscribeSyncStatus(setSyncStatus), []);
 
   // Load initial data
   const loadData = async () => {
     setLoading(true);
     try {
-      const [projData, sprintsData, tasksData, actData] = await Promise.all([
-        DataService.getProject(),
-        DataService.getSprints(),
-        DataService.getTasks(),
-        DataService.getActivity()
-      ]);
+      const {
+        project: projData,
+        sprints: sprintsData,
+        tasks: tasksData,
+        activities: actData
+      } = await DataService.loadAll();
       setProject(projData);
       sprintsRef.current = sprintsData;
       setSprints(sprintsData);
@@ -61,43 +65,53 @@ export function ProjectProvider({ children }) {
   }, []);
 
   // Appends one audit record; the feed always mirrors the stored, append-only history.
+  // Show the stored history, which includes every record even when saves finish out of order.
+  const refreshActivities = async () => setActivities(await DataService.getActivity());
+
   const recordAudit = async (record) => {
     if (!record) return;
     await DataService.logActivity(record);
-    // Show the stored history, which includes every record even when saves finish out of order.
-    setActivities(await DataService.getActivity());
+    await refreshActivities();
+  };
+
+  // Saves a new task list together with the audit record of the change. If nothing could
+  // be stored (for example an invalid estimate), the board returns to the saved list and
+  // the error reaches the caller.
+  const commitTasks = async (newTasks, auditRecord) => {
+    const savedTasks = tasksRef.current;
+    tasksRef.current = newTasks;
+    setTasks(newTasks);
+    try {
+      await DataService.saveTasks(newTasks, auditRecord);
+    } catch (err) {
+      tasksRef.current = savedTasks;
+      setTasks(savedTasks);
+      throw err;
+    }
+    setBurndownHistory(DataService.recordBurndown(sprintsRef.current, newTasks));
+    await refreshActivities();
   };
 
   // Update a task (e.g. drag & drop status change, edit)
   const updateTask = async (updatedTask, authorName = 'Team Member') => {
     validateStoryPoints(updatedTask.story_points);
     const { previousTask, tasks: newTasks, durationMs } = applyTaskUpdate(tasksRef.current, updatedTask);
-    tasksRef.current = newTasks;
-    setTasks(newTasks);
-    setBurndownHistory(DataService.recordBurndown(sprintsRef.current, newTasks));
-    await DataService.saveTasks(newTasks);
-
-    if (previousTask) await recordAudit(auditTaskUpdated(previousTask, updatedTask, authorName));
-
+    await commitTasks(newTasks, previousTask ? auditTaskUpdated(previousTask, updatedTask, authorName) : null);
     return { durationMs };
   };
 
   // Create a new task
   const addTask = async (taskData, authorName = 'Team Member') => {
     validateStoryPoints(taskData.story_points);
+    // UUIDs match the tasks.id column, so new tasks can be synced to Supabase.
     const newTask = {
-      id: 'task-' + Date.now(),
+      id: crypto.randomUUID(),
+      project_id: project?.id ?? null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       ...taskData
     };
-    const newTasks = [newTask, ...tasksRef.current];
-    tasksRef.current = newTasks;
-    setTasks(newTasks);
-    setBurndownHistory(DataService.recordBurndown(sprintsRef.current, newTasks));
-    await DataService.saveTasks(newTasks);
-
-    await recordAudit(auditTaskCreated(newTask, authorName));
+    await commitTasks([newTask, ...tasksRef.current], auditTaskCreated(newTask, authorName));
     return newTask;
   };
 
@@ -108,9 +122,8 @@ export function ProjectProvider({ children }) {
     tasksRef.current = newTasks;
     setTasks(newTasks);
     setBurndownHistory(DataService.recordBurndown(sprintsRef.current, newTasks));
-    await DataService.saveTasks(newTasks);
-
-    if (taskToDelete) await recordAudit(auditTaskDeleted(taskToDelete, authorName));
+    await DataService.deleteTask(taskId, newTasks, taskToDelete ? auditTaskDeleted(taskToDelete, authorName) : null);
+    await refreshActivities();
   };
 
   // Add or update sprint
@@ -129,8 +142,8 @@ export function ProjectProvider({ children }) {
     setSprints(newSprints);
     setBurndownHistory(DataService.recordBurndown(newSprints, tasksRef.current));
     if (!activeSprintId) setActiveSprintId(newSprint.id);
-    await DataService.saveSprints(newSprints);
-    await recordAudit(auditSprintCreated(newSprint, authorName));
+    await DataService.saveSprints(newSprints, auditSprintCreated(newSprint, authorName));
+    await refreshActivities();
     return newSprint;
   };
 
@@ -142,8 +155,11 @@ export function ProjectProvider({ children }) {
     setBurndownHistory(DataService.recordBurndown(newSprints, tasksRef.current));
     // Starting a sprint selects its board and metrics; completing keeps its report visible.
     if (status === 'active') setActiveSprintId(sprintId);
-    await DataService.saveSprints(newSprints);
-    await recordAudit(auditSprintTransition(previousSprint, newSprints.find(sprint => sprint.id === sprintId), authorName));
+    await DataService.saveSprints(
+      newSprints,
+      auditSprintTransition(previousSprint, newSprints.find(sprint => sprint.id === sprintId), authorName)
+    );
+    await refreshActivities();
   };
 
   const setActiveSprintId = (sprintId) => {
@@ -192,6 +208,7 @@ export function ProjectProvider({ children }) {
       addSprint,
       updateSprintStatus,
       supabaseConfig,
+      syncStatus,
       refreshConfig,
       resetData
     }}>
