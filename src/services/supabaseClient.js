@@ -88,12 +88,20 @@ const setSyncStatus = (state, message) => {
   syncListeners.forEach(listener => listener(syncStatus));
 };
 
+// A request that gets no answer counts as failed, so a stalled connection cannot leave
+// a retry stuck; the change stays queued and is sent again later.
+const REQUEST_TIMEOUT_MS = 15000;
+
 // Runs one Supabase request. supabase-js reports failures in `error` rather than
 // throwing, so both paths are checked. Failures are surfaced, never thrown: the
 // copy already written to this browser is always kept.
 async function runCloud(label, request) {
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error(`no answer within ${REQUEST_TIMEOUT_MS / 1000} seconds`)), REQUEST_TIMEOUT_MS);
+  });
   try {
-    const { data, error } = await request();
+    const { data, error } = await Promise.race([request(), timeout]);
     if (error) throw error;
     setSyncStatus('synced', 'All changes are synced with Supabase.');
     return { ok: true, data };
@@ -102,6 +110,8 @@ async function runCloud(label, request) {
     console.warn(message);
     setSyncStatus('error', message);
     return { ok: false, data: null };
+  } finally {
+    clearTimeout(timer);
   }
 }
 
@@ -197,6 +207,88 @@ const readLocalTasks = () => {
   return repaired;
 };
 
+// Changes Supabase has not confirmed yet (PMS-F-016). A table is marked before its rows
+// are sent, and the mark is cleared only when Supabase confirms the latest send, so a
+// reload during a slow request (or an older request finishing after a newer one failed)
+// can never replace the local copy with older cloud data. Deletes and audit records are
+// queued the same way. While a table is marked, loading uses the local copy.
+const PENDING_KEY = 'sprintflow_pending_sync';
+let flushInFlight = null;
+
+const readPending = () => {
+  const empty = { seq: 0, tables: {}, deletedTaskIds: [], activity: [] };
+  try {
+    const saved = JSON.parse(localStorage.getItem(PENDING_KEY) || '{}');
+    return {
+      ...empty,
+      ...saved,
+      tables: saved.tables && !Array.isArray(saved.tables) ? saved.tables : {}
+    };
+  } catch {
+    return empty;
+  }
+};
+
+const updatePending = (change) => localStorage.setItem(PENDING_KEY, JSON.stringify(change(readPending())));
+
+// Marks a table as sent-but-unconfirmed and returns the version of this send.
+const markTablePending = (table) => {
+  let version = 0;
+  updatePending(pending => {
+    version = pending.seq + 1;
+    return { ...pending, seq: version, tables: { ...pending.tables, [table]: version } };
+  });
+  return version;
+};
+
+// Clears the mark only if no newer send of the same table started in the meantime.
+const confirmTableSent = (table, version) => updatePending(pending => {
+  if (pending.tables[table] !== version) return pending;
+  const { [table]: _confirmed, ...stillPending } = pending.tables;
+  return { ...pending, tables: stillPending };
+});
+
+const queueDelete = (taskId) => updatePending(pending => ({
+  ...pending,
+  deletedTaskIds: [...new Set([...pending.deletedTaskIds, taskId])]
+}));
+
+const confirmDelete = (taskId) => updatePending(pending => ({
+  ...pending,
+  deletedTaskIds: pending.deletedTaskIds.filter(id => id !== taskId)
+}));
+
+const queueActivity = (record) => updatePending(pending => ({
+  ...pending,
+  activity: [...pending.activity.filter(item => item.id !== record.id), record]
+}));
+
+const confirmActivity = (recordId) => updatePending(pending => ({
+  ...pending,
+  activity: pending.activity.filter(item => item.id !== recordId)
+}));
+
+const hasPendingChanges = (table) => {
+  const pending = readPending();
+  return Object.hasOwn(pending.tables, table) || (table === 'tasks' && pending.deletedTaskIds.length > 0);
+};
+
+export const getPendingChangeCount = () => {
+  const pending = readPending();
+  return Object.keys(pending.tables).length + pending.deletedTaskIds.length + pending.activity.length;
+};
+
+const deleteTaskRow = (supabase, taskId) =>
+  runCloud('Deleting a task', () => supabase.from('tasks').delete().eq('id', taskId));
+
+// A stored audit record is never overwritten: a record whose id already exists is
+// skipped (INSERT ... ON CONFLICT DO NOTHING), so sending it again is harmless.
+const insertActivityRow = (supabase, record) => {
+  const projectId = readLocal(STORAGE_KEYS.PROJECT, INITIAL_PROJECT).id;
+  return runCloud('Recording the audit trail', () =>
+    supabase.from('activity_logs').upsert(toActivityRow(record, projectId), { onConflict: 'id', ignoreDuplicates: true }));
+};
+
 // Unified Data Service: operates on Supabase when connected, else localStorage
 export const DataService = {
   getSelectedSprint() {
@@ -214,9 +306,12 @@ export const DataService = {
     return history;
   },
 
-  // Loads everything. On first connection to an empty Supabase project, this browser's
-  // data is published in foreign-key order: project, then sprints, then tasks.
+  // Loads everything. Changes still waiting to sync are sent in the background (a stalled
+  // connection must not block loading); tables with such changes load from the local copy.
+  // On first connection to an empty Supabase project, this browser's data is published in
+  // foreign-key order: project, then sprints, then tasks.
   async loadAll() {
+    this.flushPending().catch(err => console.warn('Sending unsynced changes failed:', err));
     const project = await this.getProject();
     const [sprints, tasks, activities] = await Promise.all([
       this.getSprints(),
@@ -232,10 +327,44 @@ export const DataService = {
     return (await this.pushProject(project)) && (await this.pushSprints(sprints)) && (await this.pushTasks(tasks));
   },
 
+  // Only one retry runs at a time: a second caller (such as the browser coming back
+  // online during a load) waits for the retry already running instead of sending twice.
+  flushPending() {
+    if (!flushInFlight) {
+      flushInFlight = this.sendPending().finally(() => { flushInFlight = null; });
+    }
+    return flushInFlight;
+  },
+
+  // Sends everything Supabase has not confirmed yet, in foreign-key order. Each item is
+  // cleared only after Supabase confirms it, so a failed retry loses nothing.
+  async sendPending() {
+    const supabase = getSupabase();
+    if (!supabase || getPendingChangeCount() === 0) return true;
+    const pending = readPending();
+
+    if (Object.hasOwn(pending.tables, 'projects')
+      && !(await this.pushProject(readLocal(STORAGE_KEYS.PROJECT, INITIAL_PROJECT)))) return false;
+    if (Object.hasOwn(pending.tables, 'sprints')
+      && !(await this.pushSprints(readLocal(STORAGE_KEYS.SPRINTS, INITIAL_SPRINTS)))) return false;
+    if (Object.hasOwn(pending.tables, 'tasks')
+      && !(await this.pushTasks(readLocalTasks()))) return false;
+
+    for (const taskId of pending.deletedTaskIds) {
+      if (!(await deleteTaskRow(supabase, taskId)).ok) return false;
+      confirmDelete(taskId);
+    }
+    for (const record of pending.activity) {
+      if (!(await insertActivityRow(supabase, record)).ok) return false;
+      confirmActivity(record.id);
+    }
+    return true;
+  },
+
   async getProject() {
     const local = readLocal(STORAGE_KEYS.PROJECT, INITIAL_PROJECT);
     const supabase = getSupabase();
-    if (!supabase) return local;
+    if (!supabase || hasPendingChanges('projects')) return local;
     const { ok, data } = await runCloud('Loading the project', () => supabase.from('projects').select('*').limit(1));
     if (!ok) return local;
     if (!data?.length) {
@@ -250,7 +379,7 @@ export const DataService = {
   async getSprints() {
     const local = readLocal(STORAGE_KEYS.SPRINTS, INITIAL_SPRINTS);
     const supabase = getSupabase();
-    if (!supabase) return local;
+    if (!supabase || hasPendingChanges('sprints')) return local;
     const { ok, data } = await runCloud('Loading sprints', () =>
       supabase.from('sprints').select('*').order('start_date', { ascending: true }));
     if (!ok) return local;
@@ -265,7 +394,7 @@ export const DataService = {
   async getTasks() {
     const local = readLocalTasks();
     const supabase = getSupabase();
-    if (!supabase) return local;
+    if (!supabase || hasPendingChanges('tasks')) return local;
     const { ok, data } = await runCloud('Loading tasks', () =>
       supabase.from('tasks').select('*').order('created_at', { ascending: false }));
     if (!ok) return local;
@@ -290,18 +419,25 @@ export const DataService = {
 
   async pushTasks(tasks) {
     const supabase = getSupabase();
-    if (!supabase || tasks.length === 0) return true;
-    return (await runCloud('Saving tasks', () => supabase.from('tasks').upsert(tasks.map(toTaskRow)))).ok;
+    if (!supabase) return true;
+    const version = markTablePending('tasks');
+    const ok = tasks.length === 0
+      || (await runCloud('Saving tasks', () => supabase.from('tasks').upsert(tasks.map(toTaskRow)))).ok;
+    if (ok) confirmTableSent('tasks', version);
+    return ok;
   },
 
-  // Removes one task here and in Supabase, so a deleted task cannot come back on the next load.
+  // Removes one task here and in Supabase, so a deleted task cannot come back on the next
+  // load. The delete is queued before it is sent and leaves the queue once confirmed.
   async deleteTask(taskId, remainingTasks, auditRecord = null) {
     if (auditRecord) requireAuditRecord(auditRecord);
     writeLocal(STORAGE_KEYS.TASKS, remainingTasks);
     if (auditRecord) appendActivity(auditRecord);
     const supabase = getSupabase();
     if (!supabase) return true;
-    const { ok } = await runCloud('Deleting a task', () => supabase.from('tasks').delete().eq('id', taskId));
+    queueDelete(taskId);
+    const { ok } = await deleteTaskRow(supabase, taskId);
+    if (ok) confirmDelete(taskId);
     if (auditRecord) await this.pushActivity(auditRecord);
     return ok;
   },
@@ -316,8 +452,12 @@ export const DataService = {
 
   async pushSprints(sprints) {
     const supabase = getSupabase();
-    if (!supabase || sprints.length === 0) return true;
-    return (await runCloud('Saving sprints', () => supabase.from('sprints').upsert(sprints.map(toSprintRow)))).ok;
+    if (!supabase) return true;
+    const version = markTablePending('sprints');
+    const ok = sprints.length === 0
+      || (await runCloud('Saving sprints', () => supabase.from('sprints').upsert(sprints.map(toSprintRow)))).ok;
+    if (ok) confirmTableSent('sprints', version);
+    return ok;
   },
 
   async saveProject(project, auditRecord = null) {
@@ -330,8 +470,12 @@ export const DataService = {
 
   async pushProject(project) {
     const supabase = getSupabase();
-    if (!supabase || !project) return true;
-    return (await runCloud('Saving the project', () => supabase.from('projects').upsert(toProjectRow(project)))).ok;
+    if (!supabase) return true;
+    const version = markTablePending('projects');
+    const ok = !project
+      || (await runCloud('Saving the project', () => supabase.from('projects').upsert(toProjectRow(project)))).ok;
+    if (ok) confirmTableSent('projects', version);
+    return ok;
   },
 
   async getActivity() {
@@ -347,18 +491,21 @@ export const DataService = {
     return updated;
   },
 
-  // A stored record is never overwritten: a record whose id already exists is skipped
-  // (INSERT ... ON CONFLICT DO NOTHING), so sending it again is harmless.
+  // The record is queued before it is sent and leaves the queue once Supabase confirms it.
   async pushActivity(record) {
     const supabase = getSupabase();
     if (!supabase) return true;
-    const projectId = readLocal(STORAGE_KEYS.PROJECT, INITIAL_PROJECT).id;
-    return (await runCloud('Recording the audit trail', () =>
-      supabase.from('activity_logs').upsert(toActivityRow(record, projectId), { onConflict: 'id', ignoreDuplicates: true }))).ok;
+    queueActivity(record);
+    const { ok } = await insertActivityRow(supabase, record);
+    if (ok) confirmActivity(record.id);
+    return ok;
   },
 
   // Resets the demo board but keeps the audit trail, which must survive every change.
+  // Unsent board changes belong to the board being replaced, so they are dropped;
+  // unsent audit records are kept.
   resetAllData() {
+    updatePending(pending => ({ ...pending, tables: {}, deletedTaskIds: [] }));
     localStorage.removeItem(STORAGE_KEYS.SELECTED_SPRINT);
     localStorage.removeItem(STORAGE_KEYS.BURNDOWN);
     localStorage.setItem(STORAGE_KEYS.PROJECT, JSON.stringify(INITIAL_PROJECT));
