@@ -3,6 +3,7 @@ import { useProject } from '../../context/ProjectContext';
 import { useAuth } from '../../context/AuthContext';
 import { TASK_STATUSES, TASK_PRIORITIES, STORY_POINTS, TEAM_MEMBERS } from '../../utils/constants';
 import { buildTaskPayload, getTaskFormValues, mergeTaskPayload, validateTaskForm } from '../../utils/taskForm';
+import { addLabels, getDistinctLabels, removeLabel } from '../../utils/labels';
 
 export default function TaskModal({ task, isOpen, onClose }) {
   const { updateTask, addTask, deleteTask, activeSprintId, sprints } = useProject();
@@ -32,23 +33,22 @@ export default function TaskModal({ task, isOpen, onClose }) {
     setStoryPoints(values.storyPoints);
     setAssigneeId(values.assigneeId);
     setSprintId(values.sprintId);
-    setLabels(values.labels);
+    setLabels(getDistinctLabels(values.labels));
+    setLabelInput('');
   }, [task, activeSprintId, currentUser]);
 
   if (!isOpen) return null;
 
   const handleAddLabel = (e) => {
-    if (e.key === 'Enter' && labelInput.trim()) {
+    if ((e.key === 'Enter' || e.key === ',') && labelInput.trim()) {
       e.preventDefault();
-      if (!labels.includes(labelInput.trim().toLowerCase())) {
-        setLabels([...labels, labelInput.trim().toLowerCase()]);
-      }
+      setLabels(addLabels(labels, labelInput));
       setLabelInput('');
     }
   };
 
-  const removeLabel = (lbl) => {
-    setLabels(labels.filter(l => l !== lbl));
+  const handleRemoveLabel = (lbl) => {
+    setLabels(removeLabel(labels, lbl));
   };
 
   const handleSubmit = async (e) => {
@@ -61,7 +61,8 @@ export default function TaskModal({ task, isOpen, onClose }) {
       storyPoints,
       assigneeId,
       sprintId,
-      labels
+      // A label still in the input when the task is saved is kept, not dropped.
+      labels: addLabels(labels, labelInput)
     };
     if (!validateTaskForm(formValues)) return;
 
@@ -210,18 +211,19 @@ export default function TaskModal({ task, isOpen, onClose }) {
 
           {/* Labels */}
           <div className="form-group">
-            <label className="form-label">Labels (Press Enter to add)</label>
+            <label className="form-label">Labels (Press Enter or comma to add)</label>
             <div className="labels-input-wrap">
               {labels.map(lbl => (
                 <span key={lbl} className="label-pill">
                   #{lbl}
-                  <button type="button" onClick={() => removeLabel(lbl)}>×</button>
+                  <button type="button" aria-label={`Remove label ${lbl}`} onClick={() => handleRemoveLabel(lbl)}>×</button>
                 </span>
               ))}
               <input
                 type="text"
                 className="label-sub-input"
                 placeholder="Add tag..."
+                aria-label="Add label"
                 value={labelInput}
                 onChange={(e) => setLabelInput(e.target.value)}
                 onKeyDown={handleAddLabel}

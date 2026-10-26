@@ -994,6 +994,12 @@ body {
   border-radius: 4px;
 }
 
+.form-error {
+  color: #f87171;
+  font-size: 0.8rem;
+  margin: 0 0 8px;
+}
+
 .card-footer-row {
   display: flex;
   align-items: center;
