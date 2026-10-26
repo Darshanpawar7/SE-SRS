@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { STORY_POINTS } from '../utils/constants';
 import { validateStoryPoints } from '../utils/storyPoints';
 import { DataService } from '../services/supabaseClient';
+import { INITIAL_TASKS } from '../services/mockData';
 
 describe('PMS-F-008 Fibonacci estimates', () => {
   beforeEach(() => {
@@ -31,5 +32,12 @@ describe('PMS-F-008 Fibonacci estimates', () => {
     expect(await DataService.getTasks()).toEqual(tasks);
     await DataService.saveTasks([]);
     expect(await DataService.getTasks()).toEqual([]);
+  });
+
+  // Every board change saves the whole task list, so one off-scale seed estimate
+  // would make all saves fail on a fresh install.
+  it('keeps the seed data on the scale so a fresh board can be saved', async () => {
+    INITIAL_TASKS.forEach(task => expect(STORY_POINTS).toContain(task.story_points));
+    await expect(DataService.saveTasks(INITIAL_TASKS)).resolves.toBeUndefined();
   });
 });
