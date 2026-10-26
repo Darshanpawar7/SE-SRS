@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useProject } from '../../context/ProjectContext';
 import { useAuth } from '../../context/AuthContext';
 import { TASK_STATUSES, TASK_PRIORITIES, STORY_POINTS, TEAM_MEMBERS } from '../../utils/constants';
+import { buildTaskPayload, getTaskFormValues, mergeTaskPayload, validateTaskForm } from '../../utils/taskForm';
 
 export default function TaskModal({ task, isOpen, onClose }) {
   const { updateTask, addTask, deleteTask, activeSprintId, sprints } = useProject();
@@ -23,25 +24,15 @@ export default function TaskModal({ task, isOpen, onClose }) {
 
   useEffect(() => {
     setError('');
-    if (task) {
-      setTitle(task.title || '');
-      setDescription(task.description || '');
-      setStatus(task.status || 'todo');
-      setPriority(task.priority || 'medium');
-      setStoryPoints(task.story_points ?? 3);
-      setAssigneeId(task.assignee_id || 'u-1');
-      setSprintId(task.sprint_id || activeSprintId || '');
-      setLabels(task.labels || []);
-    } else {
-      setTitle('');
-      setDescription('');
-      setStatus('todo');
-      setPriority('medium');
-      setStoryPoints(3);
-      setAssigneeId(currentUser.id);
-      setSprintId(activeSprintId || '');
-      setLabels(['feature']);
-    }
+    const values = getTaskFormValues(task, activeSprintId, currentUser);
+    setTitle(values.title);
+    setDescription(values.description);
+    setStatus(values.status);
+    setPriority(values.priority);
+    setStoryPoints(values.storyPoints);
+    setAssigneeId(values.assigneeId);
+    setSprintId(values.sprintId);
+    setLabels(values.labels);
   }, [task, activeSprintId, currentUser]);
 
   if (!isOpen) return null;
@@ -62,28 +53,25 @@ export default function TaskModal({ task, isOpen, onClose }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!title.trim()) return;
-
-    const assignedMember = TEAM_MEMBERS.find(m => m.id === assigneeId);
-
-    const taskPayload = {
-      title: title.trim(),
-      description: description.trim(),
+    const formValues = {
+      title,
+      description,
       status,
       priority,
-      story_points: Number(storyPoints),
-      assignee_id: assigneeId,
-      assignee_name: assignedMember ? assignedMember.name : 'Unassigned',
-      reporter_name: currentUser.name,
-      sprint_id: sprintId || null,
+      storyPoints,
+      assigneeId,
+      sprintId,
       labels
     };
+    if (!validateTaskForm(formValues)) return;
+
+    const taskPayload = buildTaskPayload(formValues, currentUser, TEAM_MEMBERS);
 
     setError('');
     setSaving(true);
     try {
       if (isEditing) {
-        await updateTask({ ...task, ...taskPayload }, currentUser.name);
+        await updateTask(mergeTaskPayload(task, taskPayload), currentUser.name);
       } else {
         await addTask(taskPayload, currentUser.name);
       }
@@ -158,6 +146,7 @@ export default function TaskModal({ task, isOpen, onClose }) {
               <label className="form-label">Priority</label>
               <select 
                 className="form-select"
+                required
                 value={priority} 
                 onChange={(e) => setPriority(e.target.value)}
               >
