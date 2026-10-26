@@ -1,4 +1,5 @@
 // Supabase Client with graceful Offline / Mock fallback
+import { validateStoryPoints } from '../utils/storyPoints';
 import { createClient } from '@supabase/supabase-js';
 import { INITIAL_PROJECT, INITIAL_SPRINTS, INITIAL_TASKS, INITIAL_ACTIVITY } from './mockData';
 
@@ -98,6 +99,7 @@ export const DataService = {
   },
 
   async saveTasks(tasks) {
+    tasks.forEach(task => validateStoryPoints(task.story_points));
     localStorage.setItem(STORAGE_KEYS.TASKS, JSON.stringify(tasks));
     const supabase = getSupabase();
     if (supabase) {
