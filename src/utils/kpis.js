@@ -10,7 +10,7 @@ export function buildKpiCards(metrics) {
       label: 'Total Story Points',
       value: metrics.totalStoryPoints,
       unit: 'pts',
-      tone: 'text-indigo',
+      tone: 'tone-strong',
       meta: `${metrics.totalTasks} tasks in active scope`
     },
     {
@@ -18,7 +18,7 @@ export function buildKpiCards(metrics) {
       label: 'Delivered Velocity',
       value: metrics.completedStoryPoints,
       unit: 'pts',
-      tone: 'text-emerald',
+      tone: 'tone-success',
       meta: `${metrics.completedTasks} items completed`
     },
     {
@@ -26,7 +26,7 @@ export function buildKpiCards(metrics) {
       label: 'Sprint Completion',
       value: metrics.progressPercentage,
       unit: '%',
-      tone: 'text-amber',
+      tone: 'tone-strong',
       progress: metrics.progressPercentage
     },
     {
@@ -34,7 +34,7 @@ export function buildKpiCards(metrics) {
       label: 'Remaining Workload',
       value: metrics.remainingStoryPoints,
       unit: 'pts',
-      tone: 'text-purple',
+      tone: 'tone-warning',
       meta: `${pendingTasks} tasks pending`
     }
   ];

@@ -8,8 +8,9 @@ import BurndownChart from './BurndownChart';
 import KpiCards from './KpiCards';
 import WorkloadList from './WorkloadList';
 import AuditTrail from './AuditTrail';
+import DeliverySignals from './DeliverySignals';
 
-export default function DashboardView({ onNavigateKanban }) {
+export default function DashboardView({ onNavigateKanban, onOpenTask = () => {} }) {
   const { project, activeSprintTasks, sprintMetrics, activities, sprints, activeSprintId, burndownHistory } = useProject();
   const activeSprint = sprints.find(s => s.id === activeSprintId);
   const projectSummary = describeProject(project);
@@ -36,6 +37,8 @@ export default function DashboardView({ onNavigateKanban }) {
 
       {/* KPI Stats Cards */}
       <KpiCards metrics={sprintMetrics} />
+
+      <DeliverySignals tasks={activeSprintTasks} sprint={activeSprint} onOpenTask={onOpenTask} />
 
       {/* Visual Analytics Grid */}
       <div className="charts-grid">
@@ -112,4 +115,3 @@ export default function DashboardView({ onNavigateKanban }) {
     </div>
   );
 }
-
