@@ -6,6 +6,7 @@ import './commandMenu.css';
 export default function CommandMenu({ onNavigate, onNewTask, onOpenTask, onSettings, explorerEnabled = false }) {
   const { tasks, activeSprintId, sprints } = useProject();
   const dialog = useRef(null);
+  const search = useRef(null);
   const [query, setQuery] = useState('');
   const actions = [
     { id: 'dashboard', label: 'Go to overview', hint: 'Workspace' },
@@ -16,7 +17,8 @@ export default function CommandMenu({ onNavigate, onNewTask, onOpenTask, onSetti
     { id: 'new', label: 'Create a task', hint: 'Action' },
     { id: 'settings', label: 'Open connections', hint: 'Action' },
   ].filter(action => action.id !== 'explorer' || explorerEnabled);
-  const open = () => { setQuery(''); dialog.current?.showModal(); };
+  // showModal() focuses the first button (Esc), so move the cursor to the search box ourselves.
+  const open = () => { setQuery(''); dialog.current?.showModal(); search.current?.focus(); };
   useEffect(() => {
     const handler = event => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
@@ -44,7 +46,7 @@ export default function CommandMenu({ onNavigate, onNewTask, onOpenTask, onSetti
     <dialog ref={dialog} className="command-dialog" aria-labelledby="command-title" onClick={event => { if (event.target === dialog.current) dialog.current.close(); }}>
       <header><div><h2 id="command-title">Search and commands</h2></div><button className="btn btn-secondary" onClick={() => dialog.current.close()} aria-label="Close command menu">Esc</button></header>
       <label className="sr-label" htmlFor="command-query">Search actions and work items</label>
-      <input id="command-query" autoFocus className="form-input" placeholder="Find a page, action or work item…" value={query} onChange={event => setQuery(event.target.value)}
+      <input id="command-query" ref={search} className="form-input" placeholder="Find a page, action or work item…" value={query} onChange={event => setQuery(event.target.value)}
         onKeyDown={event => { if (event.key === 'ArrowDown') { event.preventDefault(); dialog.current.querySelector('.command-result')?.focus(); } }} />
       <p className="command-count" aria-live="polite">{results.length} results · Search covers all project work items</p>
       <div className="command-results" onKeyDown={event => {
