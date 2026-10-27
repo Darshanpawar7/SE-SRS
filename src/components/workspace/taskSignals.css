@@ -1,0 +1,48 @@
+/* Priority and status badges. Each pairs an icon with a text label, so colour is never the only signal. */
+.signal-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.signal-badge svg {
+  flex-shrink: 0;
+}
+
+/* Only urgent priorities take colour; low and medium stay neutral. */
+.priority-signal[data-priority=critical] {
+  color: var(--danger);
+  background: var(--danger-light);
+  border-color: var(--danger-border);
+}
+
+.priority-signal[data-priority=high] {
+  color: var(--warning);
+  background: var(--warning-light);
+  border-color: var(--warning-border);
+}
+
+.priority-signal[data-priority=medium] {
+  color: var(--text-main);
+  background: var(--bg-subtle);
+}
+
+/* Statuses keep a neutral badge; the icon carries the stage colour. */
+.status-signal {
+  color: var(--text-main);
+}
+
+.status-signal[data-status=backlog] svg { color: var(--text-dim); }
+.status-signal[data-status=todo] svg { color: var(--text-muted); }
+.status-signal[data-status=in_progress] svg { color: var(--warning); }
+.status-signal[data-status=review] svg { color: var(--info); }
+.status-signal[data-status=done] svg { color: var(--success); }
