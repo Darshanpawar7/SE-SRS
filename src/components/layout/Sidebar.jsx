@@ -2,6 +2,7 @@ import React from 'react';
 
 export default function Sidebar({ activeTab, setActiveTab, onOpenSettings }) {
   const navItems = [
+    { id: "explorer", label: "Work items", icon: <span aria-hidden="true">≡</span> },
     {
       id: 'dashboard',
       label: 'Overview',
