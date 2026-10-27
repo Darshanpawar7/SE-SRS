@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import CommandMenu from './components/workspace/CommandMenu';
 import TaskExplorer from './components/workspace/TaskExplorer';
 import './styles/motion.css';
@@ -21,6 +21,12 @@ export default function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isProjectSettingsOpen, setIsProjectSettingsOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
+  const mainRef = useRef(null);
+
+  // Each page opens at the top, not at the scroll position of the page before it.
+  useEffect(() => {
+    mainRef.current?.scrollTo(0, 0);
+  }, [activeTab]);
 
   const navigate = tab => setActiveTab(tab);
 
@@ -53,7 +59,7 @@ export default function App() {
           onOpenSettings={() => setIsSettingsOpen(true)}
         />
 
-        <main id="workspace-main" className="app-content" tabIndex={-1}>
+        <main id="workspace-main" ref={mainRef} className="app-content" tabIndex={-1}>
           <CommandMenu onNavigate={navigate} explorerEnabled onNewTask={handleOpenNewTask} onOpenTask={handleOpenEditTask} onSettings={() => setIsSettingsOpen(true)} />
           {activeTab === 'dashboard' && (
             <DashboardView onNavigateKanban={() => setActiveTab('kanban')} onOpenTask={handleOpenEditTask} />
