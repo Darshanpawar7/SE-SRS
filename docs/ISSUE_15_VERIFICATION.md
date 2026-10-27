@@ -8,6 +8,8 @@ Automated cases cover observed values versus invented interpolation, gaps, scope
 
 Manual check: change a task to Done and confirm today's remaining points change immediately. Reload and confirm the observation persists. Inspect the daily values table. Historical dates without observations must say Not recorded.
 
+Follow-up layout fix: a chart longer than its card (for example a sprint viewed weeks after its end date) now scrolls inside the card instead of stretching it past the screen edge, where the latest recorded value was cut off, and the dates under the axis are no longer clipped. Manual check: on a laptop screen, open the dashboard for a sprint whose dates are long past; the chart scrolls sideways inside its card, the Ideal/Actual legend stays visible, and every date label is readable.
+
 History is local to this browser, including when task data is loaded from Supabase. No observations are generated while the app is closed; absent days are intentionally blank. Clearing site data or resetting the demo removes history. Cross-device history synchronization is outside this issue.
 
 ## Validation
