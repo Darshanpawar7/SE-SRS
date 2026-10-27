@@ -42,7 +42,7 @@ export default function CommandMenu({ onNavigate, onNewTask, onOpenTask, onSetti
       <button className="command-trigger" onClick={open}>Search & commands <kbd>⌘ / Ctrl K</kbd></button>
     </div>
     <dialog ref={dialog} className="command-dialog" aria-labelledby="command-title" onClick={event => { if (event.target === dialog.current) dialog.current.close(); }}>
-      <header><div><span className="eyebrow">SPRINTFLOW / COMMAND CENTER</span><h2 id="command-title">Where to next?</h2></div><button className="btn btn-secondary" onClick={() => dialog.current.close()} aria-label="Close command menu">Esc</button></header>
+      <header><div><h2 id="command-title">Search and commands</h2></div><button className="btn btn-secondary" onClick={() => dialog.current.close()} aria-label="Close command menu">Esc</button></header>
       <label className="sr-label" htmlFor="command-query">Search actions and work items</label>
       <input id="command-query" autoFocus className="form-input" placeholder="Find a page, action or work item…" value={query} onChange={event => setQuery(event.target.value)}
         onKeyDown={event => { if (event.key === 'ArrowDown') { event.preventDefault(); dialog.current.querySelector('.command-result')?.focus(); } }} />
