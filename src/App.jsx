@@ -34,6 +34,7 @@ export default function App() {
 
   return (
     <div className="app-container">
+      <a className="skip-link" href="#workspace-main">Skip to workspace</a>
       <Navbar
         onOpenSettings={() => setIsSettingsOpen(true)}
         onOpenNewTask={handleOpenNewTask}
@@ -47,7 +48,7 @@ export default function App() {
           onOpenSettings={() => setIsSettingsOpen(true)}
         />
 
-        <main className="app-content">
+        <main id="workspace-main" className="app-content" tabIndex={-1}>
           {activeTab === 'dashboard' && (
             <DashboardView onNavigateKanban={() => setActiveTab('kanban')} />
           )}
