@@ -3,6 +3,7 @@ import { useProject } from '../../context/ProjectContext';
 import { TASK_STATUSES, TASK_PRIORITIES, TEAM_MEMBERS } from '../../utils/constants';
 import { exploreTasks, tasksToCsv } from '../../utils/taskExplorer';
 import './taskExplorer.css';
+import { PriorityBadge, StatusBadge } from './TaskSignals';
 export default function TaskExplorer({ onOpenTask }) {
   const { tasks, sprints, activeSprintId, project } = useProject();
   const [scope, setScope] = useState('sprint');
@@ -30,7 +31,7 @@ export default function TaskExplorer({ onOpenTask }) {
     </div>
     <div className="explorer-summary" role="status"><span>{visible.length} / {inScope.length} WORK ITEMS</span><span>{points} POINTS IN VIEW</span><span>{scope === 'project' ? 'PROJECT SCOPE' : 'SPRINT SCOPE'}</span></div>
     <div className="explorer-table-wrap"><table className="explorer-table"><caption className="sr-only">Filtered project work items. Open a title to edit its task.</caption><thead><tr><th scope="col">Work item</th><th scope="col">Status</th><th scope="col">Priority</th><th scope="col">Owner</th><th scope="col">Points</th></tr></thead><tbody>
-      {visible.map(task=><tr key={task.id}><td><button className="task-title-link" onClick={()=>onOpenTask(task)}>{task.title}</button><small>{(task.labels || []).join(' · ') || 'No labels'}</small></td><td><span className="explorer-status" data-status={task.status}>{TASK_STATUSES.find(s=>s.id===task.status)?.label || task.status}</span></td><td>{TASK_PRIORITIES.find(p=>p.id===task.priority)?.label || task.priority}</td><td>{task.assignee_name || 'Unassigned'}</td><td className="explorer-points">{task.story_points}</td></tr>)}
+      {visible.map(task=><tr key={task.id}><td><button className="task-title-link" onClick={()=>onOpenTask(task)}>{task.title}</button><small>{(task.labels || []).join(' · ') || 'No labels'}</small></td><td><StatusBadge status={task.status} /></td><td><PriorityBadge priority={task.priority} /></td><td>{task.assignee_name || 'Unassigned'}</td><td className="explorer-points">{task.story_points}</td></tr>)}
     </tbody></table>{!visible.length && <div className="empty-explorer"><h3>No work items match.</h3><p>Clear filters or switch to the entire project.</p></div>}</div>
   </section>;
 }
