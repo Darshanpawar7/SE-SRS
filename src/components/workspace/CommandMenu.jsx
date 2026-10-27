@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useProject } from '../../context/ProjectContext';
 import { findCommands } from '../../utils/commands';
 
-export default function CommandMenu({ onNavigate, onNewTask, onOpenTask, onSettings }) {
+export default function CommandMenu({ onNavigate, onNewTask, onOpenTask, onSettings, explorerEnabled = false }) {
   const { tasks, activeSprintId, sprints } = useProject();
   const dialog = useRef(null);
   const [query, setQuery] = useState('');
@@ -14,7 +14,7 @@ export default function CommandMenu({ onNavigate, onNewTask, onOpenTask, onSetti
     { id: 'docs', label: 'Go to documentation', hint: 'Workspace' },
     { id: 'new', label: 'Create a task', hint: 'Action' },
     { id: 'settings', label: 'Open connections', hint: 'Action' },
-  ].filter(action => action.id !== 'explorer' || onNavigate.explorerEnabled);
+  ].filter(action => action.id !== 'explorer' || explorerEnabled);
   const open = () => { setQuery(''); dialog.current?.showModal(); };
   useEffect(() => {
     const handler = event => {
