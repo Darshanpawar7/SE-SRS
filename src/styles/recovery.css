@@ -1,1 +1,42 @@
-.recovery-page{display:grid;min-height:100dvh;place-items:center;background:#261d29;padding:24px}.recovery-card{max-width:620px;background:#fffdf9;color:#29262a;padding:48px;border:1px solid #b5986d;border-radius:16px;box-shadow:0 30px 100px #160d1b70}.recovery-card h1{font:500 clamp(32px,6vw,48px) Georgia,serif;letter-spacing:-.05em;margin:20px 0}.recovery-card p{line-height:1.8;color:#69616a}.recovery-actions{display:flex;gap:12px;flex-wrap:wrap;margin:28px 0}.recovery-card .card-subtitle{font-size:12px}
+/* Shown by the error boundary when a view fails to render. */
+.recovery-page {
+  display: grid;
+  min-height: 100dvh;
+  place-items: center;
+  padding: 24px;
+  background: var(--bg-main);
+}
+
+.recovery-card {
+  max-width: 620px;
+  padding: 40px;
+  background: var(--bg-card);
+  color: var(--text-main);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-raised);
+}
+
+.recovery-card h1 {
+  margin: 16px 0 12px;
+  font-size: clamp(28px, 5vw, 40px);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+}
+
+.recovery-card p {
+  line-height: 1.7;
+  color: var(--text-muted);
+}
+
+.recovery-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 24px 0;
+}
+
+.recovery-card .card-subtitle {
+  font-size: 0.8rem;
+}
