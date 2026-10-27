@@ -56,7 +56,7 @@ export default function App() {
         <main id="workspace-main" className="app-content" tabIndex={-1}>
           <CommandMenu onNavigate={navigate} explorerEnabled onNewTask={handleOpenNewTask} onOpenTask={handleOpenEditTask} onSettings={() => setIsSettingsOpen(true)} />
           {activeTab === 'dashboard' && (
-            <DashboardView onNavigateKanban={() => setActiveTab('kanban')} />
+            <DashboardView onNavigateKanban={() => setActiveTab('kanban')} onOpenTask={handleOpenEditTask} />
           )}
 
           {activeTab === 'kanban' && (
