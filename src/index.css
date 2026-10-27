@@ -5,7 +5,7 @@
 :root {
   color-scheme: light;
 
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-sans: 'Inter Variable', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, 'Cascadia Mono', Consolas, 'Liberation Mono', monospace;
 
   --bg-main: #f6f6f3;
@@ -73,10 +73,20 @@ body {
   min-height: 100vh;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 button, input, select, textarea {
   font: inherit;
+}
+
+/* Quiet, thin scrollbars in the same neutrals as the borders. */
+:root {
+  scrollbar-color: var(--border-strong) transparent;
+}
+
+* {
+  scrollbar-width: thin;
 }
 
 button {
@@ -173,8 +183,9 @@ button {
 }
 
 .brand-title {
-  font-size: 1.15rem;
+  font-size: 1.05rem;
   font-weight: 700;
+  line-height: 1.2;
   letter-spacing: -0.02em;
   color: var(--text-main);
 }
@@ -554,15 +565,17 @@ button {
 }
 
 .view-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-size: 1.6rem;
+  font-weight: 650;
+  line-height: 1.25;
+  letter-spacing: -0.025em;
 }
 
 .view-subtitle {
-  font-size: 0.85rem;
+  font-size: 0.875rem;
   color: var(--text-muted);
-  margin-top: 4px;
+  margin-top: 6px;
+  max-width: 72ch;
 }
 
 /* Buttons */
@@ -669,9 +682,11 @@ button {
 }
 
 .stat-unit {
-  font-size: 0.9rem;
+  margin-left: 2px;
+  font-size: 0.85rem;
   font-weight: 500;
-  color: var(--text-muted);
+  letter-spacing: 0;
+  color: var(--text-dim);
 }
 
 .stat-meta {
@@ -724,8 +739,9 @@ button {
 }
 
 .card-title {
-  font-size: 1.05rem;
+  font-size: 1rem;
   font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 .card-subtitle {
@@ -764,6 +780,42 @@ button {
 .burndown-ideal { stroke: var(--chart-ideal); }
 .burndown-actual { stroke: var(--accent); }
 .burndown-point { fill: var(--accent); }
+
+/* The "Daily burndown values" table under the chart. */
+.chart-card details {
+  margin-top: 12px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.chart-card summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.chart-card details table {
+  width: 100%;
+  margin-top: 10px;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-card details th,
+.chart-card details td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border-subtle);
+  text-align: left;
+  font-weight: 500;
+}
+
+.chart-card details thead th {
+  color: var(--text-dim);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
 
 .burndown-svg {
   width: 100%;
@@ -1292,7 +1344,8 @@ button {
 
 .modal-title {
   font-size: 1.1rem;
-  font-weight: 700;
+  font-weight: 650;
+  letter-spacing: -0.015em;
 }
 
 .close-btn {
@@ -1443,6 +1496,11 @@ button {
   border-top: 1px solid var(--border-subtle);
 }
 
+/* A footer inside a padded form still spans the full width of the dialog. */
+.modal-form > .modal-footer {
+  margin: 20px -20px -20px;
+}
+
 .footer-right {
   display: flex;
   gap: 10px;
@@ -1509,8 +1567,15 @@ button {
 }
 
 .sprint-title {
-  font-size: 1.2rem;
-  font-weight: 700;
+  font-size: 1.15rem;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+}
+
+.sprint-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .sprint-goal {
@@ -1681,6 +1746,41 @@ button {
   color: var(--text-muted);
 }
 
+/* Documentation tabs read as one segmented control. */
+.docs-tab-btns {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 4px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.docs-tab-btns .btn {
+  border: 1px solid transparent;
+  box-shadow: none;
+}
+
+.docs-tab-btns .btn-secondary {
+  background: transparent;
+  color: var(--text-muted);
+}
+
+.docs-tab-btns .btn-secondary:hover:not(:disabled) {
+  background: var(--bg-muted);
+  border-color: transparent;
+  color: var(--text-main);
+}
+
+.docs-tab-btns .btn-primary,
+.docs-tab-btns .btn-primary:hover:not(:disabled) {
+  background: var(--bg-card);
+  border-color: var(--border-subtle);
+  color: var(--text-main);
+  box-shadow: var(--shadow-sm);
+}
+
 /* Custom Table for Docs */
 .custom-table {
   width: 100%;
@@ -1762,6 +1862,32 @@ button {
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-raised);
+}
+
+/* The card's own gap spaces the fields, so the usual form-group margin is dropped. */
+.signin-card .form-group {
+  margin-bottom: 0;
+}
+
+.signin-card .brand-logo {
+  margin-bottom: 8px;
+}
+
+.signin-card .view-title {
+  font-size: 1.5rem;
+}
+
+.signin-card .view-subtitle {
+  margin-top: -8px;
+}
+
+.signin-card .card-subtitle {
+  margin-top: 6px;
+}
+
+.signin-card .btn {
+  justify-content: center;
+  padding: 11px 16px;
 }
 
 .profile-options {
