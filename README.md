@@ -64,6 +64,10 @@ The detailed work breakdown, SAD and STP section ownership, and viva guide are i
 - **Verification Notes:** `docs/ISSUE_*_VERIFICATION.md`, one per backlog item (what changed, its automated tests and a manual check)
 - **Deviation Report:** [`docs/SPRINT1_DEVIATIONS.md`](docs/SPRINT1_DEVIATIONS.md), every known deviation from the submitted SRS, SAD and Test Plan up to the end of Sprint 1 (course item 2(i))
 
+### Sprint 2 -- Implementation (26-30 October 2026)
+
+- **Product Demo Video (60 seconds, 1080p):** [`docs/demo/SprintFlow_Demo.mp4`](docs/demo/SprintFlow_Demo.mp4), a captioned walkthrough of all 18 functional backlog items (PMS-F-001 to PMS-F-018) in the refreshed interface
+
 ### Common to All Phases
 
 - **Team Work Breakdown and Viva Guide:** `docs/Team_Work_Division.md`
