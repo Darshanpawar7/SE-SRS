@@ -186,7 +186,7 @@ export default function KanbanBoard({ onOpenTaskModal }) {
                           <div className="assignee-badge">
                             <div 
                               className="assignee-avatar-sm" 
-                              style={{ backgroundColor: assignee?.color || '#6366f1' }}
+                              style={{ backgroundColor: assignee?.color || 'var(--text-dim)' }}
                             >
                               {assignee ? assignee.initials : 'UN'}
                             </div>

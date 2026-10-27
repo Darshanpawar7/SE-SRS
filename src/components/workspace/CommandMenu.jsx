@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useProject } from '../../context/ProjectContext';
 import { findCommands } from '../../utils/commands';
+import './commandMenu.css';
 
 export default function CommandMenu({ onNavigate, onNewTask, onOpenTask, onSettings, explorerEnabled = false }) {
   const { tasks, activeSprintId, sprints } = useProject();
