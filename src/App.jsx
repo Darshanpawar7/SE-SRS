@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import CommandMenu from './components/workspace/CommandMenu';
+import TaskExplorer from './components/workspace/TaskExplorer';
+import './styles/motion.css';
 import Navbar from './components/layout/Navbar';
 import Sidebar from './components/layout/Sidebar';
 import DashboardView from './components/dashboard/DashboardView';
@@ -18,6 +21,8 @@ export default function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isProjectSettingsOpen, setIsProjectSettingsOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
+
+  const navigate = tab => setActiveTab(tab);
 
   // Unauthenticated visitors only ever see the sign-in view.
   if (!currentUser) return <SignInView />;
@@ -49,8 +54,9 @@ export default function App() {
         />
 
         <main id="workspace-main" className="app-content" tabIndex={-1}>
+          <CommandMenu onNavigate={navigate} explorerEnabled onNewTask={handleOpenNewTask} onOpenTask={handleOpenEditTask} onSettings={() => setIsSettingsOpen(true)} />
           {activeTab === 'dashboard' && (
-            <DashboardView onNavigateKanban={() => setActiveTab('kanban')} />
+            <DashboardView onNavigateKanban={() => setActiveTab('kanban')} onOpenTask={handleOpenEditTask} />
           )}
 
           {activeTab === 'kanban' && (
@@ -60,6 +66,8 @@ export default function App() {
           {activeTab === 'sprints' && (
             <SprintManager />
           )}
+
+          {activeTab === 'explorer' && <TaskExplorer onOpenTask={handleOpenEditTask} />}
 
           {activeTab === 'docs' && (
             <DocsView />
