@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import CommandMenu from './components/workspace/CommandMenu';
+import './styles/motion.css';
 import Navbar from './components/layout/Navbar';
 import Sidebar from './components/layout/Sidebar';
 import DashboardView from './components/dashboard/DashboardView';
@@ -49,6 +51,7 @@ export default function App() {
         />
 
         <main id="workspace-main" className="app-content" tabIndex={-1}>
+          <CommandMenu onNavigate={setActiveTab} onNewTask={handleOpenNewTask} onOpenTask={handleOpenEditTask} onSettings={() => setIsSettingsOpen(true)} />
           {activeTab === 'dashboard' && (
             <DashboardView onNavigateKanban={() => setActiveTab('kanban')} />
           )}
