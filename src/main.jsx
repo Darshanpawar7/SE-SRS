@@ -5,6 +5,7 @@ import ErrorBoundary from './components/workspace/ErrorBoundary';
 import './styles/recovery.css';
 import './index.css';
 import './styles/royal.css';
+import './styles/tech.css';
 import { AuthProvider } from './context/AuthContext';
 import { ProjectProvider } from './context/ProjectContext';
 
