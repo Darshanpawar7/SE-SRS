@@ -13,19 +13,19 @@ export default function BurndownChart({ data }) {
       <div className="burndown-svg-wrap" style={{ overflowX: 'auto' }}>
         <svg width={width} viewBox={`0 0 ${width} 195`} style={{ minWidth: width }} role="img" aria-label="Daily sprint burndown: ideal and recorded remaining story points">
           <title>Sprint burndown — missing days have no actual data</title>
-          <line x1="40" y1="20" x2="40" y2="150" stroke="#94a3b8" />
-          <line x1="40" y1="150" x2={width - 30} y2="150" stroke="#94a3b8" />
-          <text x="32" y="25" fill="#94a3b8" fontSize="10" textAnchor="end">{maxPoints}p</text>
-          <text x="32" y="150" fill="#94a3b8" fontSize="10" textAnchor="end">0</text>
-          <polyline fill="none" stroke="#818cf8" strokeWidth="2" strokeDasharray="4 4" points={data.map((point, i) => `${x(i)},${y(point.ideal)}`).join(' ')} />
+          <line className="burndown-axis" x1="40" y1="20" x2="40" y2="150" />
+          <line className="burndown-axis" x1="40" y1="150" x2={width - 30} y2="150" />
+          <text className="burndown-label" x="32" y="25" fontSize="10" textAnchor="end">{maxPoints}p</text>
+          <text className="burndown-label" x="32" y="150" fontSize="10" textAnchor="end">0</text>
+          <polyline className="burndown-ideal" fill="none" strokeWidth="2" strokeDasharray="4 4" points={data.map((point, i) => `${x(i)},${y(point.ideal)}`).join(' ')} />
           {segments.map((segment, i) => (
-            <polyline key={i} fill="none" stroke="#10b981" strokeWidth="3" points={segment.map(point => `${x(point.index)},${y(point.actual)}`).join(' ')} />
+            <polyline key={i} className="burndown-actual" fill="none" strokeWidth="3" points={segment.map(point => `${x(point.index)},${y(point.actual)}`).join(' ')} />
           ))}
           {data.map((point, i) => (
             <g key={point.date}>
-              {point.actual !== null && <circle cx={x(i)} cy={y(point.actual)} r="4" fill="#10b981"><title>{point.date}: {point.actual} points remaining</title></circle>}
-              <text x={x(i)} y="168" fill="#94a3b8" fontSize="10" textAnchor="middle">D{i}</text>
-              <text x={x(i)} y="183" fill="#94a3b8" fontSize="9" textAnchor="middle">{point.date.slice(5)}</text>
+              {point.actual !== null && <circle className="burndown-point" cx={x(i)} cy={y(point.actual)} r="4"><title>{point.date}: {point.actual} points remaining</title></circle>}
+              <text className="burndown-label" x={x(i)} y="168" fontSize="10" textAnchor="middle">D{i}</text>
+              <text className="burndown-label" x={x(i)} y="183" fontSize="9" textAnchor="middle">{point.date.slice(5)}</text>
             </g>
           ))}
         </svg>
