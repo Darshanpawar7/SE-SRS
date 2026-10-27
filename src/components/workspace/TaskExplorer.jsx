@@ -26,7 +26,7 @@ export default function TaskExplorer({ onOpenTask }) {
     anchor.click();setTimeout(() => URL.revokeObjectURL(url),1000);
   };
   return <section className="explorer-page" aria-labelledby="explorer-title">
-    <div className="view-header"><div><span className="eyebrow">PROJECT INTELLIGENCE</span><h2 className="view-title" id="explorer-title">Every detail. In focus.</h2><p className="view-subtitle">A precise view of the work. Search, prioritise and take it with you.</p></div><button className="btn btn-primary" disabled={!visible.length} onClick={download}><SignalIcon name="export" size={15}/> Export visible rows</button></div>
+    <div className="view-header"><div><h2 className="view-title" id="explorer-title">Work items</h2><p className="view-subtitle">Search, filter and export the work in the selected scope.</p></div><button className="btn btn-primary" disabled={!visible.length} onClick={download}><SignalIcon name="export" size={15}/> Export visible rows</button></div>
     <div className="table-tools" aria-label="Quick work views">{WORK_VIEWS.map(item => <button key={item.id} aria-pressed={view === item.id} onClick={()=>setView(item.id)}><SignalIcon name={item.icon} size={14}/>{item.label}<span>{applyWorkView(inScope,item.id,currentUser?.id,members).length}</span></button>)}</div>
     <div className="explorer-filters">
       <label className="explorer-search">Search work items<input className="form-input" value={filters.query} placeholder="Title, person or label…" onChange={e => update('query',e.target.value)} /></label>

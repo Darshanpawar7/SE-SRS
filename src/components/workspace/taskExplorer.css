@@ -61,15 +61,19 @@
   display: grid;
   gap: 6px;
   flex: 1;
-  min-width: 130px;
+  min-width: 148px;
   font-size: 0.75rem;
   font-weight: 500;
   color: var(--text-muted);
 }
 
 .explorer-filters .explorer-search {
-  flex: 2;
-  min-width: 200px;
+  flex: 1.6;
+  min-width: 170px;
+}
+
+.explorer-filters > .btn {
+  flex: none;
 }
 
 .explorer-filters .form-select {

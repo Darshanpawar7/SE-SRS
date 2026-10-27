@@ -1,6 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 // Global styles load before the components, so each component's own stylesheet can refine them.
+// Inter is bundled with the app, so the typeface also works offline.
+import '@fontsource-variable/inter';
 import './index.css';
 import './styles/recovery.css';
 import App from './App';

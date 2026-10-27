@@ -15,7 +15,7 @@ export default function DeliverySignals({ tasks, sprint, onOpenTask }) {
     ['target','Sprint elapsed',signal.clock ? `${signal.clock.percentage}%` : '—',signal.clock ? `${signal.clock.elapsed} / ${signal.clock.duration} calendar days` : 'Select a sprint with valid dates'],
   ];
   return <section className="delivery-section" aria-labelledby="delivery-heading">
-    <div className="delivery-heading"><div><span className="eyebrow">DELIVERY TELEMETRY / SELECTED SPRINT</span><h3 id="delivery-heading">Signals worth acting on.</h3></div><span className="delivery-count">{signal.done} COMPLETE / {tasks.length} ITEMS</span></div>
+    <div className="delivery-heading"><div><span className="eyebrow">Selected sprint</span><h3 id="delivery-heading">Delivery signals</h3></div><span className="delivery-count">{signal.done} COMPLETE / {tasks.length} ITEMS</span></div>
     <div className="signal-metrics">{cards.map(([icon,label,value,note])=><article className="signal-metric" key={label}><div className="signal-metric-label"><SignalIcon name={icon}/><span>{label}</span></div><strong>{value}</strong><small>{note}</small></article>)}</div>
     {signal.clock?.overdue && signal.open>0 && <p className="schedule-note" role="status"><SignalIcon name="clock" size={16}/>The scheduled end date has passed with {signal.open} unfinished items. This is a schedule flag, not a delivery forecast.</p>}
     <div className="signal-panels">
