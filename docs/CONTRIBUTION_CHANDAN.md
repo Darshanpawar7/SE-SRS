@@ -19,6 +19,13 @@
 
 ---
 
+## Follow-up -- Shared Audit History
+
+- **Issue #74:** Load project-scoped audit records from Supabase, merge them with local history without duplicates, and keep the local feed available when cloud reads fail.
+- Added automated coverage for cloud row mapping, caching, merging, and offline fallback.
+
+---
+
 ## Phase 2 -- SAD and STP (first developed in SE-SRS-2)
 
 **Feature Branch:** `feature/chandan-test-plan-core`

@@ -164,11 +164,42 @@ const writeLocal = (key, value) => localStorage.setItem(key, JSON.stringify(valu
 const emptyCloudTables = new Set();
 
 // Audit records come back frozen: the application can read them but never edit them.
-const readActivity = () => {
+const readActivity = (fallback = INITIAL_ACTIVITY) => {
   const local = localStorage.getItem(STORAGE_KEYS.ACTIVITY);
-  if (!local) localStorage.setItem(STORAGE_KEYS.ACTIVITY, JSON.stringify(INITIAL_ACTIVITY));
-  const records = local ? JSON.parse(local) : INITIAL_ACTIVITY;
+  if (!local && fallback) localStorage.setItem(STORAGE_KEYS.ACTIVITY, JSON.stringify(fallback));
+  const records = local ? JSON.parse(local) : (fallback ?? []);
   return records.map(record => Object.freeze({ ...record }));
+};
+
+const fromActivityRow = (row) => {
+  let metadata = {};
+  if (row.details) {
+    try {
+      const parsed = typeof row.details === 'string' ? JSON.parse(row.details) : row.details;
+      metadata = parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+        ? parsed
+        : { details: parsed ?? row.details };
+    } catch {
+      metadata = { details: row.details };
+    }
+  }
+  const action = String(row.action ?? '');
+  const record = {
+    id: row.id,
+    type: metadata.type ?? (action.startsWith('created ') ? 'CREATE' : action.startsWith('deleted ') ? 'DELETE' : 'UPDATE'),
+    timestamp: row.created_at,
+    user: row.user_name,
+    actor: row.user_name,
+    action: row.action,
+    entity_type: row.entity_type,
+    entity_id: metadata.entity_id ?? null,
+    target: row.entity_title,
+    from: metadata.from ?? null,
+    to: metadata.to ?? null,
+    details: metadata.details ?? null
+  };
+  requireAuditRecord(record);
+  return Object.freeze(record);
 };
 
 const requireAuditRecord = (record) => {
@@ -491,7 +522,25 @@ export const DataService = {
   },
 
   async getActivity() {
-    return readActivity();
+    const supabase = getSupabase();
+    if (!supabase) return readActivity();
+
+    const local = readActivity([]);
+    const projectId = readLocal(STORAGE_KEYS.PROJECT, INITIAL_PROJECT).id;
+    const { ok, data } = await runCloud('Loading the audit trail', () =>
+      supabase.from('activity_logs')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('created_at', { ascending: false }));
+    if (!ok) return local.length ? local : readActivity();
+
+    const records = (data ?? []).map(fromActivityRow);
+    const byId = new Map(local.map(record => [record.id, record]));
+    records.forEach(record => byId.set(record.id, record));
+    const merged = [...byId.values()].sort((left, right) =>
+      Date.parse(right.timestamp) - Date.parse(left.timestamp));
+    writeLocal(STORAGE_KEYS.ACTIVITY, merged);
+    return merged.map(record => Object.freeze({ ...record }));
   },
 
   // Append-only: a new record goes on top and the history is never truncated.
