@@ -15,13 +15,28 @@ export const isValidSupabaseUrl = (value) => {
   }
 };
 
+const hasServiceRoleJwtPayload = (key) => {
+  const parts = key.split('.');
+  if (parts.length !== 3) return false;
+
+  try {
+    const encodedPayload = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    const paddedPayload = encodedPayload.padEnd(Math.ceil(encodedPayload.length / 4) * 4, '=');
+    const payload = JSON.parse(atob(paddedPayload));
+    return payload?.role === 'service_role';
+  } catch {
+    return false;
+  }
+};
+
 // Only public client keys belong in this browser configuration. Secret and
 // service-role keys must never be accepted by the frontend.
 export const isValidSupabaseAnonKey = (value) => {
   const key = String(value ?? '').trim();
   return Boolean(key)
     && !/\s/.test(key)
-    && !/^(your[-_]anon[-_]public[-_]key|service_role|sb_secret_)/i.test(key);
+    && !/^(your[-_]anon[-_]public[-_]key|service_role|sb_secret_)/i.test(key)
+    && !hasServiceRoleJwtPayload(key);
 };
 
 // Retrieve credentials from localStorage or environment variables. Credentials saved in
