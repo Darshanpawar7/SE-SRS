@@ -97,6 +97,36 @@ describe('PMS-F-014 immutable audit trail', () => {
     expect(recent.map(record => `${record.type} ${record.action}`)).toEqual(['CREATE created sprint', 'UPDATE started sprint']);
   });
 
+  it('audits sprint deletion and the task changes caused by detaching its tasks', async () => {
+    const app = renderApp();
+    const sprint = await app.addSprint({
+      name: 'Sprint to remove',
+      goal: '',
+      start_date: '2026-10-26',
+      end_date: '2026-10-30'
+    }, 'Chandan Kumar K');
+    const created = await app.addTask({
+      title: 'Keep this task',
+      status: 'todo',
+      priority: 'medium',
+      story_points: 3,
+      sprint_id: sprint.id,
+      labels: []
+    }, 'Chandan Kumar K');
+
+    await app.deleteSprint(sprint.id, 'Chandan Kumar K');
+
+    expect((await DataService.getSprints()).some(item => item.id === sprint.id)).toBe(false);
+    expect((await DataService.getTasks()).find(item => item.id === created.id).sprint_id).toBeNull();
+    const events = (await DataService.getActivity()).slice(0, 3).reverse();
+    expect(events.map(record => record.action)).toEqual([
+      'created task',
+      'deleted sprint',
+      'updated task'
+    ]);
+    expect(events[2].details).toContain('sprint_id');
+  });
+
   it('keeps long before and after values in full', () => {
     const description = 'x'.repeat(120);
     const record = auditTaskUpdated(task, { ...task, description }, 'Dhatri Shivaprasad', at(0));
