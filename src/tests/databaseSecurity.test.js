@@ -23,4 +23,10 @@ describe('Supabase database security schema', () => {
     expect(schema).not.toMatch(/CREATE POLICY[^;]*USING\s*\(true\)/i);
     expect(schema).not.toMatch(/CREATE POLICY[^;]*TO\s+(?:anon|public)/i);
   });
+  it('makes audit records append-only and prevents project deletion from cascading into history', () => {
+    expect(schema).toMatch(/CREATE POLICY activity_logs_insert_member[\s\S]*?FOR INSERT TO authenticated/i);
+    expect(schema).toMatch(/GRANT SELECT, INSERT ON TABLE activity_logs TO authenticated/i);
+    expect(schema).not.toMatch(/CREATE POLICY[^;]*activity_logs[^;]*FOR\s+(?:UPDATE|DELETE)/i);
+    expect(schema).toMatch(/FOREIGN KEY \(project_id\) REFERENCES projects\(id\) ON DELETE RESTRICT/i);
+  });
 });
