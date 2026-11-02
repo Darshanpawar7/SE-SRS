@@ -19,6 +19,11 @@
 
 ---
 
+## Follow-up -- Shared Audit History
+
+- **Issue #74:** Load project-scoped audit records from Supabase, merge them with local history without duplicates, and keep the local feed available when cloud reads fail.
+- Added automated coverage for cloud row mapping, caching, merging, and offline fallback.
+
 ## Sprint 2 -- Security and Availability
 
 - **Issue #24 / SO-02:** Enforced append-only cloud audit records with restricted database privileges and project-delete protection.
