@@ -1,3 +1,4 @@
+import { commitLocalSave, recoverLocalSave } from './localPersistence';
 import { recordDailyProgress } from '../utils/burndown';
 // Supabase Client with graceful Offline / Mock fallback
 import { validateStoryPoints } from '../utils/storyPoints';
@@ -178,6 +179,7 @@ const STORAGE_KEYS = {
 };
 
 const readLocal = (key, fallback) => {
+  recoverLocalSave();
   const saved = localStorage.getItem(key);
   if (saved) return JSON.parse(saved);
   localStorage.setItem(key, JSON.stringify(fallback));
@@ -191,6 +193,7 @@ const emptyCloudTables = new Set();
 
 // Audit records come back frozen: the application can read them but never edit them.
 const readActivity = (fallback = INITIAL_ACTIVITY) => {
+  recoverLocalSave();
   const local = localStorage.getItem(STORAGE_KEYS.ACTIVITY);
   if (!local && fallback) localStorage.setItem(STORAGE_KEYS.ACTIVITY, JSON.stringify(fallback));
   const records = local ? JSON.parse(local) : (fallback ?? []);
@@ -275,6 +278,7 @@ const PENDING_KEY = 'sprintflow_pending_sync';
 let flushInFlight = null;
 
 const readPending = () => {
+  recoverLocalSave();
   const empty = { seq: 0, tables: {}, deletedTaskIds: [], deletedSprintIds: [], activity: [] };
   try {
     const saved = JSON.parse(localStorage.getItem(PENDING_KEY) || '{}');
@@ -369,9 +373,27 @@ const insertActivityRow = (supabase, record) => {
     supabase.from('activity_logs').upsert(toActivityRow(record, projectId), { onConflict: 'id', ignoreDuplicates: true }));
 };
 
+// Persist retry intent with the entity and audit before starting any network request.
+const persistChange = (key, value, table, record, deletedTaskId = null) => {
+  const values = { [key]: value };
+  if (record) values[STORAGE_KEYS.ACTIVITY] = [record, ...readActivity()];
+  if (getSupabase()) {
+    const pending = readPending();
+    const version = pending.seq + 1;
+    values[PENDING_KEY] = {
+      ...pending, seq: version,
+      tables: table ? { ...pending.tables, [table]: version } : pending.tables,
+      deletedTaskIds: deletedTaskId ? [...new Set([...pending.deletedTaskIds, deletedTaskId])] : pending.deletedTaskIds,
+      activity: record ? [...pending.activity.filter(item => item.id !== record.id), record] : pending.activity
+    };
+  }
+  commitLocalSave(values);
+};
+
 // Unified Data Service: operates on Supabase when connected, else localStorage
 export const DataService = {
   getSelectedSprint() {
+    recoverLocalSave();
     return localStorage.getItem(STORAGE_KEYS.SELECTED_SPRINT);
   },
 
@@ -381,6 +403,7 @@ export const DataService = {
   },
 
   recordBurndown(sprints, tasks, now = new Date()) {
+    recoverLocalSave();
     const saved = localStorage.getItem(STORAGE_KEYS.BURNDOWN);
     const history = recordDailyProgress(saved ? JSON.parse(saved) : {}, sprints, tasks, now);
     localStorage.setItem(STORAGE_KEYS.BURNDOWN, JSON.stringify(history));
@@ -448,9 +471,12 @@ export const DataService = {
 
   async getProject() {
     const local = readLocal(STORAGE_KEYS.PROJECT, INITIAL_PROJECT);
+    const snapshot = localStorage.getItem(STORAGE_KEYS.PROJECT);
     const supabase = getSupabase();
     if (!supabase || hasPendingChanges('projects')) return local;
     const { ok, data } = await runCloud('Loading the project', () => supabase.from('projects').select('*').limit(1));
+    if (hasPendingChanges('projects')
+      || localStorage.getItem(STORAGE_KEYS.PROJECT) !== snapshot) return readLocal(STORAGE_KEYS.PROJECT, INITIAL_PROJECT);
     if (!ok) return local;
     if (!data?.length) {
       emptyCloudTables.add('projects');
@@ -463,10 +489,13 @@ export const DataService = {
 
   async getSprints() {
     const local = readLocal(STORAGE_KEYS.SPRINTS, INITIAL_SPRINTS);
+    const snapshot = localStorage.getItem(STORAGE_KEYS.SPRINTS);
     const supabase = getSupabase();
     if (!supabase || hasPendingChanges('sprints')) return local;
     const { ok, data } = await runCloud('Loading sprints', () =>
       supabase.from('sprints').select('*').order('start_date', { ascending: true }));
+    if (hasPendingChanges('sprints')
+      || localStorage.getItem(STORAGE_KEYS.SPRINTS) !== snapshot) return readLocal(STORAGE_KEYS.SPRINTS, INITIAL_SPRINTS);
     if (!ok) return local;
     if (!data?.length) {
       emptyCloudTables.add('sprints');
@@ -478,10 +507,13 @@ export const DataService = {
 
   async getTasks() {
     const local = readLocalTasks();
+    const snapshot = localStorage.getItem(STORAGE_KEYS.TASKS);
     const supabase = getSupabase();
     if (!supabase || hasPendingChanges('tasks')) return local;
     const { ok, data } = await runCloud('Loading tasks', () =>
       supabase.from('tasks').select('*').order('created_at', { ascending: false }));
+    if (hasPendingChanges('tasks')
+      || localStorage.getItem(STORAGE_KEYS.TASKS) !== snapshot) return readLocalTasks();
     if (!ok) return local;
     if (!data?.length) {
       emptyCloudTables.add('tasks');
@@ -496,8 +528,7 @@ export const DataService = {
   async saveTasks(tasks, auditRecord = null) {
     tasks.forEach(validateTaskEstimate);
     if (auditRecord) requireAuditRecord(auditRecord);
-    writeLocal(STORAGE_KEYS.TASKS, tasks);
-    if (auditRecord) appendActivity(auditRecord);
+    persistChange(STORAGE_KEYS.TASKS, tasks, 'tasks', auditRecord);
     await this.pushTasks(tasks);
     if (auditRecord) await this.pushActivity(auditRecord);
   },
@@ -516,8 +547,7 @@ export const DataService = {
   // load. The delete is queued before it is sent and leaves the queue once confirmed.
   async deleteTask(taskId, remainingTasks, auditRecord = null) {
     if (auditRecord) requireAuditRecord(auditRecord);
-    writeLocal(STORAGE_KEYS.TASKS, remainingTasks);
-    if (auditRecord) appendActivity(auditRecord);
+    persistChange(STORAGE_KEYS.TASKS, remainingTasks, null, auditRecord, taskId);
     const supabase = getSupabase();
     if (!supabase) return true;
     queueDelete(taskId);
@@ -529,8 +559,7 @@ export const DataService = {
 
   async saveSprints(sprints, auditRecord = null) {
     if (auditRecord) requireAuditRecord(auditRecord);
-    writeLocal(STORAGE_KEYS.SPRINTS, sprints);
-    if (auditRecord) appendActivity(auditRecord);
+    persistChange(STORAGE_KEYS.SPRINTS, sprints, 'sprints', auditRecord);
     await this.pushSprints(sprints);
     if (auditRecord) await this.pushActivity(auditRecord);
   },
@@ -577,8 +606,7 @@ export const DataService = {
 
   async saveProject(project, auditRecord = null) {
     if (auditRecord) requireAuditRecord(auditRecord);
-    writeLocal(STORAGE_KEYS.PROJECT, project);
-    if (auditRecord) appendActivity(auditRecord);
+    persistChange(STORAGE_KEYS.PROJECT, project, 'projects', auditRecord);
     await this.pushProject(project);
     if (auditRecord) await this.pushActivity(auditRecord);
   },
