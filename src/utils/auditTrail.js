@@ -144,6 +144,18 @@ export function auditSprintTransition(before, after, actor, timestamp) {
   });
 }
 
+export function auditSprintDeleted(sprint, actor, timestamp) {
+  return createAuditRecord({
+    actor, timestamp,
+    type: AUDIT_TYPES.DELETE,
+    action: 'deleted sprint',
+    entityType: 'sprint',
+    entityId: sprint.id,
+    target: sprint.name,
+    from: sprint.status
+  });
+}
+
 const PROJECT_FIELDS = ['key', 'name', 'start_date', 'target_date'];
 
 // Returns null when nothing changed, so saving untouched details adds no record.
