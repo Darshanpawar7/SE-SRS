@@ -6,9 +6,10 @@ The application reads `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` from the
 build environment or accepts them through the in-app settings screen.
 
 Configuration validation requires an HTTPS Supabase URL and rejects empty,
-whitespace-containing, placeholder, service-role, and secret keys. Only the
-Supabase anon/public or publishable key belongs in the browser; it is not a
-database administrator credential.
+whitespace-containing, placeholder, service-role, and secret keys. JWT-shaped
+keys with a `service_role` payload are rejected; a legacy anon JWT remains
+accepted. Only the Supabase anon/public or publishable key belongs in the
+browser; it is not a database administrator credential.
 
 Setup:
 

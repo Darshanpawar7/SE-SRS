@@ -4,6 +4,8 @@ import { isValidSupabaseAnonKey, isValidSupabaseUrl } from '../services/supabase
 
 const gitignore = readFileSync(new URL('../../.gitignore', import.meta.url), 'utf8');
 const envExample = readFileSync(new URL('../../.env.example', import.meta.url), 'utf8');
+const encodeJwtPayload = (payload) =>
+  btoa(JSON.stringify(payload)).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
 
 describe('Supabase credential configuration', () => {
   it('ignores local environment files and keeps the example credential-free', () => {
@@ -24,5 +26,13 @@ describe('Supabase credential configuration', () => {
     expect(isValidSupabaseAnonKey('sb_secret_example')).toBe(false);
     expect(isValidSupabaseAnonKey('eyJhbGciOiJub25lIn0.eyJyb2xlIjoic2VydmljZV9yb2xlIn0.signature')).toBe(false);
     expect(isValidSupabaseAnonKey('key with spaces')).toBe(false);
+  });
+
+  it('rejects service-role JWTs while allowing legacy anon public JWTs', () => {
+    const serviceRoleKey = `eyJhbGciOiJIUzI1NiJ9.${encodeJwtPayload({ role: 'service_role' })}.signature`;
+    const anonPublicKey = `eyJhbGciOiJIUzI1NiJ9.${encodeJwtPayload({ role: 'anon' })}.signature`;
+
+    expect(isValidSupabaseAnonKey(serviceRoleKey)).toBe(false);
+    expect(isValidSupabaseAnonKey(anonPublicKey)).toBe(true);
   });
 });
