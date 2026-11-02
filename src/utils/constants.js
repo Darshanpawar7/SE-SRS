@@ -10,7 +10,7 @@ export const TEAM_MEMBERS = [
     accessRole: 'lead',
     role: 'Lead & Full-Stack Architect',
     initials: 'DP',
-    color: '#56364e' // Indigo
+    color: '#1f6b4c' // Evergreen
   },
   {
     id: 'u-2',
@@ -20,7 +20,7 @@ export const TEAM_MEMBERS = [
     accessRole: 'developer',
     role: 'Frontend & UI/UX Lead',
     initials: 'DS',
-    color: '#875365' // Pink
+    color: '#9c4a2f' // Terracotta
   },
   {
     id: 'u-3',
@@ -30,7 +30,7 @@ export const TEAM_MEMBERS = [
     accessRole: 'developer',
     role: 'Backend & Supabase Architect',
     initials: 'CK',
-    color: '#22634d' // Emerald
+    color: '#3d3d39' // Graphite
   },
   {
     id: 'u-4',
@@ -40,23 +40,25 @@ export const TEAM_MEMBERS = [
     accessRole: 'developer',
     role: 'Full-Stack & DevOps/Testing Lead',
     initials: 'GE',
-    color: '#86601e' // Amber
+    color: '#8a5a12' // Bronze
   }
 ];
 
+// Stage colours mark the board columns and charts: greys for work not started,
+// amber while in progress, teal in review and green when done.
 export const TASK_STATUSES = [
-  { id: 'backlog', label: 'Backlog', color: '#626774', bg: '#1e293b' },
-  { id: 'todo', label: 'To Do', color: '#86601e', bg: '#451a03' },
-  { id: 'in_progress', label: 'In Progress', color: '#3d5970', bg: '#172554' },
-  { id: 'review', label: 'Code Review', color: '#634d77', bg: '#3b0764' },
-  { id: 'done', label: 'Done', color: '#22634d', bg: '#064e3b' }
+  { id: 'backlog', label: 'Backlog', color: '#9c9a93', bg: '#f1f0ec' },
+  { id: 'todo', label: 'To Do', color: '#5b5a55', bg: '#efeee9' },
+  { id: 'in_progress', label: 'In Progress', color: '#b7791f', bg: '#fbf2e1' },
+  { id: 'review', label: 'Code Review', color: '#1a8c86', bg: '#e4f3f1' },
+  { id: 'done', label: 'Done', color: '#1f6b4c', bg: '#e7f1ec' }
 ];
 
 export const TASK_PRIORITIES = [
-  { id: 'low', label: 'Low', color: '#626774', icon: '↓' },
-  { id: 'medium', label: 'Medium', color: '#3d5970', icon: '→' },
-  { id: 'high', label: 'High', color: '#86601e', icon: '↑' },
-  { id: 'critical', label: 'Critical', color: '#a13838', icon: '⚠' }
+  { id: 'low', label: 'Low', color: '#9c9a93', icon: '↓' },
+  { id: 'medium', label: 'Medium', color: '#5b5a55', icon: '→' },
+  { id: 'high', label: 'High', color: '#b7791f', icon: '↑' },
+  { id: 'critical', label: 'Critical', color: '#b0281d', icon: '⚠' }
 ];
 
 export const STORY_POINTS = [1, 2, 3, 5, 8, 13, 21];
