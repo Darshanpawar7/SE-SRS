@@ -19,6 +19,17 @@
 
 ---
 
+## Sprint 2 -- Security and Availability
+
+- **Issue #24 / SO-02:** Enforced append-only cloud audit records with restricted database privileges and project-delete protection.
+- **Issue #26 / PMS-SR-001:** Added authenticated, membership- and role-scoped RLS policies for all seven application tables.
+- **Issue #28 / PMS-SR-003:** Retained and documented HTTPS-only Supabase URL validation; TLS 1.3 must still be confirmed or enforced by the deployed endpoint.
+- **Issue #32 / PMS-NF-002:** Completed offline sprint CRUD, including safe task detachment, audit events, persistent local changes, and queued cloud deletion retries.
+
+Verification notes are in `docs/ISSUE_24_VERIFICATION.md`, `docs/ISSUE_26_VERIFICATION.md`, `docs/ISSUE_28_VERIFICATION.md`, and `docs/ISSUE_32_VERIFICATION.md`.
+
+---
+
 ## Phase 2 -- SAD and STP (first developed in SE-SRS-2)
 
 **Feature Branch:** `feature/chandan-test-plan-core`

@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { calculateSprintMetrics, selectSprintTasks } from '../../utils/estimation';
 
 export default function SprintManager() {
-  const { sprints, tasks, addSprint, updateSprintStatus, activeSprintId, setActiveSprintId } = useProject();
+  const { sprints, tasks, addSprint, updateSprintStatus, deleteSprint, activeSprintId, setActiveSprintId } = useProject();
   const { currentUser } = useAuth();
 
   const [showNewSprintModal, setShowNewSprintModal] = useState(false);
@@ -50,6 +50,22 @@ export default function SprintManager() {
     }
   };
 
+  const handleDeleteSprint = async (sprint) => {
+    const message = `Delete "${sprint.name}"? Its tasks will be kept outside the sprint, and this action cannot be undone.`;
+    if (!window.confirm(message)) return;
+
+    setError('');
+    setBusy(true);
+    try {
+      const synced = await deleteSprint(sprint.id, currentUser.name);
+      if (!synced) setError('Sprint deleted on this device; cloud sync is pending.');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <div className="sprint-page">
       <div className="view-header">
@@ -83,7 +99,7 @@ export default function SprintManager() {
                 </div>
 
                 <div className="sprint-actions">
-                  <button className="btn btn-sm btn-secondary" onClick={() => setActiveSprintId(sprint.id)} aria-pressed={activeSprintId === sprint.id}>
+                  <button className="btn btn-sm btn-secondary" disabled={busy} onClick={() => setActiveSprintId(sprint.id)} aria-pressed={activeSprintId === sprint.id}>
                     {activeSprintId === sprint.id ? 'Selected sprint' : 'View sprint'}
                   </button>
                   {sprint.status === 'planned' && (
@@ -104,6 +120,13 @@ export default function SprintManager() {
                       Complete Sprint
                     </button>
                   )}
+                  <button
+                    className="btn btn-sm btn-danger"
+                    disabled={busy}
+                    onClick={() => handleDeleteSprint(sprint)}
+                  >
+                    Delete Sprint
+                  </button>
                 </div>
               </div>
 
@@ -233,4 +256,3 @@ export default function SprintManager() {
     </div>
   );
 }
-
