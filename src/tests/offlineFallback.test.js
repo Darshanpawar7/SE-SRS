@@ -6,7 +6,7 @@ import { AuthProvider } from '../context/AuthContext';
 import { ProjectProvider } from '../context/ProjectContext';
 import Navbar from '../components/layout/Navbar';
 import { INITIAL_PROJECT, INITIAL_SPRINTS } from '../services/mockData';
-import { auditTaskCreated } from '../utils/auditTrail';
+import { auditSprintDeleted, auditTaskCreated } from '../utils/auditTrail';
 import { signIn } from '../services/authService';
 import { TEAM_MEMBERS } from '../utils/constants';
 import { createFakeSupabase } from './helpers/fakeSupabase';
@@ -62,6 +62,57 @@ describe('PMS-F-016 offline CRUD fallback', () => {
 
     const { tasks } = await DataService.loadAll();
     expect(tasks).toEqual([makeTask(1, { status: 'done' })]);
+    expect(getPendingChangeCount()).toBe(0);
+  });
+
+  it('keeps sprint create, update and delete changes in local storage across reloads', async () => {
+    setSupabaseClient(null);
+    const sprint = { ...INITIAL_SPRINTS[0], name: 'Offline sprint' };
+    const task = makeTask(1);
+
+    await DataService.saveSprints([sprint]);
+    await DataService.saveSprints([{ ...sprint, goal: 'Updated offline' }]);
+    await DataService.saveTasks([task]);
+    await DataService.deleteSprint(
+      sprint.id,
+      [],
+      [{ ...task, sprint_id: null }],
+      auditSprintDeleted(sprint, 'Chandan Kumar K')
+    );
+
+    const { sprints, tasks } = await DataService.loadAll();
+    expect(sprints).toEqual([]);
+    expect(tasks[0].sprint_id).toBeNull();
+    expect(getPendingChangeCount()).toBe(0);
+  });
+
+  it('queues a sprint deletion and detached tasks until the cloud is reachable', async () => {
+    const sprint = INITIAL_SPRINTS[0];
+    const task = makeTask(1);
+    const cloud = createFakeSupabase({
+      sprints: [toSprintRow(sprint)],
+      tasks: [task]
+    });
+    setSupabaseClient(cloud);
+    cloud.failWritesWith = 'Failed to fetch';
+
+    const synced = await DataService.deleteSprint(
+      sprint.id,
+      [],
+      [{ ...task, sprint_id: null }],
+      auditSprintDeleted(sprint, 'Chandan Kumar K')
+    );
+
+    expect(synced).toBe(false);
+    expect(getPendingChangeCount()).toBe(3);
+    expect(cloud.db.sprints).toHaveLength(1);
+    expect(cloud.db.tasks[0].sprint_id).toBe(sprint.id);
+
+    cloud.failWritesWith = null;
+    expect(await DataService.flushPending()).toBe(true);
+    expect(cloud.db.sprints).toEqual([]);
+    expect(cloud.db.tasks[0].sprint_id).toBeNull();
+    expect(cloud.db.activity_logs).toHaveLength(1);
     expect(getPendingChangeCount()).toBe(0);
   });
 
