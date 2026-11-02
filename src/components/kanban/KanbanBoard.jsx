@@ -184,7 +184,7 @@ export default function KanbanBoard({ onOpenTaskModal }) {
                           </span>
                         </div>
 
-                        <h4 className="task-title"><button onClick={e => { e.stopPropagation(); onOpenTaskModal(task); }}>{task.title}</button></h4>
+                        <h4 className="task-title">{task.title}</h4>
                         {task.description && (
                           <p className="task-desc">{task.description}</p>
                         )}
