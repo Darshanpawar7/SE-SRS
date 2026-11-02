@@ -89,7 +89,7 @@ CREATE TABLE IF NOT EXISTS comments (
 -- 7. Audit & Activity Log (Visibility & History tracking)
 CREATE TABLE IF NOT EXISTS activity_logs (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    project_id UUID REFERENCES projects(id) ON DELETE CASCADE,
+    project_id UUID REFERENCES projects(id) ON DELETE RESTRICT,
     user_name TEXT NOT NULL,
     action TEXT NOT NULL,
     entity_type TEXT NOT NULL, -- 'task', 'sprint', 'project'
@@ -97,6 +97,12 @@ CREATE TABLE IF NOT EXISTS activity_logs (
     details TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
+
+-- Preserve audit history if a project is removed; do not allow cascade deletion.
+ALTER TABLE activity_logs DROP CONSTRAINT IF EXISTS activity_logs_project_id_fkey;
+ALTER TABLE activity_logs
+    ADD CONSTRAINT activity_logs_project_id_fkey
+    FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE RESTRICT;
 
 -- Indexes for high-performance querying
 CREATE INDEX IF NOT EXISTS idx_tasks_project ON tasks(project_id);
@@ -367,8 +373,9 @@ REVOKE ALL ON TABLE profiles, projects, project_members, sprints, tasks, comment
     FROM PUBLIC, anon, authenticated;
 GRANT SELECT ON TABLE profiles TO authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE
-    ON TABLE projects, project_members, sprints, tasks, comments, activity_logs
+    ON TABLE projects, project_members, sprints, tasks, comments
     TO authenticated;
+GRANT SELECT, INSERT ON TABLE activity_logs TO authenticated;
 
 -- ====================================================================
 -- SEED DATA FOR TEAM 11 EVALUATION
