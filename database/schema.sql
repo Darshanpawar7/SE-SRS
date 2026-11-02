@@ -340,6 +340,33 @@ CREATE POLICY activity_logs_insert_member ON activity_logs
         AND user_name = public.current_profile_name()
     );
 
+-- Never trust a client-supplied actor name for cloud audit records.
+CREATE OR REPLACE FUNCTION public.set_verified_activity_actor()
+RETURNS TRIGGER
+LANGUAGE PLPGSQL
+SECURITY DEFINER
+SET search_path = pg_catalog, public
+AS $$
+DECLARE
+    verified_name TEXT;
+BEGIN
+    verified_name := public.current_profile_name();
+    IF verified_name IS NULL THEN
+        RAISE EXCEPTION 'No verified profile is associated with this session';
+    END IF;
+    NEW.user_name := verified_name;
+    RETURN NEW;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.set_verified_activity_actor() FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.set_verified_activity_actor() TO authenticated;
+DROP TRIGGER IF EXISTS activity_logs_verified_actor ON activity_logs;
+CREATE TRIGGER activity_logs_verified_actor
+    BEFORE INSERT ON activity_logs
+    FOR EACH ROW
+    EXECUTE FUNCTION public.set_verified_activity_actor();
+
 -- Only authenticated application users can access project data. Audit records are
 -- explicitly insert/read-only; they have no UPDATE or DELETE policy or table grant.
 REVOKE ALL ON TABLE profiles, projects, project_members, sprints, tasks, comments, activity_logs
