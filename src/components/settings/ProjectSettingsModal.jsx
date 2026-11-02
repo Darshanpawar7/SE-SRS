@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useProject } from '../../context/ProjectContext';
 import { useAuth } from '../../context/AuthContext';
 import { PERMISSIONS } from '../../services/authService';
+import { sanitizeUserText } from '../../utils/userText';
 
 // Mounted only while open, so it always starts from the saved project values.
 export default function ProjectSettingsModal({ onClose }) {
@@ -12,13 +13,19 @@ export default function ProjectSettingsModal({ onClose }) {
   const [values, setValues] = useState(() => ({
     key: project?.key ?? '',
     name: project?.name ?? '',
+    description: project?.description ?? '',
     start_date: project?.start_date ?? '',
     target_date: project?.target_date ?? ''
   }));
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
-  const setField = (field) => (e) => setValues(current => ({ ...current, [field]: e.target.value }));
+  const setField = (field, options = {}) => (e) => {
+    const value = options.maxLength
+      ? sanitizeUserText(e.target.value, { field: options.label, maxLength: options.maxLength, allowNewlines: options.allowNewlines, trim: options.trim })
+      : e.target.value;
+    setValues(current => ({ ...current, [field]: value }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -64,11 +71,24 @@ export default function ProjectSettingsModal({ onClose }) {
                 id="project-name"
                 className="form-input"
                 value={values.name}
-                onChange={setField('name')}
+                onChange={setField('name', { label: 'Project name', maxLength: 80, allowNewlines: false, trim: false })}
                 maxLength={80}
                 readOnly={!canEdit}
               />
             </div>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label" htmlFor="project-description">Project Description</label>
+            <textarea
+              id="project-description"
+              className="form-textarea"
+              rows={3}
+              maxLength={2000}
+              value={values.description}
+              onChange={setField('description', { label: 'Project description', maxLength: 2000, trim: false })}
+              readOnly={!canEdit}
+            />
           </div>
 
           <div className="form-grid-2">
