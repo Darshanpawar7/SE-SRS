@@ -124,7 +124,7 @@ The application adopts a decoupled, reactive architecture:
 | Offline Persistence | Browser LocalStorage | Web API |
 | Unit Testing | Vitest | 2.x |
 | CI/CD | GitHub Actions | Latest |
-| Security | Row Level Security (RLS), TLS 1.3 | -- |
+| Security | Row Level Security (RLS), HTTPS-only Supabase URLs | -- |
 
 ---
 
@@ -134,7 +134,7 @@ The application adopts a decoupled, reactive architecture:
 2. **Agile Fibonacci Estimation:** Story point assignment utilizing standard Fibonacci values (`1, 2, 3, 5, 8, 13, 21`) with dynamic capacity calculations.
 3. **Sprint Lifecycle and Burndown Tracking:** Iteration scheduling, goal definition, and dynamic SVG burndown visualizers comparing ideal trajectory against actual velocity.
 4. **Executive Visibility KPI Dashboard:** Real-time metrics for total story points, completed velocity, remaining load, and student workload distribution.
-5. **Security and Access Control:** PostgreSQL Row Level Security (RLS) policies, client-side input sanitization against XSS, and TLS 1.3 encryption.
+5. **Security and Access Control:** PostgreSQL Row Level Security (RLS) policies, client-side input sanitization against XSS, and HTTPS-only Supabase URLs. TLS 1.3 negotiation is an endpoint-level deployment check and is not verified until a project is configured.
 6. **Automated CI/CD Pipeline:** GitHub Actions workflow executing build checks, Vitest test suites, linting, and dependency security audits on every branch push and pull request.
 
 ---

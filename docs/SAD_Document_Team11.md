@@ -219,7 +219,7 @@ The system is decomposed into the following primary components:
 | **Offline Storage** | Browser LocalStorage | Web API | Zero-dependency persistent key-value store for offline fallback mode |
 | **Unit Testing** | Vitest | 2.x | Vite-native test runner with Jest-compatible API and fast execution |
 | **CI/CD** | GitHub Actions | Latest | Integrated with repository; multi-job pipeline (build, test, lint, security audit) |
-| **Transport Security** | TLS 1.3 | Latest | Enforced by Supabase for all client-server communication |
+| **Transport Security** | HTTPS; TLS 1.3 required by deployment policy | Deployment-dependent | Browser negotiates TLS with the configured endpoint; the Team 11 endpoint has not been verified |
 
 **Data Store Architecture:**
 
@@ -288,7 +288,7 @@ The following table traces architectural components to the functional and non-fu
 | PMS-NF-001 | Sub-50ms UI state transitions | KanbanBoard (optimized React rendering) |
 | PMS-NF-002 | 99.9% availability target | Dual-mode SupabaseClient architecture |
 | PMS-NF-003 | Cross-browser compatibility | Vite build with ES module targets |
-| PMS-NF-004 | Data encryption in transit | TLS 1.3 (Supabase enforced) |
+| PMS-NF-004 | Data encryption in transit | HTTPS URL validation in client; TLS 1.3 endpoint verification pending |
 | PMS-NF-005 | Support 100+ concurrent tasks | ProjectContext (efficient state updates) |
 | PMS-NF-006 | Recovery from network disconnection | SupabaseClient offline fallback |
 
@@ -299,7 +299,7 @@ The following table traces architectural components to the functional and non-fu
 | STRIDE Category | Threat Description | Countermeasure | Component |
 | :--- | :--- | :--- | :--- |
 | **Spoofing** | Unauthorized user impersonating a legitimate team member | Supabase Auth with email/password authentication; session token validation | AuthContext, SupabaseClient |
-| **Tampering** | Malicious modification of task data or sprint records in transit | TLS 1.3 encryption for all Supabase API communication; input validation on all form fields | SupabaseClient |
+| **Tampering** | Malicious modification of task data or sprint records in transit | HTTPS-only Supabase URL validation; endpoint TLS 1.3 minimum must be verified/configured at deployment; input validation on all form fields | SupabaseClient and deployment configuration |
 | **Repudiation** | User denying actions performed on tasks or sprints | Immutable audit log with timestamp, user ID, action type, and affected entity recorded for every mutation | ProjectContext (audit_log) |
 | **Information Disclosure** | Unauthorized access to project data belonging to other teams | PostgreSQL Row Level Security (RLS) policies restricting data access to authenticated project members only | database/schema.sql |
 | **Denial of Service** | Excessive API requests overwhelming the Supabase backend | Client-side request debouncing; Supabase built-in rate limiting; offline fallback absorbs load during outages | SupabaseClient |
@@ -309,7 +309,7 @@ The following table traces architectural components to the functional and non-fu
 - **Authentication:** Supabase Auth with JWT token-based session management
 - **Authorization:** PostgreSQL RLS policies enforcing row-level data isolation
 - **Input Sanitization:** Client-side XSS prevention through React JSX auto-escaping and explicit input validation
-- **Transport Security:** TLS 1.3 enforced on all Supabase client-server communication
+- **Transport Security:** Supabase URLs must use HTTPS. The browser negotiates TLS with the endpoint; TLS 1.3 enforcement and negotiation must be verified for the deployed project. Team 11 has no configured project endpoint, so this verification remains pending.
 - **Audit Logging:** Comprehensive mutation audit trail with non-repudiation guarantees
 - **Dependency Security:** Automated `npm audit` in CI/CD pipeline scanning for known vulnerabilities
 
