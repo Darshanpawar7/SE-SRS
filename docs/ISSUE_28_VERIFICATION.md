@@ -12,4 +12,4 @@ Manual verification:
 
 ## Validation status
 
-HTTPS-only client URL validation is implemented and tested. TLS 1.3 deployment enforcement remains to be verified/configured for the actual Supabase endpoint.
+HTTPS-only client URL validation is implemented and tested. The team has no Supabase project URL configured, so no project endpoint was contacted and no TLS negotiation was observed. TLS 1.3 enforcement remains unverified; keep Issue #28 open until a project endpoint exists and the manual checks above pass.

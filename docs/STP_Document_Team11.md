@@ -160,7 +160,7 @@ Features mapped to SRS requirement IDs:
 | :--- | :--- | :--- |
 | XSS Input Sanitization | Inject script tags and event handlers into all text input fields (task title, description, sprint goal) | No script execution; all input rendered as plain text via React JSX auto-escaping |
 | Row Level Security (RLS) | Attempt to query tasks belonging to a different project using direct Supabase API calls | 403 Forbidden response; zero unauthorized rows returned |
-| TLS 1.3 Enforcement | Inspect network traffic using browser DevTools during Supabase API communication | All requests use HTTPS with TLS 1.3; no plaintext HTTP requests observed |
+| TLS 1.3 Enforcement | With a configured Supabase project, inspect the negotiated protocol in browser DevTools or a TLS-capable client; test a TLS 1.2-only connection | Project endpoint negotiates TLS 1.3 and rejects TLS 1.2-only connections. If no project endpoint is configured, mark this deployment test blocked; HTTPS URL validation alone is not a TLS negotiation result. |
 | Session Token Handling | Examine browser storage for JWT tokens after authentication | Tokens stored securely; expired tokens rejected on subsequent API calls |
 | API Key Exposure | Review client-side JavaScript bundle for hardcoded secrets | Only anon (public) key present; no service_role or secret keys in client bundle |
 | Input Validation Fuzzing | Submit malformed data (empty strings, excessively long strings, special characters) to all form fields | Application handles gracefully with validation error messages; no crashes or unhandled exceptions |
@@ -325,7 +325,7 @@ The Requirements Traceability Matrix ensures bidirectional mapping between SRS r
 | PMS-NF-001 | Sub-50ms transitions | TC-PERF-01 | Measure drag-and-drop operation latency via Performance API | Operation completes in under 50ms |
 | PMS-NF-002 | 99.9% availability | TC-AVAIL-01 | Verify offline mode activates seamlessly on network disconnection | Application remains functional with no user-visible errors |
 | PMS-NF-003 | Cross-browser support | TC-COMPAT-01 | Execute core workflows on Chrome, Firefox, and Edge | All features render and function identically |
-| PMS-NF-004 | TLS encryption | TC-SEC-01 | Inspect network requests during Supabase API calls | All requests use HTTPS with TLS 1.3 |
+| PMS-NF-004 | TLS encryption | TC-SEC-01 | Verify HTTPS URL validation locally; inspect negotiated TLS protocol against the configured deployed Supabase endpoint | HTTPS URL is required, deployed endpoint negotiates TLS 1.3, and TLS 1.2-only connections are rejected. Without an endpoint, deployment verification is blocked. |
 | PMS-NF-005 | 100+ task capacity | TC-LOAD-01 | Create 100 task records and verify UI responsiveness | Application renders without lag; all tasks accessible |
 | PMS-NF-006 | Network recovery | TC-RECOV-01 | Disconnect network, create tasks, reconnect | Offline tasks preserved; no data loss |
 
