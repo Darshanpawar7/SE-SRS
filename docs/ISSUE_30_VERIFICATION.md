@@ -4,9 +4,9 @@ PMS-SR-005. Threshold: HIGH and CRITICAL block. Run `npm run audit:security` (eq
 
 ## Remediation, 2 November 2026
 
-Baseline npm audit reported 14 vulnerable package entries: 9 moderate, 3 high, 2 critical. Upgrade Vite 5 to 7.3.7, Vitest 2 to 4.1.12, and the compatible React plugin to 5.2.0; refresh source-map-js to 1.2.2 and zod to 4.6.6 (or later patched compatible lockfile versions). Vitest 4 removes the old tinypool/vite-node dependency path. The source-map-js and zod fixes are transitive lockfile updates. No forced incompatible transitive overrides or npm audit fix --force were used. Full test suite and production build are rerun for this migration.
+Baseline npm audit reported 14 vulnerable package entries: 9 moderate, 3 high, 2 critical. Upgrade Vite 5 to 7.3.7, Vitest 2 to 4.1.12, and the compatible React plugin to 5.2.0; refresh source-map-js to 1.2.2 and zod to 4.6.7. Vitest 4 removes the old tinypool/vite-node dependency path. The source-map-js and zod fixes are transitive lockfile updates. No forced incompatible transitive overrides or npm audit fix --force were used. Full test suite and production build are rerun for this migration.
 
-Post-remediation audit: zero high and critical, six moderate package entries, all in the development-only lint toolchain path through minimatch. These do not meet the blocking threshold. They remain visible in the included JSON report and should be revisited when compatible upstream fixes land; no exception for a blocking finding exists. Avoid processing untrusted arbitrary glob patterns through developer tools.
+Post-remediation audit: zero high and critical, seven moderate package entries, all in the development-only lint toolchain path through minimatch. These do not meet the blocking threshold. They remain visible in the included JSON report and should be revisited when compatible upstream fixes land; no exception for a blocking finding exists. Avoid processing untrusted arbitrary glob patterns through developer tools.
 
 The existing project used `high` already; this PR documents that threshold explicitly rather than silently broadening it to critical. Changing it is a team review decision. New advisories can change results at any time; rerun before merging.
 
