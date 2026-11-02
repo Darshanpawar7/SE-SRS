@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useProject } from '../../context/ProjectContext';
 import { useAuth } from '../../context/AuthContext';
-import { TASK_PRIORITIES, TEAM_MEMBERS } from '../../utils/constants';
+import { TASK_PRIORITIES, TASK_STATUSES, TEAM_MEMBERS } from '../../utils/constants';
 import { getKanbanColumns } from '../../utils/kanban';
 import { getTaskAfterStatusDrop } from '../../utils/taskUpdates';
 import { advanceTaskByOneStage, getNextTaskStatus } from '../../utils/workflow';
+import { activateCardFromKeyDown } from '../../utils/accessibility';
 import LabelPills from './LabelPills';
 
 export default function KanbanBoard({ onOpenTaskModal }) {
@@ -69,19 +70,21 @@ export default function KanbanBoard({ onOpenTaskModal }) {
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           <input
             type="text"
+            aria-label="Search tasks, descriptions, or assignees"
             placeholder="Search tasks, descriptions, assignees..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="search-input"
           />
           {searchQuery && (
-            <button className="clear-btn" onClick={() => setSearchQuery('')}>×</button>
+            <button type="button" className="clear-btn" aria-label="Clear search" onClick={() => setSearchQuery('')}>×</button>
           )}
         </div>
 
         <div className="filters-row">
           {/* Assignee Filter */}
           <select 
+            aria-label="Filter by assignee"
             value={filterAssignee} 
             onChange={(e) => setFilterAssignee(e.target.value)}
             className="filter-select"
@@ -94,6 +97,7 @@ export default function KanbanBoard({ onOpenTaskModal }) {
 
           {/* Priority Filter */}
           <select 
+            aria-label="Filter by priority"
             value={filterPriority} 
             onChange={(e) => setFilterPriority(e.target.value)}
             className="filter-select"
@@ -119,10 +123,10 @@ export default function KanbanBoard({ onOpenTaskModal }) {
         </div>
       </div>
 
-      {boardError && <p role="alert" className="form-error">{boardError}</p>}
+          {boardError && <p role="alert" aria-live="assertive" className="form-error">{boardError}</p>}
 
       {/* Kanban 5-Column Board */}
-      <div className="kanban-board-grid">
+      <div className="kanban-board-grid" role="region" aria-label="Kanban task board">
         {kanbanColumns.map(col => {
           const colTasks = col.tasks;
           const colPoints = colTasks.reduce((sum, t) => sum + (Number(t.story_points) || 0), 0);
@@ -131,6 +135,8 @@ export default function KanbanBoard({ onOpenTaskModal }) {
             <div 
               key={col.id} 
               className="kanban-column"
+              role="group"
+              aria-label={`${col.label} tasks`}
               onDragOver={handleDragOver}
               onDrop={(e) => handleDrop(e, col.id)}
             >
@@ -154,15 +160,20 @@ export default function KanbanBoard({ onOpenTaskModal }) {
                     const priorityObj = TASK_PRIORITIES.find(p => p.id === task.priority) || TASK_PRIORITIES[1];
                     const assignee = TEAM_MEMBERS.find(m => m.id === task.assignee_id);
                     const nextStatus = getNextTaskStatus(task.status);
+                    const nextStatusLabel = TASK_STATUSES.find(status => status.id === nextStatus)?.label;
 
                     return (
-                      <div
-                        key={task.id}
-                        className="task-card"
-                        draggable
-                        onDragStart={(e) => handleDragStart(e, task.id)}
-                        onClick={() => onOpenTaskModal(task)}
-                      >
+                      <div key={task.id} className="task-card-wrap">
+                        <div
+                          className="task-card"
+                          role="button"
+                          tabIndex={0}
+                          aria-label={`Open task: ${task.title}`}
+                          draggable
+                          onDragStart={(e) => handleDragStart(e, task.id)}
+                          onClick={() => onOpenTaskModal(task)}
+                          onKeyDown={(event) => activateCardFromKeyDown(event, () => onOpenTaskModal(task))}
+                        >
                         <div className="card-top-row">
                           <span 
                             className="priority-pill" 
@@ -198,20 +209,19 @@ export default function KanbanBoard({ onOpenTaskModal }) {
                               {task.assignee_name ? task.assignee_name.split(' ')[0] : 'Unassigned'}
                             </span>
                           </div>
-
-                          <div className="quick-move-btns">
-                            <button 
-                              title="Quick advance"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                advanceTaskByOneStage(task, saveTask, currentUser.name);
-                              }}
-                              className="step-btn"
-                              disabled={!nextStatus}
-                            >
-                              →
-                            </button>
-                          </div>
+                        </div>
+                      </div>
+                        <div className="quick-move-btns">
+                          <button
+                            type="button"
+                            aria-label={nextStatus ? `Advance ${task.title} to ${nextStatusLabel}` : `${task.title} is in the final stage`}
+                            title="Quick advance"
+                            onClick={() => advanceTaskByOneStage(task, saveTask, currentUser.name)}
+                            className="step-btn task-quick-move"
+                            disabled={!nextStatus}
+                          >
+                            {'→'}
+                          </button>
                         </div>
                       </div>
                     );

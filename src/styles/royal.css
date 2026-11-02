@@ -13,6 +13,7 @@ button,input,select,textarea { font:inherit; }
 button { touch-action:manipulation; }
 ::selection { background:#e4d3b7; color:#332436; }
 :focus-visible { outline:3px solid #a47a38; outline-offset:4px; }
+.app-sidebar :focus-visible { outline-color:#f5e5c8; }
 .app-navbar { flex-shrink:0; height:78px; background:#fffdf9; backdrop-filter:none; padding:0 30px; }
 .brand-title { background:none; -webkit-text-fill-color:currentColor; color:#382a38; font-family:Georgia,'Times New Roman',serif; font-weight:500; font-size:1.55rem; letter-spacing:-.065em; }
 .brand-subtitle { text-transform:uppercase; font-size:.6rem; letter-spacing:.16em; }
@@ -52,14 +53,17 @@ button { touch-action:manipulation; }
 .highlight-tag,.audit-type,.branch-name { color:#56364e; }
 .search-input,.form-input,.form-textarea,.form-select,.label-sub-input { color:var(--text-main); }
 .search-wrap,.filter-select,.form-input,.form-select,.form-textarea,.labels-input-wrap { background:#fffdf9; border-color:#d6cec2; }
-.search-input::placeholder,input::placeholder,textarea::placeholder { color:#817684; opacity:1; }
+.search-input::placeholder,input::placeholder,textarea::placeholder { color:#6f6573; opacity:1; }
 .kanban-toolbar { gap:16px; margin-bottom:25px; }
 .kanban-board-grid { grid-template-columns:repeat(5,minmax(240px,1fr)); gap:16px; overflow-x:auto; padding-bottom:20px; align-items:start; }
 .kanban-column { background:#eae5de; border:1px solid #e0d9ce; border-radius:12px; min-width:0; }
 .column-header { padding:18px 14px; border-bottom-color:#dbd3c7; }
 .column-name { font-size:.8rem; font-weight:600; }
 .column-count { background:#fffdf9; color:#625967; border:1px solid #dcd3c6; }
-.task-card { background:#fffdf9; border:1px solid #ded7cc; box-shadow:0 3px 8px #36203905; padding:16px; margin-bottom:12px; }
+.task-card-wrap { position:relative; margin-bottom:12px; }
+.task-card { background:#fffdf9; border:1px solid #ded7cc; box-shadow:0 3px 8px #36203905; padding:16px 16px 50px; margin-bottom:0; cursor:pointer; }
+.task-card:focus-visible { outline-offset:3px; }
+.task-quick-move { position:absolute; right:14px; bottom:10px; width:32px; height:32px; }
 .task-title { font-size:.87rem; line-height:1.5; font-weight:550; }
 .task-desc { font-size:.76rem; line-height:1.6; }
 .points-badge { background:#eee5eb; color:#56364e; font-weight:600; }
@@ -90,7 +94,7 @@ button { touch-action:manipulation; }
 .signin-card .view-title { font-size:2.5rem; }.profile-option { background:#f5f0e9; border-color:#d6cec2; }.profile-option.selected{background:#eee5eb;border-color:#806347}
 .burndown-svg-wrap text { fill:#69616a; }.burndown-svg-wrap polyline[stroke="#818cf8"]{stroke:#806347}.burndown-svg-wrap polyline[stroke="#10b981"],.burndown-svg-wrap circle{stroke:#22634d}
 .skip-link { position:fixed; top:8px; left:8px; transform:translateY(-200%); z-index:500; padding:12px; background:#fffdf9; color:#29262a; }.skip-link:focus{transform:none}
-@media(min-width:1800px){.app-content{padding:40px 48px}.task-card{padding:20px}}
+@media(min-width:1800px){.app-content{padding:40px 48px}.task-card{padding:20px 20px 54px}}
 @media(max-width:1100px){.app-navbar{height:auto;min-height:78px;padding:12px 18px;gap:12px;flex-wrap:wrap}.navbar-left,.navbar-right{gap:10px;flex-wrap:wrap}.app-sidebar{width:185px}.app-content{padding:24px}.charts-grid,.grid-2-col{grid-template-columns:minmax(0,1fr)}.stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:720px){.app-container{height:auto;min-height:100dvh;overflow:visible}.app-body{display:block}.app-sidebar{width:100%;padding:8px;position:sticky;top:0;z-index:30}.sidebar-nav{display:flex;overflow:auto;padding:0;gap:4px}.nav-group-label,.sidebar-footer{display:none}.app-sidebar .nav-btn{white-space:nowrap;padding:10px}.nav-icon{display:none}.app-content{padding:20px 14px}.view-title{font-size:1.65rem}.view-header{align-items:flex-start;gap:14px;flex-wrap:wrap}.kanban-toolbar,.filters-row{flex-wrap:wrap}.search-wrap{min-width:0;width:100%}.stats-grid{gap:10px}.stat-card{padding:16px}.modal-card{max-height:90dvh}.form-grid-3,.form-grid-2{grid-template-columns:1fr}.user-meta,.brand-subtitle{display:none}.sprint-card-header{flex-wrap:wrap;gap:14px}.card-header{flex-wrap:wrap;gap:12px}}
 

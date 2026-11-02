@@ -167,18 +167,20 @@ export default function SprintManager() {
       {/* New Sprint Modal */}
       {showNewSprintModal && (
         <div className="modal-backdrop" onClick={() => setShowNewSprintModal(false)}>
-          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-card" role="dialog" aria-modal="true" aria-labelledby="new-sprint-title" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3 className="modal-title">Plan New Sprint</h3>
-              <button className="close-btn" onClick={() => setShowNewSprintModal(false)}>✕</button>
+              <h3 className="modal-title" id="new-sprint-title">Plan New Sprint</h3>
+              <button type="button" className="close-btn" aria-label="Close new sprint dialog" onClick={() => setShowNewSprintModal(false)}>✕</button>
             </div>
             <form onSubmit={handleCreateSprint} className="modal-form">
-              {error && <p role="alert">{error}</p>}
+              {error && <p id="sprint-form-error" role="alert" className="form-error">{error}</p>}
               <div className="form-group">
-                <label className="form-label">Sprint Name *</label>
+                <label className="form-label" htmlFor="sprint-name">Sprint Name *</label>
                 <input
+                  id="sprint-name"
                   type="text"
                   required
+                  aria-describedby={error ? 'sprint-form-error' : undefined}
                   placeholder="e.g. Sprint 3: Advanced CI/CD & Testing"
                   className="form-input"
                   value={sprintName}
@@ -187,8 +189,9 @@ export default function SprintManager() {
               </div>
 
               <div className="form-group">
-                <label className="form-label">Sprint Goal</label>
+                <label className="form-label" htmlFor="sprint-goal">Sprint Goal</label>
                 <textarea
+                  id="sprint-goal"
                   className="form-textarea"
                   rows={2}
                   placeholder="What is the key deliverable or business value of this iteration?"
@@ -199,8 +202,9 @@ export default function SprintManager() {
 
               <div className="form-grid-2">
                 <div className="form-group">
-                  <label className="form-label">Start Date</label>
+                  <label className="form-label" htmlFor="sprint-start-date">Start Date</label>
                   <input
+                    id="sprint-start-date"
                     type="date"
                     className="form-input"
                     value={startDate}
@@ -208,8 +212,9 @@ export default function SprintManager() {
                   />
                 </div>
                 <div className="form-group">
-                  <label className="form-label">End Date</label>
+                  <label className="form-label" htmlFor="sprint-end-date">End Date</label>
                   <input
+                    id="sprint-end-date"
                     type="date"
                     className="form-input"
                     value={endDate}
