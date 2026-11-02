@@ -1,8 +1,29 @@
 import { TASK_PRIORITIES } from './constants';
+import { sanitizeUserText } from './userText';
+
+export const TASK_TITLE_MAX_LENGTH = 120;
+export const TASK_DESCRIPTION_MAX_LENGTH = 2000;
+export const TASK_LABEL_MAX_LENGTH = 24;
+
+export function sanitizeTaskText(values) {
+  return {
+    ...values,
+    title: sanitizeUserText(values.title, { field: 'Task title', maxLength: TASK_TITLE_MAX_LENGTH, allowNewlines: false }),
+    description: sanitizeUserText(values.description, { field: 'Task description', maxLength: TASK_DESCRIPTION_MAX_LENGTH }),
+    labels: (Array.isArray(values.labels) ? values.labels : []).map(label =>
+      sanitizeUserText(label, { field: 'Tag', maxLength: TASK_LABEL_MAX_LENGTH, allowNewlines: false })
+    ).filter(Boolean)
+  };
+}
 
 export function validateTaskForm({ title, priority }) {
-  return typeof title === 'string'
-    && title.trim().length > 0
+  let safeTitle;
+  try {
+    safeTitle = sanitizeUserText(title, { field: 'Task title', maxLength: TASK_TITLE_MAX_LENGTH, allowNewlines: false });
+  } catch {
+    return false;
+  }
+  return safeTitle.length > 0
     && TASK_PRIORITIES.some((option) => option.id === priority);
 }
 
@@ -33,19 +54,20 @@ export function getTaskFormValues(task, activeSprintId, currentUser) {
 }
 
 export function buildTaskPayload(formValues, currentUser, teamMembers) {
-  const assignedMember = teamMembers.find((member) => member.id === formValues.assigneeId);
+  const safeValues = sanitizeTaskText(formValues);
+  const assignedMember = teamMembers.find((member) => member.id === safeValues.assigneeId);
 
   return {
-    title: formValues.title.trim(),
-    description: formValues.description.trim(),
-    status: formValues.status,
-    priority: formValues.priority,
-    story_points: Number(formValues.storyPoints),
-    assignee_id: formValues.assigneeId,
+    title: safeValues.title,
+    description: safeValues.description,
+    status: safeValues.status,
+    priority: safeValues.priority,
+    story_points: Number(safeValues.storyPoints),
+    assignee_id: safeValues.assigneeId,
     assignee_name: assignedMember ? assignedMember.name : 'Unassigned',
     reporter_name: currentUser.name,
-    sprint_id: formValues.sprintId || null,
-    labels: formValues.labels
+    sprint_id: safeValues.sprintId || null,
+    labels: safeValues.labels
   };
 }
 

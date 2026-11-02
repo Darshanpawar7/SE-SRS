@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { TASK_PRIORITIES, TEAM_MEMBERS } from '../../utils/constants';
 import { getKanbanColumns } from '../../utils/kanban';
 import { getTaskAfterStatusDrop } from '../../utils/taskUpdates';
+import { sanitizeUserText } from '../../utils/userText';
 import { filterTasks, resetTaskFilters } from '../../utils/taskFilters';
 import { advanceTaskByOneStage, getNextTaskStatus } from '../../utils/workflow';
 import LabelPills from './LabelPills';
@@ -61,8 +62,9 @@ export default function KanbanBoard({ onOpenTaskModal }) {
           <input
             type="text"
             placeholder="Search tasks, descriptions, assignees..."
+            maxLength={200}
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => setSearchQuery(sanitizeUserText(e.target.value, { field: 'Search', maxLength: 200, allowNewlines: false, trim: false }))}
             className="search-input"
           />
           {searchQuery && (

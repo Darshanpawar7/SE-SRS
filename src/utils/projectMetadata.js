@@ -1,4 +1,5 @@
 // Project metadata rules (PMS-F-002): a unique key, a name and a valid date range.
+import { sanitizeUserText } from './userText';
 const KEY_PATTERN = /^[A-Z][A-Z0-9]{1,9}$/;
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -12,7 +13,8 @@ const isCalendarDate = (value) => {
 // `otherProjects` must not include the project being edited.
 export function validateProjectMetadata(values, otherProjects = []) {
   const key = String(values.key ?? '').trim().toUpperCase();
-  const name = String(values.name ?? '').trim();
+  const name = sanitizeUserText(values.name, { field: 'Project name', maxLength: 80, allowNewlines: false });
+  const description = sanitizeUserText(values.description, { field: 'Project description', maxLength: 2000 });
   const { start_date: startDate, target_date: targetDate } = values;
 
   if (!KEY_PATTERN.test(key)) {
@@ -30,7 +32,7 @@ export function validateProjectMetadata(values, otherProjects = []) {
   if (targetDate < startDate) {
     throw new Error('End date must be on or after the start date.');
   }
-  return { key, name, start_date: startDate, target_date: targetDate };
+  return { key, name, description, start_date: startDate, target_date: targetDate };
 }
 
 // One source for how a project is shown, so every view displays the same saved values.
@@ -39,5 +41,5 @@ export function describeProject(project) {
   const dates = project.start_date && project.target_date
     ? `${project.start_date} → ${project.target_date}`
     : '';
-  return { key: project.key, name: project.name, dates };
+  return { key: project.key, name: sanitizeUserText(project.name), dates };
 }
