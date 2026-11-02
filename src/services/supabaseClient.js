@@ -15,6 +15,15 @@ export const isValidSupabaseUrl = (value) => {
   }
 };
 
+// Only public client keys belong in this browser configuration. Secret and
+// service-role keys must never be accepted by the frontend.
+export const isValidSupabaseAnonKey = (value) => {
+  const key = String(value ?? '').trim();
+  return Boolean(key)
+    && !/\s/.test(key)
+    && !/^(your[-_]anon[-_]public[-_]key|service_role|sb_secret_)/i.test(key);
+};
+
 // Retrieve credentials from localStorage or environment variables. Credentials saved in
 // this browser take priority; `isBuiltIn` means the deployment itself provides them.
 export const getSupabaseConfig = () => {
@@ -24,8 +33,8 @@ export const getSupabaseConfig = () => {
   const localUrl = localStorage.getItem('supabase_url') || envUrl;
   const localKey = localStorage.getItem('supabase_key') || envKey;
 
-  const isConfigured = Boolean(localUrl && localKey && isValidSupabaseUrl(localUrl));
-  const isBuiltIn = Boolean(envUrl && envKey && isValidSupabaseUrl(envUrl));
+  const isConfigured = Boolean(isValidSupabaseAnonKey(localKey) && isValidSupabaseUrl(localUrl));
+  const isBuiltIn = Boolean(isValidSupabaseAnonKey(envKey) && isValidSupabaseUrl(envUrl));
   return { url: localUrl, key: localKey, isConfigured, isBuiltIn };
 };
 
@@ -37,7 +46,9 @@ export const saveSupabaseConfig = (url, key) => {
   if (!isValidSupabaseUrl(cleanUrl)) {
     throw new Error('Enter a valid https:// Supabase project URL, for example https://your-project.supabase.co.');
   }
-  if (!cleanKey) throw new Error('Enter the Supabase anon public key.');
+  if (!isValidSupabaseAnonKey(cleanKey)) {
+    throw new Error('Enter a valid Supabase anon public key, not a service-role or secret key.');
+  }
   localStorage.setItem('supabase_url', cleanUrl);
   localStorage.setItem('supabase_key', cleanKey);
 };
