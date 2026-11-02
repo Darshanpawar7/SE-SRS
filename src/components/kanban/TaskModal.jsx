@@ -64,7 +64,10 @@ export default function TaskModal({ task, isOpen, onClose }) {
       // A label still in the input when the task is saved is kept, not dropped.
       labels: addLabels(labels, labelInput)
     };
-    if (!validateTaskForm(formValues)) return;
+    if (!validateTaskForm(formValues)) {
+      setError('Enter a task title and choose a valid priority.');
+      return;
+    }
 
     const taskPayload = buildTaskPayload(formValues, currentUser, TEAM_MEMBERS);
 
@@ -93,22 +96,26 @@ export default function TaskModal({ task, isOpen, onClose }) {
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-card" role="dialog" aria-modal="true" aria-labelledby="task-modal-title" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h3 className="modal-title">
+          <h3 className="modal-title" id="task-modal-title">
             {isEditing ? 'Edit Work Item' : 'Create New Agile Task'}
           </h3>
-          <button className="close-btn" onClick={onClose}>✕</button>
+          <button type="button" className="close-btn" aria-label="Close task dialog" onClick={onClose}>✕</button>
         </div>
 
         <form onSubmit={handleSubmit} className="modal-form">
-          {error && <p role="alert">{error}</p>}
+          {error && <p id="task-form-error" role="alert" className="form-error">{error}</p>}
           <div className="form-group">
-            <label className="form-label">Task Title *</label>
+            <label className="form-label" htmlFor="task-title">Task Title *</label>
             <input
+              id="task-title"
               type="text"
               required
               className="form-input"
+              aria-describedby={error ? 'task-form-error' : undefined}
+              aria-invalid={error === 'Enter a task title and choose a valid priority.'}
+              autoFocus
               placeholder="e.g. Implement user login with JWT"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -116,8 +123,9 @@ export default function TaskModal({ task, isOpen, onClose }) {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Description & Acceptance Criteria</label>
+            <label className="form-label" htmlFor="task-description">Description & Acceptance Criteria</label>
             <textarea
+              id="task-description"
               className="form-textarea"
               rows={3}
               placeholder="Provide user story context and technical specifications..."
@@ -130,8 +138,9 @@ export default function TaskModal({ task, isOpen, onClose }) {
           <div className="form-grid-3">
             {/* Status */}
             <div className="form-group">
-              <label className="form-label">Workflow Status</label>
+              <label className="form-label" htmlFor="task-status">Workflow Status</label>
               <select 
+                id="task-status"
                 className="form-select"
                 value={status} 
                 onChange={(e) => setStatus(e.target.value)}
@@ -144,10 +153,13 @@ export default function TaskModal({ task, isOpen, onClose }) {
 
             {/* Priority */}
             <div className="form-group">
-              <label className="form-label">Priority</label>
+              <label className="form-label" htmlFor="task-priority">Priority</label>
               <select 
+                id="task-priority"
                 className="form-select"
                 required
+                aria-describedby={error ? 'task-form-error' : undefined}
+                aria-invalid={error === 'Enter a task title and choose a valid priority.'}
                 value={priority} 
                 onChange={(e) => setPriority(e.target.value)}
               >
@@ -159,8 +171,9 @@ export default function TaskModal({ task, isOpen, onClose }) {
 
             {/* Sprint */}
             <div className="form-group">
-              <label className="form-label">Sprint</label>
+              <label className="form-label" htmlFor="task-sprint">Sprint</label>
               <select 
+                id="task-sprint"
                 className="form-select"
                 value={sprintId} 
                 onChange={(e) => setSprintId(e.target.value)}
@@ -175,10 +188,10 @@ export default function TaskModal({ task, isOpen, onClose }) {
 
           {/* Story Points (Agile Fibonacci Scale) */}
           <div className="form-group">
-            <label className="form-label">
+            <span className="form-label" id="story-points-label">
               Agile Story Points (Fibonacci Estimation)
-            </label>
-            <div className="story-points-selector">
+            </span>
+            <div className="story-points-selector" role="group" aria-labelledby="story-points-label">
               {STORY_POINTS.map(pt => (
                 <button
                   type="button"
@@ -195,8 +208,9 @@ export default function TaskModal({ task, isOpen, onClose }) {
 
           {/* Assignee */}
           <div className="form-group">
-            <label className="form-label">Assignee (Team 11 Member)</label>
+            <label className="form-label" htmlFor="task-assignee">Assignee (Team 11 Member)</label>
             <select 
+              id="task-assignee"
               className="form-select"
               value={assigneeId} 
               onChange={(e) => setAssigneeId(e.target.value)}
@@ -211,7 +225,7 @@ export default function TaskModal({ task, isOpen, onClose }) {
 
           {/* Labels */}
           <div className="form-group">
-            <label className="form-label">Labels (Press Enter or comma to add)</label>
+            <label className="form-label" htmlFor="task-label-input">Labels (Press Enter or comma to add)</label>
             <div className="labels-input-wrap">
               {labels.map(lbl => (
                 <span key={lbl} className="label-pill">
@@ -220,10 +234,10 @@ export default function TaskModal({ task, isOpen, onClose }) {
                 </span>
               ))}
               <input
+                id="task-label-input"
                 type="text"
                 className="label-sub-input"
                 placeholder="Add tag..."
-                aria-label="Add label"
                 value={labelInput}
                 onChange={(e) => setLabelInput(e.target.value)}
                 onKeyDown={handleAddLabel}

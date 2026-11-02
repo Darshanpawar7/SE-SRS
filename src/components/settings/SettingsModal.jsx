@@ -56,10 +56,10 @@ export default function SettingsModal({ isOpen, onClose }) {
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal-card modal-lg" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-card modal-lg" role="dialog" aria-modal="true" aria-labelledby="settings-modal-title" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h3 className="modal-title">Supabase & Database Configuration</h3>
-          <button className="close-btn" onClick={onClose}>✕</button>
+          <h3 className="modal-title" id="settings-modal-title">Supabase & Database Configuration</h3>
+          <button type="button" className="close-btn" aria-label="Close settings dialog" onClick={onClose}>✕</button>
         </div>
 
         <div className="settings-body">
@@ -98,24 +98,28 @@ export default function SettingsModal({ isOpen, onClose }) {
           )}
 
           <form onSubmit={handleSave} className="modal-form" noValidate>
-            {configError && <p role="alert" className="form-error">{configError}</p>}
+            {configError && <p id="settings-form-error" role="alert" className="form-error">{configError}</p>}
             <div className="form-group">
-              <label className="form-label">Supabase Project URL</label>
+              <label className="form-label" htmlFor="supabase-url">Supabase Project URL</label>
               <input
+                id="supabase-url"
                 type="url"
                 placeholder="https://your-project.supabase.co"
                 className="form-input"
+                aria-describedby={configError ? 'settings-form-error' : undefined}
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
               />
             </div>
 
             <div className="form-group">
-              <label className="form-label">Supabase Anon Public API Key</label>
+              <label className="form-label" htmlFor="supabase-anon-key">Supabase Anon Public API Key</label>
               <input
+                id="supabase-anon-key"
                 type="password"
                 placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
                 className="form-input"
+                aria-describedby={configError ? 'settings-form-error' : undefined}
                 value={key}
                 onChange={(e) => setKey(e.target.value)}
               />
