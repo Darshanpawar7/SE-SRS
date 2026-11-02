@@ -48,15 +48,15 @@ Story points use Fibonacci values (1, 2, 3, 5, 8). Statuses describe the existin
 | PMS-F-017 | Filter tasks by multiple attributes | FR | 3 | Dhatri Shivaprasad (@dhatri-shastry) | done-baseline |
 | PMS-F-018 | Run CI on pushes and pull requests | FR | 3 | Eshwar (@0-soul-slayer-0) | partial |
 | SO-01 | Isolate data by role and membership | NFR | 5 | Darshan P Pawar (@Darshanpawar7) | not-started |
-| SO-02 | Protect audit record integrity | NFR | 2 | Chandan Kumar K (@chandanKumar-k) | partial |
+| SO-02 | Protect audit record integrity | NFR | 2 | Chandan Kumar K (@chandanKumar-k) | done-baseline |
 | SO-03 | Attribute changes to verified actors | NFR | 3 | Darshan P Pawar (@Darshanpawar7) | partial |
-| PMS-SR-001 | Enforce Supabase row-level security | NFR | 5 | Chandan Kumar K (@chandanKumar-k) | not-started |
+| PMS-SR-001 | Enforce Supabase row-level security | NFR | 5 | Chandan Kumar K (@chandanKumar-k) | done-baseline |
 | PMS-SR-002 | Keep credentials out of source control | NFR | 5 | Darshan P Pawar (@Darshanpawar7) | partial |
 | PMS-SR-003 | Require HTTPS and TLS for cloud traffic | NFR | 3 | Chandan Kumar K (@chandanKumar-k) | partial |
 | PMS-SR-004 | Sanitize textual input against XSS | NFR | 3 | Dhatri Shivaprasad (@dhatri-shastry) | not-started |
 | PMS-SR-005 | Block CI on dependency security findings | NFR | 3 | Eshwar (@0-soul-slayer-0) | partial |
 | PMS-NF-001 | Meet local interaction performance target | NFR | 3 | Dhatri Shivaprasad (@dhatri-shastry) | partial |
-| PMS-NF-002 | Maintain availability through offline fallback | NFR | 3 | Chandan Kumar K (@chandanKumar-k) | partial |
+| PMS-NF-002 | Maintain availability through offline fallback | NFR | 3 | Chandan Kumar K (@chandanKumar-k) | done-baseline |
 | PMS-NF-003 | Meet accessibility and usability target | NFR | 5 | Dhatri Shivaprasad (@dhatri-shastry) | partial |
 | PMS-NF-004 | Preserve data across reloads and tab closures | NFR | 3 | Eshwar (@0-soul-slayer-0) | partial |
 | PMS-NF-005 | Keep architecture maintainable and build clean | NFR | 5 | Eshwar (@0-soul-slayer-0) | partial |
