@@ -15,6 +15,30 @@ export const isValidSupabaseUrl = (value) => {
   }
 };
 
+const hasServiceRoleJwtPayload = (key) => {
+  const parts = key.split('.');
+  if (parts.length !== 3) return false;
+
+  try {
+    const encodedPayload = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    const paddedPayload = encodedPayload.padEnd(Math.ceil(encodedPayload.length / 4) * 4, '=');
+    const payload = JSON.parse(atob(paddedPayload));
+    return payload?.role === 'service_role';
+  } catch {
+    return false;
+  }
+};
+
+// Only public client keys belong in this browser configuration. Secret and
+// service-role keys must never be accepted by the frontend.
+export const isValidSupabaseAnonKey = (value) => {
+  const key = String(value ?? '').trim();
+  return Boolean(key)
+    && !/\s/.test(key)
+    && !/^(your[-_]anon[-_]public[-_]key|service_role|sb_secret_)/i.test(key)
+    && !hasServiceRoleJwtPayload(key);
+};
+
 // Retrieve credentials from localStorage or environment variables. Credentials saved in
 // this browser take priority; `isBuiltIn` means the deployment itself provides them.
 export const getSupabaseConfig = () => {
@@ -24,8 +48,8 @@ export const getSupabaseConfig = () => {
   const localUrl = localStorage.getItem('supabase_url') || envUrl;
   const localKey = localStorage.getItem('supabase_key') || envKey;
 
-  const isConfigured = Boolean(localUrl && localKey && isValidSupabaseUrl(localUrl));
-  const isBuiltIn = Boolean(envUrl && envKey && isValidSupabaseUrl(envUrl));
+  const isConfigured = Boolean(isValidSupabaseAnonKey(localKey) && isValidSupabaseUrl(localUrl));
+  const isBuiltIn = Boolean(isValidSupabaseAnonKey(envKey) && isValidSupabaseUrl(envUrl));
   return { url: localUrl, key: localKey, isConfigured, isBuiltIn };
 };
 
@@ -37,7 +61,9 @@ export const saveSupabaseConfig = (url, key) => {
   if (!isValidSupabaseUrl(cleanUrl)) {
     throw new Error('Enter a valid https:// Supabase project URL, for example https://your-project.supabase.co.');
   }
-  if (!cleanKey) throw new Error('Enter the Supabase anon public key.');
+  if (!isValidSupabaseAnonKey(cleanKey)) {
+    throw new Error('Enter a valid Supabase anon public key, not a service-role or secret key.');
+  }
   localStorage.setItem('supabase_url', cleanUrl);
   localStorage.setItem('supabase_key', cleanKey);
 };
@@ -164,11 +190,42 @@ const writeLocal = (key, value) => localStorage.setItem(key, JSON.stringify(valu
 const emptyCloudTables = new Set();
 
 // Audit records come back frozen: the application can read them but never edit them.
-const readActivity = () => {
+const readActivity = (fallback = INITIAL_ACTIVITY) => {
   const local = localStorage.getItem(STORAGE_KEYS.ACTIVITY);
-  if (!local) localStorage.setItem(STORAGE_KEYS.ACTIVITY, JSON.stringify(INITIAL_ACTIVITY));
-  const records = local ? JSON.parse(local) : INITIAL_ACTIVITY;
+  if (!local && fallback) localStorage.setItem(STORAGE_KEYS.ACTIVITY, JSON.stringify(fallback));
+  const records = local ? JSON.parse(local) : (fallback ?? []);
   return records.map(record => Object.freeze({ ...record }));
+};
+
+const fromActivityRow = (row) => {
+  let metadata = {};
+  if (row.details) {
+    try {
+      const parsed = typeof row.details === 'string' ? JSON.parse(row.details) : row.details;
+      metadata = parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+        ? parsed
+        : { details: parsed ?? row.details };
+    } catch {
+      metadata = { details: row.details };
+    }
+  }
+  const action = String(row.action ?? '');
+  const record = {
+    id: row.id,
+    type: metadata.type ?? (action.startsWith('created ') ? 'CREATE' : action.startsWith('deleted ') ? 'DELETE' : 'UPDATE'),
+    timestamp: row.created_at,
+    user: row.user_name,
+    actor: row.user_name,
+    action: row.action,
+    entity_type: row.entity_type,
+    entity_id: metadata.entity_id ?? null,
+    target: row.entity_title,
+    from: metadata.from ?? null,
+    to: metadata.to ?? null,
+    details: metadata.details ?? null
+  };
+  requireAuditRecord(record);
+  return Object.freeze(record);
 };
 
 const requireAuditRecord = (record) => {
@@ -218,13 +275,16 @@ const PENDING_KEY = 'sprintflow_pending_sync';
 let flushInFlight = null;
 
 const readPending = () => {
-  const empty = { seq: 0, tables: {}, deletedTaskIds: [], activity: [] };
+  const empty = { seq: 0, tables: {}, deletedTaskIds: [], deletedSprintIds: [], activity: [] };
   try {
     const saved = JSON.parse(localStorage.getItem(PENDING_KEY) || '{}');
     return {
       ...empty,
       ...saved,
-      tables: saved.tables && !Array.isArray(saved.tables) ? saved.tables : {}
+      tables: saved.tables && !Array.isArray(saved.tables) ? saved.tables : {},
+      deletedTaskIds: Array.isArray(saved.deletedTaskIds) ? saved.deletedTaskIds : [],
+      deletedSprintIds: Array.isArray(saved.deletedSprintIds) ? saved.deletedSprintIds : [],
+      activity: Array.isArray(saved.activity) ? saved.activity : []
     };
   } catch {
     return empty;
@@ -260,6 +320,16 @@ const confirmDelete = (taskId) => updatePending(pending => ({
   deletedTaskIds: pending.deletedTaskIds.filter(id => id !== taskId)
 }));
 
+const queueSprintDelete = (sprintId) => updatePending(pending => ({
+  ...pending,
+  deletedSprintIds: [...new Set([...pending.deletedSprintIds, sprintId])]
+}));
+
+const confirmSprintDelete = (sprintId) => updatePending(pending => ({
+  ...pending,
+  deletedSprintIds: pending.deletedSprintIds.filter(id => id !== sprintId)
+}));
+
 const queueActivity = (record) => updatePending(pending => ({
   ...pending,
   activity: [...pending.activity.filter(item => item.id !== record.id), record]
@@ -272,16 +342,24 @@ const confirmActivity = (recordId) => updatePending(pending => ({
 
 const hasPendingChanges = (table) => {
   const pending = readPending();
-  return Object.hasOwn(pending.tables, table) || (table === 'tasks' && pending.deletedTaskIds.length > 0);
+  return Object.hasOwn(pending.tables, table)
+    || (table === 'tasks' && pending.deletedTaskIds.length > 0)
+    || (table === 'sprints' && pending.deletedSprintIds.length > 0);
 };
 
 export const getPendingChangeCount = () => {
   const pending = readPending();
-  return Object.keys(pending.tables).length + pending.deletedTaskIds.length + pending.activity.length;
+  return Object.keys(pending.tables).length
+    + pending.deletedTaskIds.length
+    + pending.deletedSprintIds.length
+    + pending.activity.length;
 };
 
 const deleteTaskRow = (supabase, taskId) =>
   runCloud('Deleting a task', () => supabase.from('tasks').delete().eq('id', taskId));
+
+const deleteSprintRow = (supabase, sprintId) =>
+  runCloud('Deleting a sprint', () => supabase.from('sprints').delete().eq('id', sprintId));
 
 // A stored audit record is never overwritten: a record whose id already exists is
 // skipped (INSERT ... ON CONFLICT DO NOTHING), so sending it again is harmless.
@@ -298,7 +376,8 @@ export const DataService = {
   },
 
   saveSelectedSprint(sprintId) {
-    localStorage.setItem(STORAGE_KEYS.SELECTED_SPRINT, sprintId);
+    if (sprintId) localStorage.setItem(STORAGE_KEYS.SELECTED_SPRINT, sprintId);
+    else localStorage.removeItem(STORAGE_KEYS.SELECTED_SPRINT);
   },
 
   recordBurndown(sprints, tasks, now = new Date()) {
@@ -355,6 +434,10 @@ export const DataService = {
     for (const taskId of pending.deletedTaskIds) {
       if (!(await deleteTaskRow(supabase, taskId)).ok) return false;
       confirmDelete(taskId);
+    }
+    for (const sprintId of pending.deletedSprintIds) {
+      if (!(await deleteSprintRow(supabase, sprintId)).ok) return false;
+      confirmSprintDelete(sprintId);
     }
     for (const record of pending.activity) {
       if (!(await insertActivityRow(supabase, record)).ok) return false;
@@ -452,6 +535,26 @@ export const DataService = {
     if (auditRecord) await this.pushActivity(auditRecord);
   },
 
+  async deleteSprint(sprintId, remainingSprints, remainingTasks, auditRecords = []) {
+    const records = Array.isArray(auditRecords) ? auditRecords : [auditRecords];
+    records.forEach(requireAuditRecord);
+    writeLocal(STORAGE_KEYS.SPRINTS, remainingSprints);
+    writeLocal(STORAGE_KEYS.TASKS, remainingTasks);
+    records.forEach(appendActivity);
+
+    const supabase = getSupabase();
+    if (!supabase) return true;
+
+    queueSprintDelete(sprintId);
+    records.forEach(queueActivity);
+    if (!(await this.pushTasks(remainingTasks))) return false;
+
+    const { ok } = await deleteSprintRow(supabase, sprintId);
+    if (ok) confirmSprintDelete(sprintId);
+    for (const record of records) await this.pushActivity(record);
+    return ok;
+  },
+
   async pushSprints(sprints) {
     const supabase = getSupabase();
     if (!supabase) return true;
@@ -491,7 +594,25 @@ export const DataService = {
   },
 
   async getActivity() {
-    return readActivity();
+    const supabase = getSupabase();
+    if (!supabase) return readActivity();
+
+    const local = readActivity([]);
+    const projectId = readLocal(STORAGE_KEYS.PROJECT, INITIAL_PROJECT).id;
+    const { ok, data } = await runCloud('Loading the audit trail', () =>
+      supabase.from('activity_logs')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('created_at', { ascending: false }));
+    if (!ok) return local.length ? local : readActivity();
+
+    const records = (data ?? []).map(fromActivityRow);
+    const byId = new Map(local.map(record => [record.id, record]));
+    records.forEach(record => byId.set(record.id, record));
+    const merged = [...byId.values()].sort((left, right) =>
+      Date.parse(right.timestamp) - Date.parse(left.timestamp));
+    writeLocal(STORAGE_KEYS.ACTIVITY, merged);
+    return merged.map(record => Object.freeze({ ...record }));
   },
 
   // Append-only: a new record goes on top and the history is never truncated.
@@ -517,7 +638,7 @@ export const DataService = {
   // Unsent board changes belong to the board being replaced, so they are dropped;
   // unsent audit records are kept.
   resetAllData() {
-    updatePending(pending => ({ ...pending, tables: {}, deletedTaskIds: [] }));
+    updatePending(pending => ({ ...pending, tables: {}, deletedTaskIds: [], deletedSprintIds: [] }));
     localStorage.removeItem(STORAGE_KEYS.SELECTED_SPRINT);
     localStorage.removeItem(STORAGE_KEYS.BURNDOWN);
     localStorage.setItem(STORAGE_KEYS.PROJECT, JSON.stringify(INITIAL_PROJECT));

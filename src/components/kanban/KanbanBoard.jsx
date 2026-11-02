@@ -5,8 +5,11 @@ import { TASK_PRIORITIES, TEAM_MEMBERS } from '../../utils/constants';
 import { getKanbanColumns } from '../../utils/kanban';
 import { getTaskAfterStatusDrop } from '../../utils/taskUpdates';
 import { sanitizeUserText } from '../../utils/userText';
+import { filterTasks, resetTaskFilters } from '../../utils/taskFilters';
 import { advanceTaskByOneStage, getNextTaskStatus } from '../../utils/workflow';
 import LabelPills from './LabelPills';
+import { PriorityBadge } from '../workspace/TaskSignals';
+import SignalIcon from '../workspace/SignalIcon';
 
 export default function KanbanBoard({ onOpenTaskModal }) {
   const { 
@@ -28,19 +31,7 @@ export default function KanbanBoard({ onOpenTaskModal }) {
     .then(() => setBoardError(''))
     .catch(err => setBoardError(err.message));
 
-  // Filter tasks
-  const filteredTasks = activeSprintTasks.filter(task => {
-    if (filterAssignee !== 'all' && task.assignee_id !== filterAssignee) return false;
-    if (filterPriority !== 'all' && task.priority !== filterPriority) return false;
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      const matchTitle = task.title.toLowerCase().includes(q);
-      const matchDesc = (task.description || '').toLowerCase().includes(q);
-      const matchAssignee = (task.assignee_name || '').toLowerCase().includes(q);
-      if (!matchTitle && !matchDesc && !matchAssignee) return false;
-    }
-    return true;
-  });
+  const filteredTasks = filterTasks(activeSprintTasks, { filterAssignee, filterPriority, searchQuery });
   const kanbanColumns = getKanbanColumns(filteredTasks);
 
   // Drag and Drop handlers
@@ -107,12 +98,11 @@ export default function KanbanBoard({ onOpenTaskModal }) {
           </select>
 
           {/* Quick Clear */}
-          {(filterAssignee !== 'all' || filterPriority !== 'all') && (
+          {(filterAssignee !== 'all' || filterPriority !== 'all' || searchQuery.trim()) && (
             <button 
               className="btn btn-text"
               onClick={() => {
-                setFilterAssignee('all');
-                setFilterPriority('all');
+                resetTaskFilters({ setFilterAssignee, setFilterPriority, setSearchQuery });
               }}
             >
               Reset Filters
@@ -153,7 +143,7 @@ export default function KanbanBoard({ onOpenTaskModal }) {
                   </div>
                 ) : (
                   colTasks.map(task => {
-                    const priorityObj = TASK_PRIORITIES.find(p => p.id === task.priority) || TASK_PRIORITIES[1];
+
                     const assignee = TEAM_MEMBERS.find(m => m.id === task.assignee_id);
                     const nextStatus = getNextTaskStatus(task.status);
 
@@ -166,20 +156,14 @@ export default function KanbanBoard({ onOpenTaskModal }) {
                         onClick={() => onOpenTaskModal(task)}
                       >
                         <div className="card-top-row">
-                          <span 
-                            className="priority-pill" 
-                            style={{ color: priorityObj.color, borderColor: priorityObj.color + '40' }}
-                          >
-                            <span className="priority-symbol">{priorityObj.icon}</span>
-                            <span>{priorityObj.label}</span>
-                          </span>
+                          <PriorityBadge priority={task.priority} />
 
                           <span className="points-badge" title="Agile Fibonacci Estimation">
                             {task.story_points || 3} SP
                           </span>
                         </div>
 
-                        <h4 className="task-title">{task.title}</h4>
+                        <h4 className="task-title"><button onClick={e => { e.stopPropagation(); onOpenTaskModal(task); }}>{task.title}</button></h4>
                         {task.description && (
                           <p className="task-desc">{task.description}</p>
                         )}
@@ -192,7 +176,7 @@ export default function KanbanBoard({ onOpenTaskModal }) {
                           <div className="assignee-badge">
                             <div 
                               className="assignee-avatar-sm" 
-                              style={{ backgroundColor: assignee?.color || '#6366f1' }}
+                              style={{ backgroundColor: assignee?.color || 'var(--text-dim)' }}
                             >
                               {assignee ? assignee.initials : 'UN'}
                             </div>
@@ -203,7 +187,8 @@ export default function KanbanBoard({ onOpenTaskModal }) {
 
                           <div className="quick-move-btns">
                             <button 
-                              title="Quick advance"
+                              title={nextStatus ? `Advance to ${nextStatus}` : "Task is complete"}
+                              aria-label={nextStatus ? `Advance ${task.title} to ${nextStatus}` : `${task.title} is complete`}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 advanceTaskByOneStage(task, saveTask, currentUser.name);
@@ -211,7 +196,7 @@ export default function KanbanBoard({ onOpenTaskModal }) {
                               className="step-btn"
                               disabled={!nextStatus}
                             >
-                              →
+                              <SignalIcon name="medium" size={15} />
                             </button>
                           </div>
                         </div>
