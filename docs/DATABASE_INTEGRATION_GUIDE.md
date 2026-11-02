@@ -22,8 +22,9 @@ The persistence layer provides relational data management for project entities, 
 ---
 
 ## 3. Security Specifications
-- **Row Level Security (RLS):** Enabled across all PostgreSQL tables to enforce multi-tenant isolation.
-- **Transport Encryption:** TLS 1.3 enforced for all external database transactions.
+- **Row Level Security (RLS):** Enabled on every application table. Supabase Auth email claims map to provisioned profiles, and project membership and role policies scope access. Anonymous cloud access is revoked; without an authenticated cloud session, the app continues in local mode.
+- **Audit integrity:** Authenticated application users can read and insert activity records for their projects, but cannot update, delete, or truncate them. Project deletion is restricted while audit records exist.
+- **Transport Encryption:** Database Settings accepts only HTTPS project URLs. TLS protocol negotiation is managed by the deployed Supabase endpoint and browser; TLS 1.3 must be confirmed at deployment and cannot be forced or inspected by frontend JavaScript.
 
 ---
 
@@ -59,9 +60,18 @@ All `id` columns are `UUID`. New tasks and sprints get `crypto.randomUUID()` ide
 
 ### 5.4 Offline fallback and pending changes (PMS-F-016)
 - Without credentials, every create, read, update and delete uses `localStorage` only and survives reloads and closed tabs.
+- Sprint deletion also works offline: the sprint is removed locally, its tasks are kept with no sprint assignment, and the selection moves to another available sprint.
 - With credentials, every change is recorded under `sprintflow_pending_sync` before it is sent: the table that changed (with a version number), the IDs of deleted tasks, and audit records not yet inserted. An entry is cleared only when Supabase confirms it, and a table's entry only when the confirmed send is the latest one, so an older request that finishes late cannot clear a newer change that failed.
+- Deleting a sprint queues its ID and detached task rows. On retry, task rows are synced before the sprint deletion to satisfy the foreign key.
 - While a table has an entry, loading uses the local copy instead of the (older) cloud rows, so a reload never undoes an unsent change, even if the tab was closed during a slow request.
 - The queue is sent in the background on the next load, when the browser comes back online, or from **Retry sync now** in Database Settings, in foreign-key order: project, sprints, tasks, deletes, then audit records. Only one retry runs at a time.
 - A request with no answer after 15 seconds counts as failed: the change stays queued and the next retry is not blocked.
 - While changes are waiting, the navbar shows "Sync pending (n)" (or "Supabase Sync Error" after a failure) instead of "Supabase Connected", and Database Settings shows the count.
 - Data entered in local-only mode is not merged into a Supabase project that already has data; connecting to such a project loads the cloud data.
+
+### 5.5 Database security deployment checks (Sprint 2)
+- Run `database/schema.sql` in the Supabase SQL Editor. Team accounts must exist in Supabase Auth with the same verified email addresses as the seeded `profiles` rows; the seed creates project membership roles for the four Team 11 accounts.
+- Cloud CRUD requires an authenticated Supabase session. Unauthenticated reads and writes are denied by table grants and RLS; the app retains its local fallback.
+- Confirm RLS is enabled for `profiles`, `projects`, `project_members`, `sprints`, `tasks`, `comments`, and `activity_logs`. Confirm the policies scope records to project membership and only project owners/leads can manage membership and project metadata.
+- Test `activity_logs` as an authenticated member: SELECT and INSERT should work for the member's project; UPDATE, DELETE, and TRUNCATE must be denied. Deleting a project with audit rows must be rejected.
+- Confirm transport in browser developer tools or with a TLS-capable client against the deployed project endpoint. The active connection must negotiate TLS 1.3. If the endpoint permits TLS 1.2, enforce a TLS 1.3 minimum at the hosting/edge layer before marking this requirement complete; application code cannot set that server-side minimum.
