@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useProject } from '../../context/ProjectContext';
 import { useAuth } from '../../context/AuthContext';
 import { TASK_STATUSES, TASK_PRIORITIES, STORY_POINTS, TEAM_MEMBERS } from '../../utils/constants';
-import { buildTaskPayload, getTaskFormValues, mergeTaskPayload, validateTaskForm } from '../../utils/taskForm';
+import { buildTaskPayload, getTaskFormValues, mergeTaskPayload, sanitizeTaskText, TASK_TITLE_MAX_LENGTH, TASK_DESCRIPTION_MAX_LENGTH, validateTaskForm } from '../../utils/taskForm';
 import { addLabels, getDistinctLabels, removeLabel } from '../../utils/labels';
+import { sanitizeUserText } from '../../utils/userText';
 
 export default function TaskModal({ task, isOpen, onClose }) {
   const { updateTask, addTask, deleteTask, activeSprintId, sprints } = useProject();
@@ -42,8 +43,13 @@ export default function TaskModal({ task, isOpen, onClose }) {
   const handleAddLabel = (e) => {
     if ((e.key === 'Enter' || e.key === ',') && labelInput.trim()) {
       e.preventDefault();
-      setLabels(addLabels(labels, labelInput));
-      setLabelInput('');
+      try {
+        setLabels(addLabels(labels, labelInput));
+        setLabelInput('');
+        setError('');
+      } catch (err) {
+        setError(err.message);
+      }
     }
   };
 
@@ -53,7 +59,9 @@ export default function TaskModal({ task, isOpen, onClose }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const formValues = {
+    let formValues;
+    try {
+      formValues = sanitizeTaskText({
       title,
       description,
       status,
@@ -63,7 +71,11 @@ export default function TaskModal({ task, isOpen, onClose }) {
       sprintId,
       // A label still in the input when the task is saved is kept, not dropped.
       labels: addLabels(labels, labelInput)
-    };
+      });
+    } catch (err) {
+      setError(err.message);
+      return;
+    }
     if (!validateTaskForm(formValues)) {
       setError('Enter a task title and choose a valid priority.');
       return;
@@ -118,7 +130,8 @@ export default function TaskModal({ task, isOpen, onClose }) {
               autoFocus
               placeholder="e.g. Implement user login with JWT"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              maxLength={TASK_TITLE_MAX_LENGTH}
+              onChange={(e) => setTitle(sanitizeUserText(e.target.value, { field: 'Task title', maxLength: TASK_TITLE_MAX_LENGTH, allowNewlines: false, trim: false }))}
             />
           </div>
 
@@ -130,7 +143,8 @@ export default function TaskModal({ task, isOpen, onClose }) {
               rows={3}
               placeholder="Provide user story context and technical specifications..."
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              maxLength={TASK_DESCRIPTION_MAX_LENGTH}
+              onChange={(e) => setDescription(sanitizeUserText(e.target.value, { field: 'Task description', maxLength: TASK_DESCRIPTION_MAX_LENGTH, trim: false }))}
             />
           </div>
 
@@ -238,8 +252,13 @@ export default function TaskModal({ task, isOpen, onClose }) {
                 type="text"
                 className="label-sub-input"
                 placeholder="Add tag..."
+<<<<<<< HEAD
+=======
+                aria-label="Add label"
+                maxLength={200}
+>>>>>>> origin/main
                 value={labelInput}
-                onChange={(e) => setLabelInput(e.target.value)}
+                onChange={(e) => setLabelInput(sanitizeUserText(e.target.value, { field: 'Tag', maxLength: 200, allowNewlines: false, trim: false }))}
                 onKeyDown={handleAddLabel}
               />
             </div>
@@ -270,4 +289,3 @@ export default function TaskModal({ task, isOpen, onClose }) {
     </div>
   );
 }
-

@@ -4,6 +4,8 @@ import { useAuth } from '../../context/AuthContext';
 import { TASK_PRIORITIES, TASK_STATUSES, TEAM_MEMBERS } from '../../utils/constants';
 import { getKanbanColumns } from '../../utils/kanban';
 import { getTaskAfterStatusDrop } from '../../utils/taskUpdates';
+import { sanitizeUserText } from '../../utils/userText';
+import { filterTasks, resetTaskFilters } from '../../utils/taskFilters';
 import { advanceTaskByOneStage, getNextTaskStatus } from '../../utils/workflow';
 import { activateCardFromKeyDown } from '../../utils/accessibility';
 import LabelPills from './LabelPills';
@@ -30,19 +32,7 @@ export default function KanbanBoard({ onOpenTaskModal }) {
     .then(() => setBoardError(''))
     .catch(err => setBoardError(err.message));
 
-  // Filter tasks
-  const filteredTasks = activeSprintTasks.filter(task => {
-    if (filterAssignee !== 'all' && task.assignee_id !== filterAssignee) return false;
-    if (filterPriority !== 'all' && task.priority !== filterPriority) return false;
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      const matchTitle = task.title.toLowerCase().includes(q);
-      const matchDesc = (task.description || '').toLowerCase().includes(q);
-      const matchAssignee = (task.assignee_name || '').toLowerCase().includes(q);
-      if (!matchTitle && !matchDesc && !matchAssignee) return false;
-    }
-    return true;
-  });
+  const filteredTasks = filterTasks(activeSprintTasks, { filterAssignee, filterPriority, searchQuery });
   const kanbanColumns = getKanbanColumns(filteredTasks);
 
   // Drag and Drop handlers
@@ -74,8 +64,9 @@ export default function KanbanBoard({ onOpenTaskModal }) {
             type="text"
             aria-label="Search tasks, descriptions, or assignees"
             placeholder="Search tasks, descriptions, assignees..."
+            maxLength={200}
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => setSearchQuery(sanitizeUserText(e.target.value, { field: 'Search', maxLength: 200, allowNewlines: false, trim: false }))}
             className="search-input"
           />
           {searchQuery && (
@@ -111,12 +102,11 @@ export default function KanbanBoard({ onOpenTaskModal }) {
           </select>
 
           {/* Quick Clear */}
-          {(filterAssignee !== 'all' || filterPriority !== 'all') && (
+          {(filterAssignee !== 'all' || filterPriority !== 'all' || searchQuery.trim()) && (
             <button 
               className="btn btn-text"
               onClick={() => {
-                setFilterAssignee('all');
-                setFilterPriority('all');
+                resetTaskFilters({ setFilterAssignee, setFilterPriority, setSearchQuery });
               }}
             >
               Reset Filters
