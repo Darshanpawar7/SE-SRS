@@ -11,7 +11,7 @@ import { ProjectProvider, useProject } from '../context/ProjectContext';
 import ProjectSettingsModal from '../components/settings/ProjectSettingsModal';
 import { createFakeSupabase } from './helpers/fakeSupabase';
 
-const valid = { key: 'pms', name: '  SprintFlow Team 11  ', start_date: '2026-10-19', target_date: '2026-10-30' };
+const valid = { key: 'pms', name: '  SprintFlow Team 11  ', description: 'A project description', start_date: '2026-10-19', target_date: '2026-10-30' };
 
 const renderDialogAs = (memberId, email) => {
   localStorage.setItem('sprintflow_session', JSON.stringify({ memberId, email }));
@@ -51,7 +51,7 @@ describe('PMS-F-002 project metadata', () => {
 
   it('accepts and normalises a valid key, name and date range', () => {
     expect(validateProjectMetadata(valid)).toEqual({
-      key: 'PMS', name: 'SprintFlow Team 11', start_date: '2026-10-19', target_date: '2026-10-30'
+      key: 'PMS', name: 'SprintFlow Team 11', description: 'A project description', start_date: '2026-10-19', target_date: '2026-10-30'
     });
     expect(validateProjectMetadata({ ...valid, target_date: valid.start_date }).target_date).toBe('2026-10-19');
   });
