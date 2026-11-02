@@ -22,6 +22,7 @@ describe('Supabase credential configuration', () => {
     expect(isValidSupabaseAnonKey('your-anon-public-key')).toBe(false);
     expect(isValidSupabaseAnonKey('service_role_secret')).toBe(false);
     expect(isValidSupabaseAnonKey('sb_secret_example')).toBe(false);
+    expect(isValidSupabaseAnonKey('eyJhbGciOiJub25lIn0.eyJyb2xlIjoic2VydmljZV9yb2xlIn0.signature')).toBe(false);
     expect(isValidSupabaseAnonKey('key with spaces')).toBe(false);
   });
 });
