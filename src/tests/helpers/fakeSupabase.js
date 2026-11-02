@@ -21,7 +21,10 @@ export function createFakeSupabase(tables = {}) {
     const failure = client.failWith || (WRITES.has(op.kind) ? client.failWritesWith : null);
     if (failure) return { data: null, error: { message: failure } };
     const rows = db[op.table];
-    if (op.kind === 'select') return { data: structuredClone(rows), error: null };
+    if (op.kind === 'select') {
+      const selected = rows.filter(row => op.filters.every(([column, value]) => row[column] === value));
+      return { data: structuredClone(selected), error: null };
+    }
     if (op.kind === 'upsert') {
       for (const row of [].concat(op.payload)) {
         const index = rows.findIndex(existing => existing.id === row.id);

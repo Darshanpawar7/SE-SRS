@@ -14,6 +14,7 @@ import {
   auditDemoReset,
   auditProjectUpdated,
   auditSprintCreated,
+  auditSprintDeleted,
   auditSprintTransition,
   auditTaskCreated,
   auditTaskDeleted,
@@ -178,6 +179,42 @@ export function ProjectProvider({ children }) {
     await refreshActivities();
   };
 
+  const deleteSprint = async (sprintId, authorName = 'Team Member') => {
+    const sprintToDelete = sprintsRef.current.find(sprint => sprint.id === sprintId);
+    if (!sprintToDelete) throw new Error('The sprint could not be found.');
+
+    const newSprints = sprintsRef.current.filter(sprint => sprint.id !== sprintId);
+    const auditRecords = [auditSprintDeleted(sprintToDelete, authorName)];
+    const newTasks = tasksRef.current.map(task => {
+      if (task.sprint_id !== sprintId) return task;
+      const detachedTask = { ...task, sprint_id: null };
+      const auditRecord = auditTaskUpdated(task, detachedTask, authorName);
+      if (auditRecord) auditRecords.push(auditRecord);
+      return detachedTask;
+    });
+    sprintsRef.current = newSprints;
+    setSprints(newSprints);
+    tasksRef.current = newTasks;
+    setTasks(newTasks);
+
+    const nextSelectedSprintId = resolveSelectedSprint(
+      newSprints,
+      activeSprintId === sprintId ? null : activeSprintId
+    );
+    DataService.saveSelectedSprint(nextSelectedSprintId);
+    setSelectedSprintId(nextSelectedSprintId);
+    setBurndownHistory(DataService.recordBurndown(newSprints, newTasks));
+
+    const synced = await DataService.deleteSprint(
+      sprintId,
+      newSprints,
+      newTasks,
+      auditRecords
+    );
+    await refreshActivities();
+    return synced;
+  };
+
   const setActiveSprintId = (sprintId) => {
     if (!sprintsRef.current.some(sprint => sprint.id === sprintId)) return;
     DataService.saveSelectedSprint(sprintId);
@@ -255,6 +292,7 @@ export function ProjectProvider({ children }) {
       deleteTask,
       addSprint,
       updateSprintStatus,
+      deleteSprint,
       supabaseConfig,
       syncStatus,
       pendingChanges,
@@ -268,4 +306,3 @@ export function ProjectProvider({ children }) {
 }
 
 export const useProject = () => useContext(ProjectContext);
-

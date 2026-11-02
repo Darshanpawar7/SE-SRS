@@ -7,6 +7,8 @@ import { getTaskAfterStatusDrop } from '../../utils/taskUpdates';
 import { advanceTaskByOneStage, getNextTaskStatus } from '../../utils/workflow';
 import { activateCardFromKeyDown } from '../../utils/accessibility';
 import LabelPills from './LabelPills';
+import { PriorityBadge } from '../workspace/TaskSignals';
+import SignalIcon from '../workspace/SignalIcon';
 
 export default function KanbanBoard({ onOpenTaskModal }) {
   const { 
@@ -157,7 +159,7 @@ export default function KanbanBoard({ onOpenTaskModal }) {
                   </div>
                 ) : (
                   colTasks.map(task => {
-                    const priorityObj = TASK_PRIORITIES.find(p => p.id === task.priority) || TASK_PRIORITIES[1];
+
                     const assignee = TEAM_MEMBERS.find(m => m.id === task.assignee_id);
                     const nextStatus = getNextTaskStatus(task.status);
                     const nextStatusLabel = TASK_STATUSES.find(status => status.id === nextStatus)?.label;
@@ -175,20 +177,14 @@ export default function KanbanBoard({ onOpenTaskModal }) {
                           onKeyDown={(event) => activateCardFromKeyDown(event, () => onOpenTaskModal(task))}
                         >
                         <div className="card-top-row">
-                          <span 
-                            className="priority-pill" 
-                            style={{ color: priorityObj.color, borderColor: priorityObj.color + '40' }}
-                          >
-                            <span className="priority-symbol">{priorityObj.icon}</span>
-                            <span>{priorityObj.label}</span>
-                          </span>
+                          <PriorityBadge priority={task.priority} />
 
                           <span className="points-badge" title="Agile Fibonacci Estimation">
                             {task.story_points || 3} SP
                           </span>
                         </div>
 
-                        <h4 className="task-title">{task.title}</h4>
+                        <h4 className="task-title"><button onClick={e => { e.stopPropagation(); onOpenTaskModal(task); }}>{task.title}</button></h4>
                         {task.description && (
                           <p className="task-desc">{task.description}</p>
                         )}
@@ -201,7 +197,7 @@ export default function KanbanBoard({ onOpenTaskModal }) {
                           <div className="assignee-badge">
                             <div 
                               className="assignee-avatar-sm" 
-                              style={{ backgroundColor: assignee?.color || '#6366f1' }}
+                              style={{ backgroundColor: assignee?.color || 'var(--text-dim)' }}
                             >
                               {assignee ? assignee.initials : 'UN'}
                             </div>
@@ -214,13 +210,16 @@ export default function KanbanBoard({ onOpenTaskModal }) {
                         <div className="quick-move-btns">
                           <button
                             type="button"
+                            title={nextStatus ? `Advance to ${nextStatus}` : 'Task is complete'}
                             aria-label={nextStatus ? `Advance ${task.title} to ${nextStatusLabel}` : `${task.title} is in the final stage`}
-                            title="Quick advance"
-                            onClick={() => advanceTaskByOneStage(task, saveTask, currentUser.name)}
-                            className="step-btn task-quick-move"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              advanceTaskByOneStage(task, saveTask, currentUser.name);
+                            }}
+                            className="step-btn"
                             disabled={!nextStatus}
                           >
-                            {'→'}
+                            <SignalIcon name="medium" size={15} />
                           </button>
                         </div>
                       </div>

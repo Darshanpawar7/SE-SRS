@@ -18,7 +18,7 @@ export default function WorkloadList({ tasks, members }) {
             </div>
             <div className="workload-metrics-row">
               <span>{m.taskCount} tasks • {m.assignedPoints} story points assigned</span>
-              <span className="text-emerald">{m.completedPoints} pts done ({m.completionRate}%)</span>
+              <span className="tone-success">{m.completedPoints} pts done ({m.completionRate}%)</span>
             </div>
             <div
               className="mini-progress-track"
