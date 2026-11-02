@@ -23,4 +23,9 @@ describe('Supabase database security schema', () => {
     expect(schema).not.toMatch(/CREATE POLICY[^;]*USING\s*\(true\)/i);
     expect(schema).not.toMatch(/CREATE POLICY[^;]*TO\s+(?:anon|public)/i);
   });
+
+  it('derives cloud audit actors from the verified authenticated profile', () => {
+    expect(schema).toMatch(/CREATE OR REPLACE FUNCTION public\.set_verified_activity_actor\(\)[\s\S]*?NEW\.user_name := verified_name/i);
+    expect(schema).toMatch(/CREATE TRIGGER activity_logs_verified_actor[\s\S]*?BEFORE INSERT ON activity_logs/i);
+  });
 });
