@@ -43,10 +43,10 @@ export default function ProjectSettingsModal({ onClose }) {
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-card" role="dialog" aria-modal="true" aria-labelledby="project-settings-title" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h3 className="modal-title">Project Details</h3>
-          <button className="close-btn" onClick={onClose} aria-label="Close">✕</button>
+          <h3 className="modal-title" id="project-settings-title">Project Details</h3>
+          <button type="button" className="close-btn" onClick={onClose} aria-label="Close project details dialog">✕</button>
         </div>
 
         <form onSubmit={handleSubmit} className="modal-form" noValidate>
