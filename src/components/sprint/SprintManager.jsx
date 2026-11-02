@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useProject } from '../../context/ProjectContext';
 import { useAuth } from '../../context/AuthContext';
 import { calculateSprintMetrics, selectSprintTasks } from '../../utils/estimation';
+import { TASK_STATUSES } from '../../utils/constants';
 
 export default function SprintManager() {
   const { sprints, tasks, addSprint, updateSprintStatus, activeSprintId, setActiveSprintId } = useProject();
@@ -120,15 +121,15 @@ export default function SprintManager() {
                   <span className="box-lbl">Planned Points</span>
                 </div>
                 <div className="metric-box">
-                  <span className="box-val text-emerald">{metrics.completedStoryPoints}</span>
+                  <span className="box-val tone-success">{metrics.completedStoryPoints}</span>
                   <span className="box-lbl">Completed</span>
                 </div>
                 <div className="metric-box">
-                  <span className="box-val text-amber">{metrics.remainingStoryPoints}</span>
+                  <span className="box-val tone-warning">{metrics.remainingStoryPoints}</span>
                   <span className="box-lbl">Remaining</span>
                 </div>
                 <div className="metric-box">
-                  <span className="box-val text-indigo">{metrics.progressPercentage}%</span>
+                  <span className="box-val tone-strong">{metrics.progressPercentage}%</span>
                   <span className="box-lbl">Completion Rate</span>
                 </div>
               </div>
@@ -149,7 +150,7 @@ export default function SprintManager() {
                 <div className="tasks-mini-list">
                   {sprintTasks.slice(0, 4).map(t => (
                     <div key={t.id} className="mini-task-item">
-                      <span className="mini-task-status-dot" style={{ backgroundColor: t.status === 'done' ? '#10b981' : '#6366f1' }}></span>
+                      <span className="mini-task-status-dot" style={{ backgroundColor: TASK_STATUSES.find(s => s.id === t.status)?.color }}></span>
                       <span className="mini-task-title">{t.title}</span>
                       <span className="mini-task-pts">{t.story_points} SP</span>
                     </div>
