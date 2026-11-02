@@ -1,11 +1,11 @@
 // Task labels are short lowercase tags shown as pills on task cards (PMS-F-007).
 export const MAX_LABEL_LENGTH = 24;
+import { sanitizeUserText } from './userText';
 
 // "  #Front End " -> "front-end". Anything that is not a usable tag becomes ''.
 export function normalizeLabel(value) {
   if (typeof value !== 'string') return '';
-  return value
-    .trim()
+  return sanitizeUserText(value, { field: 'Tag', allowNewlines: false })
     .replace(/^#+/, '')
     .trim()
     .replace(/\s+/g, '-')
@@ -25,7 +25,10 @@ export function addLabel(labels, value) {
 
 // Accepts comma-separated input such as "ui, api".
 export function addLabels(labels, text) {
-  return String(text).split(',').reduce(addLabel, getDistinctLabels(labels));
+  return String(text)
+    .split(',')
+    .map(value => sanitizeUserText(value, { field: 'Tag', maxLength: MAX_LABEL_LENGTH, allowNewlines: false }))
+    .reduce(addLabel, getDistinctLabels(labels));
 }
 
 export function removeLabel(labels, value) {
