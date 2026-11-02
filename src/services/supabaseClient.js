@@ -249,13 +249,16 @@ const PENDING_KEY = 'sprintflow_pending_sync';
 let flushInFlight = null;
 
 const readPending = () => {
-  const empty = { seq: 0, tables: {}, deletedTaskIds: [], activity: [] };
+  const empty = { seq: 0, tables: {}, deletedTaskIds: [], deletedSprintIds: [], activity: [] };
   try {
     const saved = JSON.parse(localStorage.getItem(PENDING_KEY) || '{}');
     return {
       ...empty,
       ...saved,
-      tables: saved.tables && !Array.isArray(saved.tables) ? saved.tables : {}
+      tables: saved.tables && !Array.isArray(saved.tables) ? saved.tables : {},
+      deletedTaskIds: Array.isArray(saved.deletedTaskIds) ? saved.deletedTaskIds : [],
+      deletedSprintIds: Array.isArray(saved.deletedSprintIds) ? saved.deletedSprintIds : [],
+      activity: Array.isArray(saved.activity) ? saved.activity : []
     };
   } catch {
     return empty;
@@ -291,6 +294,16 @@ const confirmDelete = (taskId) => updatePending(pending => ({
   deletedTaskIds: pending.deletedTaskIds.filter(id => id !== taskId)
 }));
 
+const queueSprintDelete = (sprintId) => updatePending(pending => ({
+  ...pending,
+  deletedSprintIds: [...new Set([...pending.deletedSprintIds, sprintId])]
+}));
+
+const confirmSprintDelete = (sprintId) => updatePending(pending => ({
+  ...pending,
+  deletedSprintIds: pending.deletedSprintIds.filter(id => id !== sprintId)
+}));
+
 const queueActivity = (record) => updatePending(pending => ({
   ...pending,
   activity: [...pending.activity.filter(item => item.id !== record.id), record]
@@ -303,16 +316,24 @@ const confirmActivity = (recordId) => updatePending(pending => ({
 
 const hasPendingChanges = (table) => {
   const pending = readPending();
-  return Object.hasOwn(pending.tables, table) || (table === 'tasks' && pending.deletedTaskIds.length > 0);
+  return Object.hasOwn(pending.tables, table)
+    || (table === 'tasks' && pending.deletedTaskIds.length > 0)
+    || (table === 'sprints' && pending.deletedSprintIds.length > 0);
 };
 
 export const getPendingChangeCount = () => {
   const pending = readPending();
-  return Object.keys(pending.tables).length + pending.deletedTaskIds.length + pending.activity.length;
+  return Object.keys(pending.tables).length
+    + pending.deletedTaskIds.length
+    + pending.deletedSprintIds.length
+    + pending.activity.length;
 };
 
 const deleteTaskRow = (supabase, taskId) =>
   runCloud('Deleting a task', () => supabase.from('tasks').delete().eq('id', taskId));
+
+const deleteSprintRow = (supabase, sprintId) =>
+  runCloud('Deleting a sprint', () => supabase.from('sprints').delete().eq('id', sprintId));
 
 // A stored audit record is never overwritten: a record whose id already exists is
 // skipped (INSERT ... ON CONFLICT DO NOTHING), so sending it again is harmless.
@@ -329,7 +350,8 @@ export const DataService = {
   },
 
   saveSelectedSprint(sprintId) {
-    localStorage.setItem(STORAGE_KEYS.SELECTED_SPRINT, sprintId);
+    if (sprintId) localStorage.setItem(STORAGE_KEYS.SELECTED_SPRINT, sprintId);
+    else localStorage.removeItem(STORAGE_KEYS.SELECTED_SPRINT);
   },
 
   recordBurndown(sprints, tasks, now = new Date()) {
@@ -386,6 +408,10 @@ export const DataService = {
     for (const taskId of pending.deletedTaskIds) {
       if (!(await deleteTaskRow(supabase, taskId)).ok) return false;
       confirmDelete(taskId);
+    }
+    for (const sprintId of pending.deletedSprintIds) {
+      if (!(await deleteSprintRow(supabase, sprintId)).ok) return false;
+      confirmSprintDelete(sprintId);
     }
     for (const record of pending.activity) {
       if (!(await insertActivityRow(supabase, record)).ok) return false;
@@ -483,6 +509,26 @@ export const DataService = {
     if (auditRecord) await this.pushActivity(auditRecord);
   },
 
+  async deleteSprint(sprintId, remainingSprints, remainingTasks, auditRecords = []) {
+    const records = Array.isArray(auditRecords) ? auditRecords : [auditRecords];
+    records.forEach(requireAuditRecord);
+    writeLocal(STORAGE_KEYS.SPRINTS, remainingSprints);
+    writeLocal(STORAGE_KEYS.TASKS, remainingTasks);
+    records.forEach(appendActivity);
+
+    const supabase = getSupabase();
+    if (!supabase) return true;
+
+    queueSprintDelete(sprintId);
+    records.forEach(queueActivity);
+    if (!(await this.pushTasks(remainingTasks))) return false;
+
+    const { ok } = await deleteSprintRow(supabase, sprintId);
+    if (ok) confirmSprintDelete(sprintId);
+    for (const record of records) await this.pushActivity(record);
+    return ok;
+  },
+
   async pushSprints(sprints) {
     const supabase = getSupabase();
     if (!supabase) return true;
@@ -566,7 +612,7 @@ export const DataService = {
   // Unsent board changes belong to the board being replaced, so they are dropped;
   // unsent audit records are kept.
   resetAllData() {
-    updatePending(pending => ({ ...pending, tables: {}, deletedTaskIds: [] }));
+    updatePending(pending => ({ ...pending, tables: {}, deletedTaskIds: [], deletedSprintIds: [] }));
     localStorage.removeItem(STORAGE_KEYS.SELECTED_SPRINT);
     localStorage.removeItem(STORAGE_KEYS.BURNDOWN);
     localStorage.setItem(STORAGE_KEYS.PROJECT, JSON.stringify(INITIAL_PROJECT));
