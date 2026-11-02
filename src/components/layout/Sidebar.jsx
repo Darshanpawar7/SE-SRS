@@ -41,7 +41,7 @@ export default function Sidebar({ activeTab, setActiveTab, onOpenSettings }) {
 
   return (
     <aside className="app-sidebar">
-      <nav className="sidebar-nav">
+      <nav className="sidebar-nav" aria-label="Workspace">
         <div className="nav-group-label">WORKSPACE</div>
         {navItems.map(item => (
           <button

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import {
   DataService,
   getPendingChangeCount,
@@ -51,25 +51,21 @@ export function ProjectProvider({ children }) {
     return () => window.removeEventListener('online', sendPendingChanges);
   }, []);
 
-  // Load initial data
+  // The service owns I/O; this callback applies a fully loaded snapshot.
+  const applyLoadedData = useCallback(({ project: projData, sprints: sprintsData, tasks: tasksData, activities: actData }) => {
+    setProject(projData);
+    sprintsRef.current = sprintsData;
+    setSprints(sprintsData);
+    tasksRef.current = tasksData;
+    setTasks(tasksData);
+    setBurndownHistory(DataService.recordBurndown(sprintsData, tasksData));
+    setActivities(actData);
+    setSelectedSprintId(resolveSelectedSprint(sprintsData, DataService.getSelectedSprint()));
+  }, []);
+
   const loadData = async () => {
-    setLoading(true);
     try {
-      const {
-        project: projData,
-        sprints: sprintsData,
-        tasks: tasksData,
-        activities: actData
-      } = await DataService.loadAll();
-      setProject(projData);
-      sprintsRef.current = sprintsData;
-      setSprints(sprintsData);
-      tasksRef.current = tasksData;
-      setTasks(tasksData);
-      setBurndownHistory(DataService.recordBurndown(sprintsData, tasksData));
-      setActivities(actData);
-      
-      setSelectedSprintId(resolveSelectedSprint(sprintsData, DataService.getSelectedSprint()));
+      applyLoadedData(await DataService.loadAll());
     } catch (err) {
       console.error('Failed to load project data:', err);
     } finally {
@@ -78,8 +74,16 @@ export function ProjectProvider({ children }) {
   };
 
   useEffect(() => {
-    loadData();
-  }, []);
+    let current = true;
+    DataService.loadAll().then(data => {
+      if (current) applyLoadedData(data);
+    }).catch(err => {
+      if (current) console.error('Failed to load project data:', err);
+    }).finally(() => {
+      if (current) setLoading(false);
+    });
+    return () => { current = false; };
+  }, [applyLoadedData]);
 
   // Appends one audit record; the feed always mirrors the stored, append-only history.
   // Show the stored history, which includes every record even when saves finish out of order.
@@ -240,6 +244,7 @@ export function ProjectProvider({ children }) {
 
   const refreshConfig = () => {
     setSupabaseConfig(getSupabaseConfig());
+    setLoading(true);
     loadData();
   };
 
@@ -255,6 +260,7 @@ export function ProjectProvider({ children }) {
     }
     DataService.resetAllData();
     await recordAudit(auditDemoReset(member.name));
+    setLoading(true);
     await loadData();
   };
 

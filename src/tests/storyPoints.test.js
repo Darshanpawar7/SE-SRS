@@ -10,6 +10,7 @@ describe('PMS-F-008 Fibonacci estimates', () => {
     vi.stubGlobal('localStorage', {
       getItem: key => data.get(key) ?? null,
       setItem: (key, value) => data.set(key, value),
+      removeItem: key => data.delete(key),
     });
   });
 
