@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { useProject } from '../../context/ProjectContext';
 import { useAuth } from '../../context/AuthContext';
 import { calculateSprintMetrics, selectSprintTasks } from '../../utils/estimation';
+import { TASK_STATUSES } from '../../utils/constants';
 
 export default function SprintManager() {
-  const { sprints, tasks, addSprint, updateSprintStatus, activeSprintId, setActiveSprintId } = useProject();
+  const { sprints, tasks, addSprint, updateSprintStatus, deleteSprint, activeSprintId, setActiveSprintId } = useProject();
   const { currentUser } = useAuth();
 
   const [showNewSprintModal, setShowNewSprintModal] = useState(false);
@@ -50,6 +51,22 @@ export default function SprintManager() {
     }
   };
 
+  const handleDeleteSprint = async (sprint) => {
+    const message = `Delete "${sprint.name}"? Its tasks will be kept outside the sprint, and this action cannot be undone.`;
+    if (!window.confirm(message)) return;
+
+    setError('');
+    setBusy(true);
+    try {
+      const synced = await deleteSprint(sprint.id, currentUser.name);
+      if (!synced) setError('Sprint deleted on this device; cloud sync is pending.');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <div className="sprint-page">
       <div className="view-header">
@@ -83,7 +100,7 @@ export default function SprintManager() {
                 </div>
 
                 <div className="sprint-actions">
-                  <button className="btn btn-sm btn-secondary" onClick={() => setActiveSprintId(sprint.id)} aria-pressed={activeSprintId === sprint.id}>
+                  <button className="btn btn-sm btn-secondary" disabled={busy} onClick={() => setActiveSprintId(sprint.id)} aria-pressed={activeSprintId === sprint.id}>
                     {activeSprintId === sprint.id ? 'Selected sprint' : 'View sprint'}
                   </button>
                   {sprint.status === 'planned' && (
@@ -104,6 +121,13 @@ export default function SprintManager() {
                       Complete Sprint
                     </button>
                   )}
+                  <button
+                    className="btn btn-sm btn-danger"
+                    disabled={busy}
+                    onClick={() => handleDeleteSprint(sprint)}
+                  >
+                    Delete Sprint
+                  </button>
                 </div>
               </div>
 
@@ -120,15 +144,15 @@ export default function SprintManager() {
                   <span className="box-lbl">Planned Points</span>
                 </div>
                 <div className="metric-box">
-                  <span className="box-val text-emerald">{metrics.completedStoryPoints}</span>
+                  <span className="box-val tone-success">{metrics.completedStoryPoints}</span>
                   <span className="box-lbl">Completed</span>
                 </div>
                 <div className="metric-box">
-                  <span className="box-val text-amber">{metrics.remainingStoryPoints}</span>
+                  <span className="box-val tone-warning">{metrics.remainingStoryPoints}</span>
                   <span className="box-lbl">Remaining</span>
                 </div>
                 <div className="metric-box">
-                  <span className="box-val text-indigo">{metrics.progressPercentage}%</span>
+                  <span className="box-val tone-strong">{metrics.progressPercentage}%</span>
                   <span className="box-lbl">Completion Rate</span>
                 </div>
               </div>
@@ -149,7 +173,7 @@ export default function SprintManager() {
                 <div className="tasks-mini-list">
                   {sprintTasks.slice(0, 4).map(t => (
                     <div key={t.id} className="mini-task-item">
-                      <span className="mini-task-status-dot" style={{ backgroundColor: t.status === 'done' ? '#10b981' : '#6366f1' }}></span>
+                      <span className="mini-task-status-dot" style={{ backgroundColor: TASK_STATUSES.find(s => s.id === t.status)?.color }}></span>
                       <span className="mini-task-title">{t.title}</span>
                       <span className="mini-task-pts">{t.story_points} SP</span>
                     </div>
@@ -233,4 +257,3 @@ export default function SprintManager() {
     </div>
   );
 }
-
