@@ -181,6 +181,60 @@ describe('PMS-F-015 Supabase synchronisation', () => {
     })]);
   });
 
+  it('loads project audit records from Supabase and caches the mapped history', async () => {
+    const record = auditTaskCreated(cloudTask, 'Chandan Kumar K', '2026-10-26T09:00:00.000Z');
+    const otherProjectRecord = auditTaskCreated(
+      { ...cloudTask, id: 'other-project-task' },
+      'Other project actor',
+      '2026-10-26T10:00:00.000Z'
+    );
+    const cloud = createFakeSupabase({
+      projects: [toProjectRow(INITIAL_PROJECT)],
+      activity_logs: [
+        toActivityRow(record, INITIAL_PROJECT.id),
+        toActivityRow(otherProjectRecord, '33333333-3333-4333-8333-333333333333')
+      ]
+    });
+    setSupabaseClient(cloud);
+
+    const history = await DataService.getActivity();
+
+    expect(history).toEqual([record]);
+    expect(cloud.calls.find(call => call.table === 'activity_logs').filters)
+      .toEqual([['project_id', INITIAL_PROJECT.id]]);
+    expect(JSON.parse(storage.get('sprintflow_activity'))).toEqual([record]);
+  });
+
+  it('merges local-only audit events with cloud history without duplicates', async () => {
+    const shared = auditTaskCreated(cloudTask, 'Cloud actor', '2026-10-26T09:00:00.000Z');
+    const localOnly = auditTaskCreated({ ...cloudTask, id: 'local-only' }, 'Local actor', '2026-10-26T10:00:00.000Z');
+    storage.set('sprintflow_activity', JSON.stringify([
+      { ...shared, actor: 'Stale local actor', user: 'Stale local actor' },
+      localOnly
+    ]));
+    const cloud = createFakeSupabase({
+      activity_logs: [toActivityRow(shared, INITIAL_PROJECT.id)]
+    });
+    setSupabaseClient(cloud);
+
+    const history = await DataService.getActivity();
+
+    expect(history.map(record => record.id)).toEqual([localOnly.id, shared.id]);
+    expect(history[1].actor).toBe('Cloud actor');
+    expect(new Set(history.map(record => record.id)).size).toBe(history.length);
+  });
+
+  it('falls back to local audit history and reports a cloud read failure', async () => {
+    const localRecord = auditTaskCreated(cloudTask, 'Local actor', '2026-10-26T09:00:00.000Z');
+    storage.set('sprintflow_activity', JSON.stringify([localRecord]));
+    const cloud = createFakeSupabase();
+    cloud.failWith = 'Failed to fetch';
+    setSupabaseClient(cloud);
+
+    await expect(DataService.getActivity()).resolves.toEqual([localRecord]);
+    expect(getSyncStatus()).toMatchObject({ state: 'error' });
+  });
+
   it('TC-SET-01: rejects a malformed URL and keeps the previous configuration', () => {
     saveSupabaseConfig('https://team11.supabase.co/', 'anon-key');
     expect(getSupabaseConfig()).toMatchObject({ url: 'https://team11.supabase.co', isConfigured: true });
