@@ -244,11 +244,8 @@ function TaskForm({ task, onClose, updateTask, addTask, deleteTask, activeSprint
                 type="text"
                 className="label-sub-input"
                 placeholder="Add tag..."
-<<<<<<< HEAD
-=======
                 aria-label="Add label"
                 maxLength={200}
->>>>>>> origin/main
                 value={labelInput}
                 onChange={(e) => setLabelInput(sanitizeUserText(e.target.value, { field: 'Tag', maxLength: 200, allowNewlines: false, trim: false }))}
                 onKeyDown={handleAddLabel}
