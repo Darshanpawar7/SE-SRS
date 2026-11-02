@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useProject } from '../../context/ProjectContext';
 import { useAuth } from '../../context/AuthContext';
 import { TASK_STATUSES, TASK_PRIORITIES, STORY_POINTS, TEAM_MEMBERS } from '../../utils/constants';
@@ -9,35 +9,27 @@ export default function TaskModal({ task, isOpen, onClose }) {
   const { updateTask, addTask, deleteTask, activeSprintId, sprints } = useProject();
   const { currentUser } = useAuth();
 
-  const isEditing = Boolean(task?.id);
+  if (!isOpen) return null;
+  // Closing unmounts the editor; switching task, sprint or member starts a new draft.
+  return <TaskForm key={`${task?.id ?? 'new'}:${activeSprintId ?? ''}:${currentUser?.id ?? ''}`}
+    task={task} onClose={onClose} updateTask={updateTask} addTask={addTask}
+    deleteTask={deleteTask} activeSprintId={activeSprintId} sprints={sprints} currentUser={currentUser} />;
+}
 
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [status, setStatus] = useState('todo');
-  const [priority, setPriority] = useState('medium');
-  const [storyPoints, setStoryPoints] = useState(3);
-  const [assigneeId, setAssigneeId] = useState('u-1');
-  const [sprintId, setSprintId] = useState('');
+function TaskForm({ task, onClose, updateTask, addTask, deleteTask, activeSprintId, sprints, currentUser }) {
+  const isEditing = Boolean(task?.id);
+  const [initial] = useState(() => getTaskFormValues(task, activeSprintId, currentUser));
+  const [title, setTitle] = useState(initial.title);
+  const [description, setDescription] = useState(initial.description);
+  const [status, setStatus] = useState(initial.status);
+  const [priority, setPriority] = useState(initial.priority);
+  const [storyPoints, setStoryPoints] = useState(initial.storyPoints);
+  const [assigneeId, setAssigneeId] = useState(initial.assigneeId);
+  const [sprintId, setSprintId] = useState(initial.sprintId);
   const [labelInput, setLabelInput] = useState('');
-  const [labels, setLabels] = useState([]);
+  const [labels, setLabels] = useState(() => getDistinctLabels(initial.labels));
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    setError('');
-    const values = getTaskFormValues(task, activeSprintId, currentUser);
-    setTitle(values.title);
-    setDescription(values.description);
-    setStatus(values.status);
-    setPriority(values.priority);
-    setStoryPoints(values.storyPoints);
-    setAssigneeId(values.assigneeId);
-    setSprintId(values.sprintId);
-    setLabels(getDistinctLabels(values.labels));
-    setLabelInput('');
-  }, [task, activeSprintId, currentUser]);
-
-  if (!isOpen) return null;
 
   const handleAddLabel = (e) => {
     if ((e.key === 'Enter' || e.key === ',') && labelInput.trim()) {
