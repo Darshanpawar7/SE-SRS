@@ -68,6 +68,10 @@ The detailed work breakdown, SAD and STP section ownership, and viva guide are i
 
 - **Product Demo Video (60 seconds, 1080p):** [`docs/demo/SprintFlow_Demo.mp4`](docs/demo/SprintFlow_Demo.mp4), a captioned walkthrough of all 18 functional backlog items (PMS-F-001 to PMS-F-018) in the refreshed interface
 
+### Delivery analytics extension (owner review)
+
+The selected-sprint dashboard adds observed cumulative flow, completion throughput, recorded cycle-time samples and open-work age. Missing history is not estimated; definitions and data tables are in the UI. See [analytics behavior and coverage](docs/enhancements/12-flow-analytics.md). This extends existing visibility requirements and does not replace the required Sprint 2 submission evidence.
+
 ### Common to All Phases
 
 - **Team Work Breakdown and Viva Guide:** `docs/Team_Work_Division.md`

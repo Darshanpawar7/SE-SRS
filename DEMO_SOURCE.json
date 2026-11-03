@@ -1,0 +1,19 @@
+{
+  "repository": "https://github.com/Darshanpawar7/SE-SRS",
+  "purpose": "combined review demo",
+  "assembled_on": "2026-11-03",
+  "feature_heads": {
+    "foundation": "943f4fdc59eff890ef7bec136142df6e99419f01",
+    "security": "390d4e136f905a8d5bb60ef1c7b608b3a6569d20",
+    "analytics": "da93bf2e01ae01807dced99eb552b182f00db7f8",
+    "tracking": "4bac901ece11d21b3ffcf7fd3100904a778e4875",
+    "feedback": "5677aef2bc5bb40e197f6c51fb44dcf6081f9949",
+    "map": "af3b18274e27b3ad9c9d47af7fb5cef7e66276f7"
+  },
+  "locally_verified_integration_commit": "6c3a768d4ec98d7a67f93a05db4dd8324f2c989d",
+  "tests": 240,
+  "test_files": 36,
+  "compiled_dom_checks": 57,
+  "merged_into_main": false,
+  "deployed": false
+}

@@ -90,7 +90,7 @@ describe('PMS-F-001 team sign-in and profile switching', () => {
     const signInWithPassword = vi.fn(async ({ password }) => (
       password === 'correct horse' ? { data: {}, error: null } : { data: null, error: { message: 'Invalid login credentials' } }
     ));
-    setSupabaseClient({ auth: { signInWithPassword, signOut: vi.fn(async () => ({ error: null })) } });
+    setSupabaseClient({ auth: { signInWithPassword, getUser: vi.fn(async () => ({data:{user:{email:developer.email}},error:null})), signOut: vi.fn(async () => ({ error: null })) } });
 
     await expect(signIn(developer.email, 'wrong')).rejects.toThrow('Invalid login credentials');
     expect(await signIn(developer.email, 'correct horse')).toMatchObject({ id: developer.id });

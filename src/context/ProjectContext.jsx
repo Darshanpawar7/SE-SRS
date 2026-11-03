@@ -23,9 +23,12 @@ import {
 import { validateSprint, transitionSprint, resolveSelectedSprint } from '../utils/sprintLifecycle';
 import { can, PERMISSIONS } from '../services/authService';
 
+import { useAuth } from './AuthContext';
+
 const ProjectContext = createContext();
 
 export function ProjectProvider({ children }) {
+  const { cloudVerified, currentUser } = useAuth();
   const [project, setProject] = useState(null);
   const [sprints, setSprints] = useState([]);
   const sprintsRef = useRef([]);
@@ -75,6 +78,10 @@ export function ProjectProvider({ children }) {
 
   useEffect(() => {
     let current = true;
+    if (supabaseConfig.isConfigured && !cloudVerified) {
+      Promise.resolve().then(() => { if (current) { setProject(null); setTasks([]); tasksRef.current = []; setSprints([]); sprintsRef.current = []; setActivities([]); setLoading(false); } });
+      return () => { current = false; };
+    }
     DataService.loadAll().then(data => {
       if (current) applyLoadedData(data);
     }).catch(err => {
@@ -83,7 +90,7 @@ export function ProjectProvider({ children }) {
       if (current) setLoading(false);
     });
     return () => { current = false; };
-  }, [applyLoadedData]);
+  }, [applyLoadedData, cloudVerified, currentUser?.id, supabaseConfig.isConfigured]);
 
   // Appends one audit record; the feed always mirrors the stored, append-only history.
   // Show the stored history, which includes every record even when saves finish out of order.
@@ -245,7 +252,7 @@ export function ProjectProvider({ children }) {
   const refreshConfig = () => {
     setSupabaseConfig(getSupabaseConfig());
     setLoading(true);
-    loadData();
+    if (!getSupabaseConfig().isConfigured || cloudVerified) loadData();
   };
 
   // Only the team lead may reset, and only in local demo mode: with Supabase connected the
