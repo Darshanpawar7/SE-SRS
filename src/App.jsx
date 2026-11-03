@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import CommandMenu from './components/workspace/CommandMenu';
 import TaskExplorer from './components/workspace/TaskExplorer';
+import ProjectMap from './components/workspace/ProjectMap';
 import './styles/motion.css';
 import Navbar from './components/layout/Navbar';
 import Sidebar from './components/layout/Sidebar';
@@ -74,6 +75,8 @@ export default function App() {
           )}
 
           {activeTab === 'explorer' && <TaskExplorer onOpenTask={handleOpenEditTask} />}
+
+          {activeTab === 'map' && <ProjectMap onOpenTask={handleOpenEditTask} onOpenProject={() => setIsProjectSettingsOpen(true)} onNavigateBoard={() => setActiveTab('kanban')} />}
 
           {activeTab === 'docs' && (
             <DocsView />
