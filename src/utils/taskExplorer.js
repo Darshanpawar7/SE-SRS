@@ -16,8 +16,8 @@ export function csvCell(value) {
   return '"' + text.replaceAll('"','""') + '"';
 }
 export function tasksToCsv(tasks, sprints = []) {
-  const rows = [['ID','Title','Status','Priority','Story points','Assignee','Sprint','Labels'],
+  const rows = [['ID','Title','Status','Priority','Story points','Assignee','Sprint','Labels','Due date','Blocker'],
     ...tasks.map(task => [task.id,task.title,task.status,task.priority,task.story_points,task.assignee_name,
-      sprints.find(sprint => sprint.id === task.sprint_id)?.name || 'Unscheduled',(task.labels || []).join('; ')])];
+      sprints.find(sprint => sprint.id === task.sprint_id)?.name || 'Unscheduled',(task.labels || []).join('; '),task.due_date,task.blocked_reason])];
   return '\ufeff' + rows.map(row => row.map(csvCell).join(',')).join('\r\n') + '\r\n';
 }

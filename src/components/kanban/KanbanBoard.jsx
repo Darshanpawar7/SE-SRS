@@ -10,6 +10,7 @@ import { advanceTaskByOneStage, getNextTaskStatus } from '../../utils/workflow';
 import { activateCardFromKeyDown } from '../../utils/accessibility';
 import LabelPills from './LabelPills';
 import { PriorityBadge } from '../workspace/TaskSignals';
+import WorkSignals from '../workspace/WorkSignals';
 import SignalIcon from '../workspace/SignalIcon';
 
 export default function KanbanBoard({ onOpenTaskModal }) {
@@ -179,6 +180,7 @@ export default function KanbanBoard({ onOpenTaskModal }) {
                           <p className="task-desc">{task.description}</p>
                         )}
 
+                        <WorkSignals task={task}/>
                         {/* Labels */}
                         <LabelPills labels={task.labels} />
 

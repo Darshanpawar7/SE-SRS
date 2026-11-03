@@ -1,0 +1,7 @@
+# Due dates, blockers and attention views
+
+Adds optional due dates (UTC) and a 300-character blocker reason to existing work items. The five workflow states are unchanged. The task form validates the date and sanitizes blocker text; clearing the reason unblocks the item. Cards and the explorer show explicit text badges. Explorer attention filters (blocked, overdue, due today) intersect the current scope, quick view and existing filters. Completed items are excluded from these attention counts. CSV exports include these fields with existing formula neutralization. Audit records capture planning changes.
+
+Maps to existing PMS-F-006/007/014/017 and PMS-F-012 visibility. These are proposed extensions of the SRS work-item metadata, requiring owner acceptance as documented deviations rather than new claimed completed backlog requirements.
+
+Cloud setup is an additive migration: apply database/migrations/20261103_work_signals.sql to the test Supabase project before using this branch with cloud persistence. Do not rerun the seeded schema on an existing project just to add columns. The migration preserves RLS and grants. Local demo needs no migration. A cloud deployment without these columns rejects writes containing the new fields and the existing retry queue retains changes; this is not a successful sync. Database deployment is not performed by this PR. Validate on test Supabase before merging/deploying. No dependency graph or automatic deadline scheduling is implied by a blocker reason.
