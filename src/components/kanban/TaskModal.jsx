@@ -221,6 +221,7 @@ function TaskForm({ task, onClose, updateTask, addTask, deleteTask, activeSprint
               value={assigneeId} 
               onChange={(e) => setAssigneeId(e.target.value)}
             >
+              <option value="">Unassigned</option>
               {TEAM_MEMBERS.map(m => (
                 <option key={m.id} value={m.id}>
                   {m.name} ({m.usn}) — {m.role}
@@ -244,11 +245,8 @@ function TaskForm({ task, onClose, updateTask, addTask, deleteTask, activeSprint
                 type="text"
                 className="label-sub-input"
                 placeholder="Add tag..."
-<<<<<<< HEAD
-=======
                 aria-label="Add label"
                 maxLength={200}
->>>>>>> origin/main
                 value={labelInput}
                 onChange={(e) => setLabelInput(sanitizeUserText(e.target.value, { field: 'Tag', maxLength: 200, allowNewlines: false, trim: false }))}
                 onKeyDown={handleAddLabel}

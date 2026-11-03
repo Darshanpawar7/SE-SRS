@@ -35,8 +35,8 @@ export function getTaskFormValues(task, activeSprintId, currentUser) {
       status: task.status || 'todo',
       priority: task.priority || 'medium',
       storyPoints: task.story_points ?? 3,
-      assigneeId: task.assignee_id || 'u-1',
-      sprintId: task.sprint_id || activeSprintId || '',
+      assigneeId: task.assignee_id ?? '',
+      sprintId: task.sprint_id ?? '',
       labels: task.labels || []
     };
   }
@@ -63,7 +63,7 @@ export function buildTaskPayload(formValues, currentUser, teamMembers) {
     status: safeValues.status,
     priority: safeValues.priority,
     story_points: Number(safeValues.storyPoints),
-    assignee_id: safeValues.assigneeId,
+    assignee_id: safeValues.assigneeId || null,
     assignee_name: assignedMember ? assignedMember.name : 'Unassigned',
     reporter_name: currentUser.name,
     sprint_id: safeValues.sprintId || null,

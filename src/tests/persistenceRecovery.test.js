@@ -1,6 +1,6 @@
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
 import { INITIAL_PROJECT, INITIAL_SPRINTS, INITIAL_ACTIVITY } from '../services/mockData';
-import { auditTaskCreated, auditProjectUpdated, auditSprintCreated } from '../utils/auditTrail';
+import { auditTaskCreated, auditProjectUpdated, auditSprintCreated, auditSprintDeleted } from '../utils/auditTrail';
 import { createFakeSupabase } from './helpers/fakeSupabase';
 import { commitLocalSave, recoverLocalSave } from '../services/localPersistence';
 
@@ -143,4 +143,57 @@ describe('PMS-NF-004 fresh-session recovery', () => {
     expect(() => commitLocalSave({ sprintflow_tasks: [] })).toThrow('storage full');
     expect(JSON.parse(storage.get('sprintflow_tasks'))).toEqual([task]);
   });
+  it('keeps an audit event saved while an older shared-history read is pending', async () => {
+    const cloud = createFakeSupabase();
+    const baseFrom = cloud.from;
+    let finishRead;
+    cloud.from = name => {
+      const builder = baseFrom(name);
+      const select = builder.select;
+      builder.select = (...args) => {
+        select(...args);
+        if (name === 'activity_logs') builder.then = resolve => { finishRead = () => resolve({ data: [], error: null }); };
+        return builder;
+      };
+      return builder;
+    };
+    const { DataService: service } = await boot(cloud);
+    const reading = service.getActivity();
+    await Promise.resolve();
+    const record = auditTaskCreated(task, 'Eshwar');
+    await service.saveTasks([task], record);
+    finishRead();
+    expect((await reading).map(event => event.id)).toContain(record.id);
+    expect(JSON.parse(storage.get('sprintflow_activity')).map(event => event.id)).toContain(record.id);
+  });
+
+  it('recovers sprint deletion, detached tasks, audit and delete retry intent together', async () => {
+    const cloud = createFakeSupabase({ sprints: INITIAL_SPRINTS, tasks: [task] });
+    const { DataService: service } = await boot(cloud);
+    const sprint = INITIAL_SPRINTS[0];
+    const record = auditSprintDeleted(sprint, 'Eshwar');
+    const remaining = INITIAL_SPRINTS.filter(item => item.id !== sprint.id);
+    const detached = [{ ...task, sprint_id: null }];
+    storage.set('sprintflow_activity', '[]');
+    const original = localStorage.setItem;
+    localStorage.setItem = (key, value) => {
+      if (key === 'sprintflow_activity') throw new Error('interrupted');
+      original(key, value);
+    };
+    await expect(service.deleteSprint(sprint.id, remaining, detached, [record])).rejects.toThrow('interrupted');
+    expect(storage.has('sprintflow_save_journal')).toBe(true);
+    localStorage.setItem = original;
+    const restarted = await boot(null);
+    expect(await restarted.DataService.getSprints()).toEqual(remaining);
+    expect(await restarted.DataService.getTasks()).toEqual(detached);
+    expect((await restarted.DataService.getActivity()).map(item => item.id)).toContain(record.id);
+    expect(JSON.parse(storage.get('sprintflow_pending_sync')).deletedSprintIds).toContain(sprint.id);
+    restarted.setSupabaseClient(cloud);
+    await restarted.DataService.flushPending();
+    expect(cloud.db.sprints.map(item => item.id)).not.toContain(sprint.id);
+    expect(cloud.db.tasks[0].sprint_id).toBe(null);
+    expect(cloud.db.activity_logs.map(item => item.id)).toContain(record.id);
+    expect(restarted.getPendingChangeCount()).toBe(0);
+  });
+
 });
