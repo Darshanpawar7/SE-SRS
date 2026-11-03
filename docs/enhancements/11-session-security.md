@@ -7,3 +7,5 @@ Active browser work and pending uploads are switched by endpoint plus verified u
 Local demo sign-in remains offline. Configured cloud mode requires network verification on initial restore; if it fails the app asks for sign-in and keeps saved data. Once verified, existing offline writes/retries remain available. RLS remains the actual cloud authorization boundary. No live Supabase, schema deployment, external penetration test or TLS certification is claimed. Tests cover identity mismatch, expiry, cache/queue isolation and project read scoping. Review server Auth/RLS separately before deployment.
 
 Source: https://supabase.com/docs/reference/javascript/auth-getuser
+
+The authenticated workspace is mounted under a profile identity key. Sign-out unmounts its modal/draft/filter state; changing the verified team profile remounts it. This prevents a previous profile's unsaved task draft or open editor from appearing after another person signs in. Combined compiled-app verification covers sign-out during an open draft and fresh-profile sign-in.
