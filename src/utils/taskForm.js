@@ -1,3 +1,4 @@
+import { validateWorkSignals } from './workSignals';
 import { TASK_PRIORITIES } from './constants';
 import { sanitizeUserText } from './userText';
 
@@ -58,6 +59,7 @@ export function buildTaskPayload(formValues, currentUser, teamMembers) {
   const assignedMember = teamMembers.find((member) => member.id === safeValues.assigneeId);
 
   return {
+    ...validateWorkSignals(safeValues),
     title: safeValues.title,
     description: safeValues.description,
     status: safeValues.status,

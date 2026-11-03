@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import WorkspaceFeedback from './components/workspace/WorkspaceFeedback';
 import CommandMenu from './components/workspace/CommandMenu';
 import TaskExplorer from './components/workspace/TaskExplorer';
 import ProjectMap from './components/workspace/ProjectMap';
@@ -17,6 +18,12 @@ import { useAuth } from './context/AuthContext';
 
 export default function App() {
   const { currentUser } = useAuth();
+  if (!currentUser) return <SignInView />;
+  // A profile change discards private drafts, open dialogs and transient filters.
+  return <AuthenticatedWorkspace key={currentUser.id} />;
+}
+
+function AuthenticatedWorkspace() {
   const [activeTab, setActiveTab] = useState('kanban');
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -30,9 +37,6 @@ export default function App() {
   }, [activeTab]);
 
   const navigate = tab => setActiveTab(tab);
-
-  // Unauthenticated visitors only ever see the sign-in view.
-  if (!currentUser) return <SignInView />;
 
   const handleOpenNewTask = () => {
     setSelectedTask(null);
@@ -62,6 +66,7 @@ export default function App() {
 
         <main id="workspace-main" ref={mainRef} className="app-content" tabIndex={-1}>
           <CommandMenu onNavigate={navigate} explorerEnabled onNewTask={handleOpenNewTask} onOpenTask={handleOpenEditTask} onSettings={() => setIsSettingsOpen(true)} />
+          <WorkspaceFeedback onNewTask={handleOpenNewTask} />
           {activeTab === 'dashboard' && (
             <DashboardView onNavigateKanban={() => setActiveTab('kanban')} onOpenTask={handleOpenEditTask} />
           )}
