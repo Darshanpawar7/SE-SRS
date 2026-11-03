@@ -1,6 +1,6 @@
 export const FEEDBACK_KEY='sprintflow_feedback_preferences';
 export function parseFeedback(value) {
- try { const p=JSON.parse(value||'{}');return {animations:p.animations!==false,haptics:p.haptics===true}; } catch{return {animations:true,haptics:false};}
+ try { const p=JSON.parse(value||'{}') || {};return {animations:p.animations!==false,haptics:p.haptics===true,theme:p.theme==='dark'?'dark':'light',compactNavigation:p.compactNavigation===true}; } catch{return {animations:true,haptics:false,theme:'light',compactNavigation:false};}
 }
 export function hapticFeedback(kind,{enabled,navigator:nav=globalThis.navigator,reduced=false,hidden=false}={}) {
  if(!enabled||reduced||hidden||!nav?.vibrate||!nav.userActivation?.hasBeenActive)return false;
