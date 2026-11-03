@@ -8,6 +8,7 @@ import BurndownChart from './BurndownChart';
 import KpiCards from './KpiCards';
 import WorkloadList from './WorkloadList';
 import AuditTrail from './AuditTrail';
+import FlowAnalytics from './FlowAnalytics';
 import DeliverySignals from './DeliverySignals';
 
 export default function DashboardView({ onNavigateKanban, onOpenTask = () => {} }) {
@@ -39,6 +40,8 @@ export default function DashboardView({ onNavigateKanban, onOpenTask = () => {} 
       <KpiCards metrics={sprintMetrics} />
 
       <DeliverySignals tasks={activeSprintTasks} sprint={activeSprint} onOpenTask={onOpenTask} />
+
+      <FlowAnalytics project={project} sprint={activeSprint} tasks={activeSprintTasks} activities={activities} onOpenTask={onOpenTask} />
 
       {/* Visual Analytics Grid */}
       <div className="charts-grid">
