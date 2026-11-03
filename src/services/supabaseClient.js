@@ -145,7 +145,7 @@ async function runCloud(label, request) {
 }
 
 // Rows sent to Supabase carry only the columns defined in database/schema.sql.
-export const TASK_COLUMNS = ['id', 'project_id', 'sprint_id', 'title', 'description', 'status', 'priority', 'story_points', 'assignee_id', 'assignee_name', 'reporter_name', 'labels', 'created_at', 'updated_at'];
+export const TASK_COLUMNS = ['id', 'project_id', 'sprint_id', 'title', 'description', 'status', 'priority', 'story_points', 'assignee_id', 'assignee_name', 'reporter_name', 'labels', 'due_date', 'blocked_reason', 'created_at', 'updated_at'];
 export const SPRINT_COLUMNS = ['id', 'project_id', 'name', 'goal', 'status', 'start_date', 'end_date', 'total_points', 'completed_points'];
 export const PROJECT_COLUMNS = ['id', 'name', 'key', 'description', 'owner_id', 'status', 'start_date', 'target_date'];
 

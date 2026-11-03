@@ -1,0 +1,12 @@
+import React from 'react';
+import { PriorityBadge, StatusBadge } from './TaskSignals';
+import WorkSignals from './WorkSignals';
+
+const timestamp = value => Number.isFinite(Date.parse(value)) ? new Date(value).toISOString().replace('T',' ').slice(0,19)+' UTC' : 'Not recorded';
+export default function TaskPreviewDrawer({ task, sprints, activities, dialogRef, onClose, onEdit }) {
+  const records = task ? activities.filter(a=>a.entity_type==='task'&&a.entity_id===task.id).slice().sort((a,b)=>Date.parse(b.timestamp)-Date.parse(a.timestamp)).slice(0,6) : [];
+  return <dialog ref={dialogRef} className="task-preview-drawer" aria-labelledby="task-preview-title" onClose={onClose} onClick={e=>{if(e.target===dialogRef.current)dialogRef.current.close();}}>
+    <header><span className="eyebrow">WORK ITEM DETAILS</span><button type="button" className="btn btn-secondary btn-sm" onClick={()=>dialogRef.current.close()} aria-label="Close work item preview">Close ×</button></header>
+    {task ? <div className="task-preview-content"><span className="task-ref">{task.id}</span><h2 id="task-preview-title">{task.title}</h2><div className="task-preview-badges"><StatusBadge status={task.status}/><PriorityBadge priority={task.priority}/><span className="points-badge">{task.story_points} pt</span></div><WorkSignals task={task}/><p className="task-preview-description">{task.description || 'No description yet.'}</p><dl><dt>Assignee</dt><dd>{task.assignee_name || 'Unassigned'}</dd><dt>Sprint</dt><dd>{sprints.find(s=>s.id===task.sprint_id)?.name || 'Unscheduled'}</dd><dt>Due date</dt><dd>{task.due_date || 'Not set'}{task.due_date&&' UTC'}</dd><dt>Blocker</dt><dd>{task.blocked_reason || 'No blocker recorded'}</dd><dt>Labels</dt><dd>{task.labels?.join(' · ') || 'No labels'}</dd><dt>Created</dt><dd>{timestamp(task.created_at)}</dd><dt>Updated</dt><dd>{timestamp(task.updated_at)}</dd></dl><button className="btn btn-primary" onClick={()=>{dialogRef.current.close();onEdit(task);}}>Edit work item</button><section className="preview-history"><h3>Recent recorded activity</h3>{records.map(r=><article key={r.id}><strong>{r.actor || r.user || 'Team member'} · {r.type}</strong><p>{r.details || `${r.from || '—'} → ${r.to || '—'}`}</p><small>{timestamp(r.timestamp)}</small></article>)}{!records.length&&<p>No retained audit events for this task.</p>}</section></div> : <div className="task-preview-content"><h2 id="task-preview-title">Work item unavailable</h2><p>This item may have been removed. Close the preview to continue.</p></div>}
+  </dialog>;
+}
