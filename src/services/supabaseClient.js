@@ -67,11 +67,13 @@ export const saveSupabaseConfig = (url, key) => {
   }
   localStorage.setItem('supabase_url', cleanUrl);
   localStorage.setItem('supabase_key', cleanKey);
+  if (typeof window !== 'undefined') window.dispatchEvent(new Event('sprintflow:connection-change'));
 };
 
 export const clearSupabaseConfig = () => {
   localStorage.removeItem('supabase_url');
   localStorage.removeItem('supabase_key');
+  if (typeof window !== 'undefined') window.dispatchEvent(new Event('sprintflow:connection-change'));
 };
 
 let supabaseInstance = null;
@@ -488,7 +490,7 @@ export const DataService = {
     const supabase = getSupabase();
     if (!supabase || hasPendingChanges('sprints')) return local;
     const { ok, data } = await runCloud('Loading sprints', () =>
-      supabase.from('sprints').select('*').order('start_date', { ascending: true }));
+      supabase.from('sprints').select('*').eq('project_id', readLocal(STORAGE_KEYS.PROJECT, INITIAL_PROJECT).id).order('start_date', { ascending: true }));
     if (hasPendingChanges('sprints')
       || localStorage.getItem(STORAGE_KEYS.SPRINTS) !== snapshot) return readLocal(STORAGE_KEYS.SPRINTS, INITIAL_SPRINTS);
     if (!ok) return local;
@@ -506,7 +508,7 @@ export const DataService = {
     const supabase = getSupabase();
     if (!supabase || hasPendingChanges('tasks')) return local;
     const { ok, data } = await runCloud('Loading tasks', () =>
-      supabase.from('tasks').select('*').order('created_at', { ascending: false }));
+      supabase.from('tasks').select('*').eq('project_id', readLocal(STORAGE_KEYS.PROJECT, INITIAL_PROJECT).id).order('created_at', { ascending: false }));
     if (hasPendingChanges('tasks')
       || localStorage.getItem(STORAGE_KEYS.TASKS) !== snapshot) return readLocalTasks();
     if (!ok) return local;

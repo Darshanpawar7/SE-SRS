@@ -1,0 +1,19 @@
+import {recoverLocalSave} from './localPersistence';
+import {INITIAL_PROJECT,INITIAL_SPRINTS,INITIAL_TASKS} from './mockData';
+const OWNER='sprintflow_cache_owner';
+const defaults={sprintflow_project:JSON.stringify(INITIAL_PROJECT),sprintflow_sprints:JSON.stringify(INITIAL_SPRINTS),sprintflow_tasks:JSON.stringify(INITIAL_TASKS),sprintflow_activity:'[]',sprintflow_selected_sprint:'',sprintflow_burndown_history:'{}',sprintflow_pending_sync:'{"seq":0,"tables":{},"deletedTaskIds":[],"deletedSprintIds":[],"activity":[]}'};
+// Isolate displayed caches and upload queues by endpoint + verified cloud identity.
+// Backups stay in this browser; none are imported into another actor's upload queue.
+export function activateSessionCache(owner) {
+ recoverLocalSave();
+ const previous=localStorage.getItem(OWNER)||'demo';
+ if(previous===owner)return;
+ const backupKey=value=>`sprintflow_cache_backup:${value}`;
+ const previousValues=Object.fromEntries(Object.keys(defaults).map(key=>[key,localStorage.getItem(key)??defaults[key]]));
+ localStorage.setItem(backupKey(previous),JSON.stringify(previousValues));
+ let restored=defaults;
+ const saved=localStorage.getItem(backupKey(owner));
+ if(saved){const parsed=JSON.parse(saved);restored=Object.fromEntries(Object.entries(defaults).map(([key,value])=>[key,typeof parsed[key]==='string'?parsed[key]:value]));}
+ const entries=[...Object.entries(restored),[OWNER,owner]];
+ localStorage.setItem('sprintflow_save_journal',JSON.stringify(entries));recoverLocalSave();
+}
