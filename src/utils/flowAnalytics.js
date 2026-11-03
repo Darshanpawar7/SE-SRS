@@ -11,7 +11,7 @@ export function flowMetrics(tasks, activities, now = new Date(), days = 28) {
   const ids = new Set(tasks.map(t => t.id));
   const events = activities.filter(a => a.entity_type === 'task' && ids.has(a.entity_id) && Number.isFinite(Date.parse(a.timestamp)) && Date.parse(a.timestamp) <= end)
     .sort((a,b)=>Date.parse(a.timestamp)-Date.parse(b.timestamp)||String(a.id).localeCompare(String(b.id)));
-  const seen = new Set(), starts = new Map(), cycles = [], throughput = new Map();
+  const seen = new Set(), starts = new Map(), cycles = [], completions = [], throughput = new Map();
   for (const event of events) {
     if (seen.has(event.id)) continue; seen.add(event.id);
     const time = Date.parse(event.timestamp);
@@ -19,6 +19,7 @@ export function flowMetrics(tasks, activities, now = new Date(), days = 28) {
     if (event.to === 'done' && event.from !== 'done') {
       if (time >= start) {
         const date = flowDate(time); throughput.set(date, (throughput.get(date) || 0) + 1);
+        completions.push({ id: event.id, taskId: event.entity_id, timestamp: event.timestamp });
         const began = starts.get(event.entity_id);
         if (began !== undefined && time >= began) cycles.push({ id: event.id, taskId: event.entity_id, timestamp: event.timestamp, hours: (time - began)/3600000 });
       }
@@ -31,7 +32,7 @@ export function flowMetrics(tasks, activities, now = new Date(), days = 28) {
   const ages = tasks.filter(t=>t.status !== 'done').map(t=>({ task:t, days:(end-Date.parse(t.created_at))/DAY })).filter(a=>Number.isFinite(a.days)&&a.days>=0).sort((a,b)=>b.days-a.days);
   return {
     throughput: Array.from({length:days},(_,index)=>{const date=flowDate(start+index*DAY);return {date,count:throughput.get(date)||0};}),
-    cycles, medianHours:median, p85Hours:quantile(.85), completedTransitions:[...throughput.values()].reduce((a,b)=>a+b,0), ages,
+    cycles, completions, medianHours:median, p85Hours:quantile(.85), completedTransitions:[...throughput.values()].reduce((a,b)=>a+b,0), ages,
     timedItems:new Set(cycles.map(c=>c.taskId)).size,
   };
 }
