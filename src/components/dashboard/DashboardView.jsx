@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useProject } from '../../context/ProjectContext';
 import { TEAM_MEMBERS, TASK_STATUSES } from '../../utils/constants';
 
@@ -10,8 +10,10 @@ import WorkloadList from './WorkloadList';
 import AuditTrail from './AuditTrail';
 import FlowAnalytics from './FlowAnalytics';
 import DeliverySignals from './DeliverySignals';
+import ReportsWorkbench from './ReportsWorkbench';
 
 export default function DashboardView({ onNavigateKanban, onOpenTask = () => {} }) {
+  const [panel, setPanel] = useState('overview');
   const { project, activeSprintTasks, sprintMetrics, activities, sprints, activeSprintId, burndownHistory } = useProject();
   const activeSprint = sprints.find(s => s.id === activeSprintId);
   const projectSummary = describeProject(project);
@@ -36,6 +38,11 @@ export default function DashboardView({ onNavigateKanban, onOpenTask = () => {} 
         </button>
       </div>
 
+      <div className="dashboard-panels" aria-label="Dashboard panels">
+        <button aria-pressed={panel === 'overview'} onClick={() => setPanel('overview')}>Overview</button>
+        <button aria-pressed={panel === 'reports'} onClick={() => setPanel('reports')}>Reports & analytics</button>
+      </div>
+      {panel === 'reports' ? <ReportsWorkbench key={activeSprintId || 'empty'} project={project} tasks={activeSprintTasks} activities={activities} sprint={activeSprint} onOpenTask={onOpenTask} /> : <>
       {/* KPI Stats Cards */}
       <KpiCards metrics={sprintMetrics} />
 
@@ -115,6 +122,7 @@ export default function DashboardView({ onNavigateKanban, onOpenTask = () => {} 
           <AuditTrail records={activities} />
         </div>
       </div>
+      </>}
     </div>
   );
 }
