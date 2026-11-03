@@ -1,0 +1,39 @@
+import React, { useRef, useState } from 'react';
+import { useProject } from '../../context/ProjectContext';
+import { useAuth } from '../../context/AuthContext';
+import { can, PERMISSIONS } from '../../services/authService';
+import { buildProjectMap, clampMapZoom } from '../../utils/projectMap';
+import { PriorityBadge, StatusBadge } from './TaskSignals';
+import SignalIcon from './SignalIcon';
+import './projectMap.css';
+
+export default function ProjectMap({ onOpenTask, onOpenProject, onNavigateBoard }) {
+  const { project, tasks, sprints, setActiveSprintId } = useProject();
+  const { currentUser } = useAuth();
+  const viewport = useRef(null), drag = useRef(null);
+  const [query,setQuery] = useState('');
+  const [zoom,setZoom] = useState(.85);
+  const [selected,setSelected] = useState('project');
+  const [mode,setMode] = useState('map');
+  const graph = buildProjectMap(project,sprints,tasks,query);
+  const node = graph.nodes.find(n=>n.key===selected);
+  const pick = n => {
+    setSelected(n.key);
+    viewport.current?.scrollTo({left:Math.max(0,n.x*zoom-50),top:Math.max(0,n.y*zoom-60)});
+  };
+  const changeZoom = next => {
+    const panel = viewport.current;
+    const center = panel ? {x:(panel.scrollLeft+panel.clientWidth/2)/zoom,y:(panel.scrollTop+panel.clientHeight/2)/zoom} : null;
+    const value = clampMapZoom(next);setZoom(value);
+    if(center)requestAnimationFrame(()=>panel.scrollTo({left:Math.max(0,center.x*value-panel.clientWidth/2),top:Math.max(0,center.y*value-panel.clientHeight/2)}));
+  };
+  const fit = () => {
+    const el=viewport.current;if(!el)return;
+    setZoom(clampMapZoom(Math.min(1,(el.clientWidth-30)/graph.width,(el.clientHeight-30)/graph.height)));
+    el.scrollTo({left:0,top:0});
+  };
+  return <section className="project-map-page" aria-labelledby="project-map-title"><div className="view-header"><div><span className="eyebrow">WORKSPACE RELATIONSHIPS</span><h2 id="project-map-title" className="view-title">Project map</h2><p className="view-subtitle">Explore actual project, sprint and task relationships.</p></div><div className="map-mode" aria-label="Relationship view"><button className="btn btn-secondary" aria-pressed={mode==='map'} onClick={()=>setMode('map')}>Map</button><button className="btn btn-secondary" aria-pressed={mode==='table'} onClick={()=>setMode('table')}>Relationship table</button></div></div>
+    <div className="map-workspace"><aside className="map-sidebar" aria-label="Project map explorer"><label>Search relationships<input className="form-input" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Task, sprint, owner or label…"/></label><p className="map-count">{graph.matches.length} / {graph.total} project work items</p><button className="map-tree-root" onClick={()=>graph.nodes[0]&&pick(graph.nodes[0])}><SignalIcon name="layers" size={15}/>{project?.key || 'Project'}</button>{graph.groups.map(g=><button className="map-tree-group" key={g.id} onClick={()=>pick(graph.nodes.find(n=>n.key===`group:${g.id}`))}><SignalIcon name="backlog" size={14}/><span>{g.name}</span><b>{g.tasks.length}</b></button>)}<p className="map-caption">Lines show membership. Select a card to inspect it, then use its editor action.</p><section className="map-inspector" aria-label="Selected relationship">{node ? <><span className="eyebrow">{node.kind === 'task'?'WORK ITEM':node.kind.toUpperCase()}</span><h3>{node.label}</h3>{node.kind==='task'?<><StatusBadge status={node.data.status}/><p>{node.data.assignee_name || 'Unassigned'} · {node.data.story_points} points</p><button className="btn btn-primary btn-sm" onClick={()=>onOpenTask(node.data)}>Open task editor</button></>:node.kind==='project'?<><p>{project?.description || 'No project description.'}</p><button className="btn btn-secondary btn-sm" disabled={!can(currentUser,PERMISSIONS.EDIT_PROJECT)} onClick={onOpenProject}>Edit project details</button>{!can(currentUser,PERMISSIONS.EDIT_PROJECT)&&<p>Project details are editable by the team lead.</p>}</>:node.kind==='sprint'?<><p>{node.data.goal || 'No sprint goal.'}</p><p>{node.data.start_date || 'No start date'} → {node.data.end_date || 'No end date'}</p><button className="btn btn-secondary btn-sm" onClick={()=>{setActiveSprintId(node.data.id);onNavigateBoard();}}>Open sprint board</button></>:<p>{node.kind==='unlinked'?'These items reference a sprint absent from this project. Open their task editor to choose a valid sprint.':'These work items have no sprint assigned.'}</p>}</>:<p>Select a visible relationship to inspect it.</p>}</section></aside>
+      <div className="map-main">{mode==='map'?<><div className="map-toolbar"><div className="map-zoom" aria-label="Map zoom"><button onClick={()=>changeZoom(zoom-.1)} aria-label="Zoom out" disabled={zoom<=.1}>−</button><output aria-live="polite">{Math.round(zoom*100)}%</output><button onClick={()=>changeZoom(zoom+.1)} aria-label="Zoom in" disabled={zoom>=1.6}>+</button><button onClick={fit}>Fit</button><button onClick={()=>changeZoom(1)}>100%</button></div><span>Drag empty space to pan · scroll or use arrow keys</span></div><div ref={viewport} className="map-viewport" tabIndex={0} aria-label="Scrollable project relationship map" onPointerDown={e=>{if(e.button!==0||e.pointerType==='touch'||e.target.closest('button'))return;drag.current={x:e.clientX,y:e.clientY,left:e.currentTarget.scrollLeft,top:e.currentTarget.scrollTop};e.currentTarget.setPointerCapture(e.pointerId);}} onPointerMove={e=>{if(drag.current){e.currentTarget.scrollLeft=drag.current.left+drag.current.x-e.clientX;e.currentTarget.scrollTop=drag.current.top+drag.current.y-e.clientY;}}} onPointerUp={e=>{drag.current=null;if(e.currentTarget.hasPointerCapture(e.pointerId))e.currentTarget.releasePointerCapture(e.pointerId);}} onPointerCancel={()=>{drag.current=null;}}><div className="map-scaled-space" style={{width:graph.width*zoom,height:graph.height*zoom}}><div className="map-scene" style={{width:graph.width,height:graph.height,transform:`scale(${zoom})`}}><svg className="map-edges" width={graph.width} height={graph.height} aria-hidden="true">{graph.edges.map(e=><path className="map-link" key={e.key} d={e.path}/>)}</svg>{graph.nodes.map(n=><div className={`map-node map-node-${n.kind}`} key={n.key} style={{left:n.x,top:n.y,width:n.w,minHeight:n.h}}><button aria-pressed={selected===n.key} onClick={()=>setSelected(n.key)}><span className="map-node-kind">{n.kind==='task'?'WORK ITEM':n.kind==='project'?project?.key:n.kind==='unlinked'?'MISSING SPRINT':n.kind.toUpperCase()}</span><strong>{n.label}</strong>{n.kind==='task'?<span className="map-task-meta"><span>{(n.data.status || 'unknown').replaceAll('_',' ')}</span><span>{n.data.story_points} pt</span></span>:n.kind!=='project'?<span>{n.data.tasks.length} work items</span>:<span>{graph.total} project work items</span>}</button></div>)}</div></div></div>{graph.matches.length>80&&<p className="map-caption">The canvas shows the first 80 matching work items. Narrow the search or use the relationship table to see every match.</p>}</>:<div className="map-table"><table><caption>All matching work items and their actual sprint memberships</caption><thead><tr><th>Work item</th><th>Sprint</th><th>Status</th><th>Priority</th><th>Owner</th></tr></thead><tbody>{graph.matches.map(t=><tr key={t.id}><td><button className="task-title-link" onClick={()=>onOpenTask(t)}>{t.title}</button></td><td>{!t.sprint_id?'Unscheduled backlog':graph.groups.find(g=>g.tasks.some(item=>item.id===t.id))?.name || 'Unlinked sprint'}</td><td><StatusBadge status={t.status}/></td><td><PriorityBadge priority={t.priority}/></td><td>{t.assignee_name || 'Unassigned'}</td></tr>)}</tbody></table>{!graph.matches.length&&<p className="empty-explorer">No matching work items.</p>}</div>}</div></div>
+  </section>;
+}
