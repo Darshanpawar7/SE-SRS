@@ -6,7 +6,11 @@ const defaults={sprintflow_project:JSON.stringify(INITIAL_PROJECT),sprintflow_sp
 // Backups stay in this browser; none are imported into another actor's upload queue.
 export function activateSessionCache(owner) {
  recoverLocalSave();
- const previous=localStorage.getItem(OWNER)||'demo';
+ let previous=localStorage.getItem(OWNER);
+ if(!previous){
+   let marker;try{marker=JSON.parse(localStorage.getItem('sprintflow_session')||'null');}catch{marker=null;}
+   previous=marker?.mode==='supabase' || (owner!=='demo' && marker?.mode!=='demo') ? 'legacy-unverified' : 'demo';
+ }
  if(previous===owner)return;
  const backupKey=value=>`sprintflow_cache_backup:${value}`;
  const previousValues=Object.fromEntries(Object.keys(defaults).map(key=>[key,localStorage.getItem(key)??defaults[key]]));
