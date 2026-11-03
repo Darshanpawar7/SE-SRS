@@ -324,11 +324,6 @@ const confirmDelete = (taskId) => updatePending(pending => ({
   deletedTaskIds: pending.deletedTaskIds.filter(id => id !== taskId)
 }));
 
-const queueSprintDelete = (sprintId) => updatePending(pending => ({
-  ...pending,
-  deletedSprintIds: [...new Set([...pending.deletedSprintIds, sprintId])]
-}));
-
 const confirmSprintDelete = (sprintId) => updatePending(pending => ({
   ...pending,
   deletedSprintIds: pending.deletedSprintIds.filter(id => id !== sprintId)
@@ -567,15 +562,25 @@ export const DataService = {
   async deleteSprint(sprintId, remainingSprints, remainingTasks, auditRecords = []) {
     const records = Array.isArray(auditRecords) ? auditRecords : [auditRecords];
     records.forEach(requireAuditRecord);
-    writeLocal(STORAGE_KEYS.SPRINTS, remainingSprints);
-    writeLocal(STORAGE_KEYS.TASKS, remainingTasks);
-    records.forEach(appendActivity);
-
     const supabase = getSupabase();
+    const values = {
+      [STORAGE_KEYS.SPRINTS]: remainingSprints,
+      [STORAGE_KEYS.TASKS]: remainingTasks,
+      [STORAGE_KEYS.ACTIVITY]: [...records].reverse().concat(readActivity())
+    };
+    if (supabase) {
+      const pending = readPending();
+      const version = pending.seq + 1;
+      values[PENDING_KEY] = {
+        ...pending, seq: version,
+        tables: { ...pending.tables, tasks: version },
+        deletedSprintIds: [...new Set([...pending.deletedSprintIds, sprintId])],
+        activity: [...pending.activity.filter(item => !records.some(record => record.id === item.id)), ...records]
+      };
+    }
+    commitLocalSave(values);
     if (!supabase) return true;
 
-    queueSprintDelete(sprintId);
-    records.forEach(queueActivity);
     if (!(await this.pushTasks(remainingTasks))) return false;
 
     const { ok } = await deleteSprintRow(supabase, sprintId);
@@ -625,17 +630,19 @@ export const DataService = {
     const supabase = getSupabase();
     if (!supabase) return readActivity();
 
-    const local = readActivity([]);
+    readActivity([]);
     const projectId = readLocal(STORAGE_KEYS.PROJECT, INITIAL_PROJECT).id;
     const { ok, data } = await runCloud('Loading the audit trail', () =>
       supabase.from('activity_logs')
         .select('*')
         .eq('project_id', projectId)
         .order('created_at', { ascending: false }));
-    if (!ok) return local.length ? local : readActivity();
+    // Reads may finish after a newer local mutation; merge with the latest saved feed.
+    const latest = readActivity([]);
+    if (!ok) return latest.length ? latest : readActivity();
 
     const records = (data ?? []).map(fromActivityRow);
-    const byId = new Map(local.map(record => [record.id, record]));
+    const byId = new Map(latest.map(record => [record.id, record]));
     records.forEach(record => byId.set(record.id, record));
     const merged = [...byId.values()].sort((left, right) =>
       Date.parse(right.timestamp) - Date.parse(left.timestamp));
