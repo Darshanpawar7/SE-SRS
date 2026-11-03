@@ -10,3 +10,5 @@ Provides an ERD-inspired explorer of the actual Project → Sprint → Work item
 - Empty/deleted selections show an unavailable state. No relationships are fabricated, moved by panning, or written by the map. No additional database columns/migration are needed.
 
 Sidebar navigation and the command menu expose Project map. Styles use existing tokens and pick up PR #88's theme/motion preferences. Merge #84 first, and review #85 for verified cloud-session loading. Native pointer/touch, focus, zoom readability and screen-reader checks remain manual if only JSDOM is available. Unit tests cover scope exclusion, orphan membership, search, complete table data, canvas limits and zoom bounds.
+
+As the combined app grows, the production build keeps the React runtime in a separate shared chunk. This avoids the large-entry-chunk warning without raising its threshold or adding a dependency. Compiled-app JSDOM checks rebundle the emitted modules for execution; native browser module-loading and visual checks remain manual.
