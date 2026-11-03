@@ -72,6 +72,8 @@ CREATE TABLE IF NOT EXISTS tasks (
     assignee_id TEXT,
     assignee_name TEXT,
     reporter_name TEXT,
+    due_date DATE,
+    blocked_reason TEXT DEFAULT '' CHECK (char_length(blocked_reason) <= 300),
     labels TEXT[], -- e.g. ['frontend', 'api', 'security']
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
