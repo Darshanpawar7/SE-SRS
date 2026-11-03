@@ -13,6 +13,7 @@ export default function WorkspaceFeedback({onNewTask}){
  const p=useSyncExternalStore(subscribeFeedback,getFeedbackSettings,getFeedbackSettings);
  const notice=useSyncExternalStore(subscribeFeedback,getFeedbackNotice,()=>null);
  const known=useRef(null),help=useRef(null);
+ useEffect(()=>()=>dismissFeedback(),[]);
  useEffect(()=>{
   document.documentElement.dataset.workspaceMotion=p.animations?'on':'off';
   document.documentElement.dataset.workspaceTheme=p.theme;
