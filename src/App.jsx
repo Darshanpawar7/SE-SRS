@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import WorkspaceFeedback from './components/workspace/WorkspaceFeedback';
 import CommandMenu from './components/workspace/CommandMenu';
 import TaskExplorer from './components/workspace/TaskExplorer';
 import './styles/motion.css';
@@ -61,6 +62,7 @@ export default function App() {
 
         <main id="workspace-main" ref={mainRef} className="app-content" tabIndex={-1}>
           <CommandMenu onNavigate={navigate} explorerEnabled onNewTask={handleOpenNewTask} onOpenTask={handleOpenEditTask} onSettings={() => setIsSettingsOpen(true)} />
+          <WorkspaceFeedback onNewTask={handleOpenNewTask} />
           {activeTab === 'dashboard' && (
             <DashboardView onNavigateKanban={() => setActiveTab('kanban')} onOpenTask={handleOpenEditTask} />
           )}

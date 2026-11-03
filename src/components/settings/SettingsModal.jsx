@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useProject } from '../../context/ProjectContext';
 import { useAuth } from '../../context/AuthContext';
 import { saveSupabaseConfig, clearSupabaseConfig } from '../../services/supabaseClient';
+import { FeedbackSettings } from '../workspace/WorkspaceFeedback';
 import { PERMISSIONS } from '../../services/authService';
 
 export default function SettingsModal({ isOpen, onClose }) {
@@ -139,6 +140,7 @@ export default function SettingsModal({ isOpen, onClose }) {
 
           <hr className="divider" />
 
+          <FeedbackSettings />
           {/* Database Setup Helper */}
           <div className="sql-helper-box">
             <div className="helper-header">
