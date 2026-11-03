@@ -156,7 +156,7 @@ export function auditSprintDeleted(sprint, actor, timestamp) {
   });
 }
 
-const PROJECT_FIELDS = ['key', 'name', 'start_date', 'target_date'];
+const PROJECT_FIELDS = ['key', 'name', 'description', 'start_date', 'target_date'];
 
 // Returns null when nothing changed, so saving untouched details adds no record.
 export function auditProjectUpdated(before, after, actor, timestamp) {

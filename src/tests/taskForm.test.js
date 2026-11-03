@@ -129,4 +129,11 @@ describe('Task form validation and persistence', () => {
       labels: ['reviewed']
     });
   });
+  it('preserves backlog and unassigned values when an existing task is saved', () => {
+    const values = getTaskFormValues({ title: 'Backlog', status: 'todo', priority: 'medium', story_points: 3, sprint_id: null, assignee_id: null }, 'active', TEAM_MEMBERS[3]);
+    const payload = buildTaskPayload(values, TEAM_MEMBERS[3], TEAM_MEMBERS);
+    expect(payload.sprint_id).toBe(null);
+    expect(payload.assignee_id).toBe(null);
+  });
+
 });

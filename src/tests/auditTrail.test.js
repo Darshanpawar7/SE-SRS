@@ -208,4 +208,9 @@ describe('PMS-F-014 immutable audit trail', () => {
     expect(html).toContain('In Progress → Code Review');
     expect(html).not.toContain('Show full history');
   });
+  it('records a description-only project change', async () => {
+    const { auditProjectUpdated } = await import('../utils/auditTrail');
+    expect(auditProjectUpdated({id:'p',name:'P',description:'old'}, {id:'p',name:'P',description:'new'}, 'Eshwar').details).toContain('description: old → new');
+  });
+
 });
