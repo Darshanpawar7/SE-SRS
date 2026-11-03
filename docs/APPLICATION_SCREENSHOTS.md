@@ -33,8 +33,9 @@ the STP test cases for each screen are listed separately, by name, under
 
 | Property | Value |
 | :--- | :--- |
-| Build | Vite 5 production build (`npm run build`), served via `npm run preview` |
-| Browser | Chrome, headless |
+| Build | Vite 7 production build (`npm run build`), served via `npm run preview` |
+| Captured | 3 November 2026, browser clock not altered |
+| Browser | Chrome, headless, fresh profile with no stored history |
 | Viewport | 1440 x 900 logical pixels, captured at 2x and downscaled to 1920 x 1200 |
 | Data mode | Zero-configuration offline mode, no Supabase credentials supplied |
 | Data source | Seed dataset from `src/services/mockData.js` |
@@ -78,9 +79,13 @@ is the behaviour specified in the UX design specification.
 
 ![Executive visibility dashboard](screenshots/02-dashboard-kpis.png)
 
-The visibility surface required by the project brief. Four KPI cards report total story
-points, delivered velocity, sprint completion percentage and remaining workload, with the
-SVG burndown chart plotting the ideal guideline against actual points remaining.
+![Burndown, workflow distribution, team capacity and audit trail](screenshots/02b-dashboard-burndown.png)
+
+The visibility surface required by the project brief. The dashboard is taller than one
+screen, so it is shown in two captures. The first shows the top of the page: four KPI cards
+report total story points, delivered velocity, sprint completion percentage and remaining
+workload, followed by the delivery signals. The second shows the bottom of the page: the
+SVG burndown chart, workflow distribution, team capacity and the audit trail.
 
 | Requirement | Description | Test Case |
 | :--- | :--- | :--- |
@@ -96,13 +101,18 @@ SVG burndown chart plotting the ideal guideline against actual points remaining.
 | SAD reference | Section 4.2.2, Figure 4.2 -- estimation and burndown generation |
 | STP test cases | TC-DASH-01 (KPI metrics), TC-BURN-01 (burndown), TC-WORK-01 (workload) |
 
-The figures are internally consistent, which is what TC-BURN-01 verifies: 34 total story
-points, 13 delivered, and the actual burndown line terminating at 21 points remaining,
-matching the Remaining Workload card exactly. The chart is computed from live sprint
-state, so completing a task lowers the actual line.
+The figures are internally consistent: 33 total story points, 13 delivered and 20
+remaining (39%), the same totals the sprint manager reports in Section 5. The burndown's
+ideal guideline starts from the same 33 points.
 
-The Real-Time Audit Trail on the right evidences PMS-F-014: each mutation is recorded with
-the acting team member, the affected entity, the transition, and a timestamp.
+Actual points remaining are recorded once a day in the browser (UTC). Missing days are
+left blank rather than filled in. These captures come from a fresh browser with no
+earlier recorded days, so only the ideal guideline is drawn. With everyday use, the actual
+line builds up as the app is used on successive days.
+
+The Real-Time Audit Trail (bottom right of the second capture) evidences PMS-F-014: each
+mutation is recorded with the acting team member, the affected entity, the transition,
+and a timestamp.
 
 ---
 
@@ -132,7 +142,8 @@ story points of assigned tasks.
 ![Task creation modal](screenshots/04-task-modal.png)
 
 The task dialog, used for both creation and editing so a single validation path serves
-both. Title is required; description, assignee and labels are optional.
+both. Title is required; description, assignee and labels are optional. An optional
+"Planning signals" group holds a due date (UTC) and a blocker reason.
 
 | Requirement | Description | Test Case |
 | :--- | :--- | :--- |
@@ -174,7 +185,9 @@ active, so the user always knows where their data is stored.
 
 The banner confirms the system is running in zero-setup offline mode on persistent browser
 storage. Supplying a Project URL and anon key switches the `DataService` abstraction to
-Supabase PostgreSQL with no change at the call sites.
+Supabase PostgreSQL with no change at the call sites. The same panel also holds the
+appearance preferences (colour theme, compact navigation, animations and opt-in haptics),
+which are saved in the browser.
 
 Only the anonymous public key is accepted here. Authorisation is enforced by PostgreSQL
 Row Level Security at the database tier (PMS-SR-001, ADR-004), not in client code, because

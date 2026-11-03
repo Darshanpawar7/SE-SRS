@@ -145,10 +145,10 @@ The application adopts a decoupled, reactive architecture:
 
 ## 5. Application Screenshots
 
-Captured from the running production build in its default zero-configuration mode, with no
-database credentials supplied. Each screen is mapped to the SRS requirements it satisfies,
-the SAD components that implement it, and the test cases that verify it in
-[docs/APPLICATION_SCREENSHOTS.md](docs/APPLICATION_SCREENSHOTS.md).
+Captured on 3 November 2026 from the running production build in its default
+zero-configuration mode, with no database credentials supplied. Each screen is mapped to
+the SRS requirements it satisfies, the SAD components that implement it, and the test
+cases that verify it in [docs/APPLICATION_SCREENSHOTS.md](docs/APPLICATION_SCREENSHOTS.md).
 
 ### 5.1 Kanban Workflow Board
 
@@ -160,11 +160,14 @@ Evidences PMS-F-002, PMS-F-003, PMS-F-004, PMS-F-005, PMS-F-007 and PMS-F-017.
 
 ### 5.2 Executive Visibility Dashboard
 
-Sprint KPIs, the SVG burndown curve comparing ideal trajectory against actual points
-remaining, workflow distribution, per-student capacity, and the immutable audit trail.
+Sprint KPIs and delivery signals at the top of the page. Further down: the SVG burndown
+chart (the ideal trajectory, with actual points remaining recorded once a day in the
+browser), workflow distribution, per-student capacity, and the immutable audit trail.
 Evidences PMS-F-009, PMS-F-011, PMS-F-012, PMS-F-013 and PMS-F-014.
 
 ![Executive visibility dashboard](docs/screenshots/02-dashboard-kpis.png)
+
+![Burndown, workflow distribution, team capacity and audit trail](docs/screenshots/02b-dashboard-burndown.png)
 
 ### 5.3 Sprint Management and Estimation
 
