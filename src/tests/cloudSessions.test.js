@@ -25,9 +25,15 @@ it('restricts cloud sprint and task reads to the selected project even for multi
 });
 it('isolates cached project data and pending uploads between verified identities and restores prior work',async()=>{
  const {activateSessionCache}=await import('../services/sessionCache');
- data.set('sprintflow_tasks','[{"id":"demo-work"}]');
+ data.set('sprintflow_session',JSON.stringify({mode:'demo'}));data.set('sprintflow_tasks','[{"id":"demo-work"}]');
  activateSessionCache('endpoint:alice');data.set('sprintflow_tasks','[{"id":"alice-private"}]');data.set('sprintflow_pending_sync','{"seq":1,"tables":{"tasks":1},"activity":[]}');
  activateSessionCache('endpoint:bob');expect(data.get('sprintflow_tasks')).not.toContain('alice-private');expect(data.get('sprintflow_pending_sync')).not.toContain('"tasks":1');
  activateSessionCache('endpoint:alice');expect(data.get('sprintflow_tasks')).toContain('alice-private');expect(data.get('sprintflow_pending_sync')).toContain('"tasks":1');
  activateSessionCache('demo');expect(data.get('sprintflow_tasks')).toContain('demo-work');
+});
+
+it('quarantines a legacy cloud cache instead of exposing it through local demo sign-in',async()=>{
+ const {activateSessionCache}=await import('../services/sessionCache');
+ data.set('sprintflow_session',JSON.stringify({mode:'supabase'}));data.set('sprintflow_tasks','[{"id":"old-cloud-private"}]');
+ activateSessionCache('demo');expect(data.get('sprintflow_tasks')).not.toContain('old-cloud-private');expect(data.get('sprintflow_cache_backup:legacy-unverified')).toContain('old-cloud-private');
 });

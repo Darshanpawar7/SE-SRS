@@ -92,6 +92,7 @@ export async function signOut() {
 // The browser marker is a display preference, never proof of a cloud identity.
 export async function verifyCloudSession() {
   const client = getSupabase();
+  const endpoint = getSupabaseConfig().url || 'injected';
   if (!client) return null;
   let timer;
   try {
@@ -99,6 +100,6 @@ export async function verifyCloudSession() {
     const { data, error } = await Promise.race([client.auth.getUser(), timeout]);
     if (error) throw error;
     const member = findTeamMember(data?.user?.email);
-    return member ? { ...member, cloudCacheScope: `${getSupabaseConfig().url || 'injected'}:${data.user.id || data.user.email}` } : null;
+    return member ? { ...member, cloudCacheScope: `${endpoint}:${data.user.id || data.user.email}` } : null;
   } finally { clearTimeout(timer); }
 }
