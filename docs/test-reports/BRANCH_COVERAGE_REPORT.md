@@ -66,7 +66,8 @@ target for utility modules (STP Section 14.1):
 
 - **Utilities:** 92.9%, so the target is met.
 - **Services:** 79.4%, just under it. The missed outcomes are almost all failure and
-  fallback paths, listed in Section 6.
+  fallback paths, listed in Section 6. Re-measured on the final `main` (`2b8fdbc`), the
+  services reach 80.9% (Code Coverage Report, Section 8).
 - **Components:** these pull the whole-application figure down, as in the Code Coverage
   Report.
 

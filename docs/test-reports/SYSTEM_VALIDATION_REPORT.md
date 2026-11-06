@@ -69,12 +69,13 @@ the actual result of every expected result.
 | Pass rate after the DEF-04 fix was retested | 29 of 29 (100%) | 95% or higher |
 | Open critical or high defects | 0 | 0 |
 
-**Verdict: PASS for the zero-configuration system, with one low-severity defect (fixed in
-PR #98 and retested), one cosmetic defect (#100) and four cases waiting on a Supabase test
-project.**
+**Verdict: PASS for the zero-configuration system. Both defects found were fixed and
+retested, and four cases wait on a Supabase test project.**
 
 - Every requirement that can be exercised without a cloud database passes, except one
   usability detail in filtering (DEF-04, Section 5). Its fix in PR #98 passed retest.
+- A wording slip in the workload panel (DEF-05) was fixed in PR #101, and a full
+  regression run on the final build passed with no failures (Section 12).
 - The cases that need a live Supabase project are listed in Section 6 and tracked in
   issue #96.
 
@@ -132,7 +133,7 @@ Defect IDs continue the series in `docs/TEST_EXECUTION_AND_CICD.md` (DEF-01 to D
 | ID | Found by | Severity | Summary | Issue | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | DEF-04 | TC-FILT-01, step 2 | Low (usability) | When the board's filters match no task, the five columns show "Drop tasks here" and nothing says that filters are hiding the work or which filters are active. "Reset Filters" is shown and restores the board. | #95, fixed in PR #98 | Fixed; retest passed on 6 Nov 2026 |
-| DEF-05 | Review of TC-WORK-01 evidence | Cosmetic | The Capacity & Workload panel reads "1 tasks" for a member with one task, because `WorkloadList.jsx` always prints the plural. TC-WORK-01 still passes; the totals are correct. | #100 | Open |
+| DEF-05 | Review of TC-WORK-01 evidence | Cosmetic | The Capacity & Workload panel reads "1 tasks" for a member with one task, because `WorkloadList.jsx` always prints the plural. TC-WORK-01 still passes; the totals are correct. | #100, fixed in PR #101 | Fixed; retest passed (Section 12.1) |
 
 ### DEF-04 in detail
 
@@ -165,7 +166,7 @@ While checking the screenshots for this report we noticed that the workload pane
 "1 tasks • 8 story points assigned" (Dhatri) and "1 tasks • 5 story points assigned"
 (Chandan). The text is built as `{taskCount} tasks` on lines 20 and 41 of
 `src/components/dashboard/WorkloadList.jsx`. No number is affected, so TC-WORK-01 passes.
-Logged as issue #100. Screenshot:
+Logged as issue #100 and fixed in PR #101 (retest in Section 12.1). Screenshot:
 [`evidence/screenshots/sv-workload.png`](evidence/screenshots/sv-workload.png).
 
 No other defects were found. In particular:
@@ -253,7 +254,7 @@ leaves open. They should be carried into the update of the Test Case Specificati
 | PMS-NF-001 | Performance, under 50 ms | TC-PERF-01 (p95 6.6 ms), TC-LOAD-01 (p95 8.9 ms with 106 tasks) | Pass |
 | PMS-NF-002 | Availability through offline fallback | TC-AVAIL-01 | Pass |
 | PMS-NF-003 | Usability: contrast, Lighthouse score above 90 | No case in the specification; keyboard and screen-reader behaviour covered by `accessibility.test.jsx` | **Not measured** (Section 11) |
-| PMS-NF-004 | Reliability: zero data loss across reloads and tab closures | TC-OFF-01, TC-RECOV-01, refresh steps in TC-KAN-02 and TC-TASK-01 | Pass |
+| PMS-NF-004 | Reliability: zero data loss across reloads and tab closures | TC-OFF-01, TC-RECOV-01, refresh steps in TC-KAN-02 and TC-TASK-01; TC-SESS-01 (supplementary, simulated Supabase, Section 12.2) | Pass |
 | PMS-NF-005 | Maintainability: zero ESLint warnings, build always passes | `eslint --max-warnings=0`: 0 errors, 0 warnings; `npm run build`: succeeded (143 modules) on the same commit | Pass |
 | PMS-SR-001 | Row Level Security | SEC-RLS | **Blocked** (Section 6) |
 | PMS-SR-002 | No hardcoded credentials | SEC-KEYS | Pass |
@@ -316,22 +317,73 @@ results above are unchanged. Further screenshots for individual cases are in
 | Exit criterion | Status | Detail |
 | :--- | :--- | :--- |
 | 100% of planned test cases executed | **Not met** | 23 of the 26 specified cases ran in full; TC-SUPA-01, TC-SET-01 (steps 1--2) and TC-SEC-01 wait on a Supabase test project (#96) |
-| 0 critical or high-severity defects open | Met | DEF-04 (low) is fixed in PR #98 and passed retest; DEF-05 (cosmetic) is open as #100 |
+| 0 critical or high-severity defects open | Met | Two defects were found, neither critical nor high, and both are fixed and retested: DEF-04 (PR #98) and DEF-05 (PR #101) |
 | All functional requirements verified against acceptance criteria | **Partly met** | 17 of 18 SRS functional requirements pass once the DEF-04 fix is counted; PMS-F-015 is blocked |
 | All non-functional requirements measured and within threshold | **Partly met** | 4 of 5 SRS non-functional requirements measured, all within threshold. PMS-NF-003 (Lighthouse above 90) has no test case and was not measured. |
 | RTM shows complete coverage | Met | Every SRS requirement maps to a test case or objective evidence (Section 8) |
-| Test Summary Report reviewed and approved | Pending | Review requested on the pull request that adds this report |
+| Test Summary Report reviewed and approved | Met | Reviewed and merged into `main` with the other reports (PR #97, 6 Nov 2026) |
 
 To close the exit criteria:
 
-1. Merge the DEF-04 fix (PR #98) and fix DEF-05 (#100).
-2. Run Section 6 on a Supabase test project (#96).
-3. Add a Lighthouse accessibility measurement for PMS-NF-003 to the Test Case
+1. Run Section 6 on a Supabase test project (#96).
+2. Add a Lighthouse accessibility measurement for PMS-NF-003 to the Test Case
    Specification.
 
 ---
 
-## 12. Conclusion
+## 12. Regression on the Final Build
+
+After the main run, four pull requests were merged on 6 November 2026: #98 (DEF-04 fix),
+#99 (Dhatri's second-machine pre-check), #101 (DEF-05 fix, tooltip warning, CI on Node.js
+24) and #85 (verified cloud sessions, merged after review fixes). Because #85 changes how
+sign-in works, the whole suite was run again on the final `main`.
+
+| Run | Build | Browsers | Pass | Fail | Blocked |
+| :--- | :--- | :--- | ---: | ---: | ---: |
+| Main run (Sections 3 to 11) | `f9e0727` | Chrome; Edge and Firefox for TC-COMPAT-01 | 28 | 1 | 4 |
+| DEF-04 retest (Section 5) | `e8f5905` (PR #98) | Chrome | 29 | 0 | 4 |
+| Final regression, 6 Nov 2026, 23:05 IST | `2b8fdbc` (final `main`) | Chrome; Edge and Firefox for TC-COMPAT-01 | 29 | 0 | 4 |
+
+The final results match the main run case for case, except that TC-FILT-01 now passes.
+TC-COMPAT-01 again found a 0 px layout difference, and the same four cloud cases stay
+blocked. All 259 unit tests pass on the same commit. Raw results:
+[`evidence/final-regression/system-validation-results-2b8fdbc.json`](evidence/final-regression/system-validation-results-2b8fdbc.json).
+
+### 12.1 DEF-05 retest
+
+PR #101 makes the panel say "task" for a count of one. On the final build Dhatri and
+Chandan read "1 task • 8 story points assigned" and "1 task • 5 story points
+assigned"; members with two tasks still read "2 tasks". TC-WORK-01 passes and issue #100
+is closed. Screenshot:
+[`evidence/final-regression/DEF-05-after-fix-PR101.png`](evidence/final-regression/DEF-05-after-fix-PR101.png).
+
+### 12.2 Supplementary case TC-SESS-01: a network failure must not sign out a member
+
+PR #85 re-checks the cloud session on Supabase auth events, for example when the tab
+regains focus. In review we found that a failed check signed the member out even when only
+the network had failed, which threw away any task being edited (a data-loss risk under
+PMS-NF-004). The fix keeps the member on network errors and signs out only when Supabase
+rejects the session. No Supabase test project is available yet, so the case was run in
+Chrome against a simulated Supabase server (Playwright answered the app's Supabase
+requests; no real database was used).
+
+| Step | Expected result | Before the fix | Final build (`2b8fdbc`) |
+| :--- | :--- | :--- | :--- |
+| 1. Sign in to the cloud project | The workspace opens | Pass | Pass |
+| 2. Type a task title; the session check fails because the network is down | Still signed in; dialog and typed title remain | **Fail**: sent to the sign-in page, draft lost | Pass |
+| 3. The network comes back | Session checked again; still signed in | Not reached | Pass |
+| 4. Supabase rejects the session (401) | Signed out with "Your cloud session has ended" | Not reached | Pass |
+
+The same logic is covered by 15 unit tests in `src/tests/sessionVerification.test.js`.
+Script: [`tests/system/cloud-session-check.mjs`](../../tests/system/cloud-session-check.mjs).
+Screenshots:
+[`evidence/final-regression/TC-SESS-01-after-network-blip.png`](evidence/final-regression/TC-SESS-01-after-network-blip.png),
+[`evidence/final-regression/TC-SESS-01-after-401.png`](evidence/final-regression/TC-SESS-01-after-401.png).
+This case does not replace TC-SUPA-01 on a real Supabase project (#96).
+
+---
+
+## 13. Conclusion
 
 In zero-configuration mode, SprintFlow behaves as specified in Chrome, Edge and Firefox.
 
@@ -341,8 +393,9 @@ In zero-configuration mode, SprintFlow behaves as specified in Chrome, Edge and 
 - **Performance:** drag-and-drop renders within 9 ms at the 95th percentile, even with
   106 tasks on the board.
 - **Security:** no XSS payload executes and no credential is exposed.
-- **Defects:** one low-severity usability defect (DEF-04), fixed in PR #98 and retested,
-  and one cosmetic wording defect (DEF-05, #100).
+- **Defects:** one low-severity usability defect (DEF-04) and one cosmetic wording defect
+  (DEF-05). Both were fixed, retested and merged on 6 November; a full regression run on
+  the final build passed with no failures (Section 12).
 - **Outstanding:** the cloud-database cases need a Supabase test project before they can
   be run.
 

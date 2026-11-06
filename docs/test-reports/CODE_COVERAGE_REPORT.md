@@ -228,7 +228,36 @@ have no automated check.
 
 ---
 
-## 8. Reproducing This Report
+## 8. Re-measurement on the Final `main` Branch
+
+After this measurement, four pull requests were merged on 6 November 2026 (Unit Test
+Report, Section 10). They added one service file (`services/sessionCache.js`), 25 tests
+and some interface code. Coverage was measured again on the final `main` (commit
+`2b8fdbc`) with the same command; Sections 3 to 7 describe the measured commit `f9e0727`.
+
+| Scope | Measure | Measured commit `f9e0727` | Final `main` `2b8fdbc` |
+| :--- | :--- | ---: | ---: |
+| Utility modules (`src/utils`) | Lines | 99.3% (397/400) | 99.3% (397/400) |
+| | Branches | 92.9% (536/577) | 92.9% (536/577) |
+| Services (`src/services`, 6 then 7 files) | Lines | 91.5% (400/437) | 92.3% (455/493) |
+| | Branches | 79.4% (270/340) | 80.9% (339/419) |
+| Logic layer (utils + services) | Lines | 95.2% (797/837) | 95.4% (852/893) |
+| | Branches | 87.9% (806/917) | 87.9% (875/996) |
+| Whole application (62 then 63 files) | Statements | 66.3% (1412/2130) | 65.0% (1510/2322) |
+| | Lines | 70.5% (1098/1558) | 69.4% (1175/1692) |
+| | Functions | 56.6% (421/744) | 56.8% (436/767) |
+| | Branches | 64.1% (995/1552) | 64.2% (1087/1692) |
+
+- The utility modules did not change and still meet the 80% target.
+- The services now reach 80.9% branch coverage, above 80%; the new session code arrived
+  with 21 tests that also exercise failure paths.
+- Whole-application line coverage dropped slightly (70.5% to 69.4%) because the merged pull
+  requests added interface code that the unit suite does not render; the system tests
+  exercise it (System Validation Report, Section 12).
+
+---
+
+## 9. Reproducing This Report
 
 ```bash
 npm ci
