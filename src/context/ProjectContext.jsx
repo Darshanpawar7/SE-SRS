@@ -40,6 +40,14 @@ export function ProjectProvider({ children }) {
   const [filterAssignee, setFilterAssignee] = useState('all');
   const [filterPriority, setFilterPriority] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  // Filters live above the keyed workspace, so clear them when a different member signs in.
+  const [filterOwnerId, setFilterOwnerId] = useState(currentUser?.id ?? null);
+  if (filterOwnerId !== (currentUser?.id ?? null)) {
+    setFilterOwnerId(currentUser?.id ?? null);
+    setFilterAssignee('all');
+    setFilterPriority('all');
+    setSearchQuery('');
+  }
   const [loading, setLoading] = useState(true);
   const [supabaseConfig, setSupabaseConfig] = useState(getSupabaseConfig());
   const [syncStatus, setSyncStatus] = useState(getSyncStatus());
@@ -47,12 +55,17 @@ export function ProjectProvider({ children }) {
   // Cloud sync errors are surfaced to the UI as they happen.
   useEffect(() => subscribeSyncStatus(setSyncStatus), []);
 
+  // Queued changes may only be sent by the account that owns them: in cloud mode that
+  // means after Supabase has verified the signed-in member.
+  const canSync = !supabaseConfig.isConfigured || cloudVerified;
+
   // Changes saved while Supabase was unreachable are sent as soon as the browser is back online.
   useEffect(() => {
+    if (!canSync) return undefined;
     const sendPendingChanges = () => DataService.flushPending();
     window.addEventListener('online', sendPendingChanges);
     return () => window.removeEventListener('online', sendPendingChanges);
-  }, []);
+  }, [canSync]);
 
   // The service owns I/O; this callback applies a fully loaded snapshot.
   const applyLoadedData = useCallback(({ project: projData, sprints: sprintsData, tasks: tasksData, activities: actData }) => {
@@ -272,7 +285,7 @@ export function ProjectProvider({ children }) {
   };
 
   // Manual retry for changes that are saved locally but not yet in Supabase.
-  const retrySync = () => DataService.flushPending();
+  const retrySync = () => (canSync ? DataService.flushPending() : Promise.resolve(false));
 
   // Re-read on every render; sync status changes trigger the re-render.
   const pendingChanges = getPendingChangeCount();

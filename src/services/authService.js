@@ -50,7 +50,7 @@ export async function signIn(email, password) {
       await supabase.auth.signOut();
       throw new Error('The verified Supabase account does not match the selected team profile.');
     }
-    activateSessionCache(verified.cloudCacheScope);
+    activateSessionCache(verified.cloudCacheScope, verified.email);
     mode = 'supabase';
   } else if (String(password).trim().toUpperCase() !== member.usn) {
     throw new Error('Incorrect email or password.');
@@ -89,6 +89,47 @@ export async function signOut() {
   }
 }
 
+export const SESSION_CHECK_TIMEOUT_MS = 10000;
+
+// A failed cloud session check. `transient` is true when Supabase could not be reached
+// (offline, timeout, 5xx, rate limit): the session may still be valid, so it must not
+// sign the user out. It is false when Supabase rejected the session itself.
+export class SessionCheckError extends Error {
+  constructor(message, { transient }) {
+    super(message);
+    this.name = 'SessionCheckError';
+    this.transient = transient;
+  }
+}
+
+const TRANSIENT_STATUSES = new Set([0, 408, 429]);
+
+// No session at all simply means "not signed in", not an error to show.
+export function isSessionMissing(error) {
+  return error?.name === 'AuthSessionMissingError' || /auth session missing/i.test(error?.message ?? '');
+}
+
+// Network-level failures and server errors are retried; anything else fails closed.
+export function isTransientAuthError(error) {
+  if (!error) return false;
+  if (error.transient === true || error.name === 'AuthRetryableFetchError') return true;
+  if (error.name === 'TypeError' && /fetch|network/i.test(error.message ?? '')) return true;
+  const status = Number(error.status);
+  return TRANSIENT_STATUSES.has(status) || status >= 500;
+}
+
+// What a failed check means for the person using the app. A verified user keeps working
+// through a network blip (their open edits stay mounted) and the check is retried; only
+// a rejected session signs them out.
+export function sessionCheckFailure(error, hasVerifiedUser) {
+  if (error?.transient) {
+    return hasVerifiedUser
+      ? { keepUser: true, retry: true, message: '' }
+      : { keepUser: false, retry: true, message: 'Could not reach Supabase to confirm your session. SprintFlow will try again when the connection is back. Saved data is retained.' };
+  }
+  return { keepUser: false, retry: false, message: 'Your cloud session has ended. Sign in again. Saved data is retained.' };
+}
+
 // The browser marker is a display preference, never proof of a cloud identity.
 export async function verifyCloudSession() {
   const client = getSupabase();
@@ -96,9 +137,19 @@ export async function verifyCloudSession() {
   if (!client) return null;
   let timer;
   try {
-    const timeout = new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('Session verification timed out.')), 10000); });
-    const { data, error } = await Promise.race([client.auth.getUser(), timeout]);
-    if (error) throw error;
+    const timeout = new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new SessionCheckError('Session verification timed out.', { transient: true })), SESSION_CHECK_TIMEOUT_MS);
+    });
+    let result;
+    try {
+      result = await Promise.race([client.auth.getUser(), timeout]);
+    } catch (err) {
+      if (err instanceof SessionCheckError) throw err;
+      throw new SessionCheckError(err?.message || 'Session verification failed.', { transient: isTransientAuthError(err) });
+    }
+    const { data, error } = result;
+    if (isSessionMissing(error)) return null;
+    if (error) throw new SessionCheckError(error.message || 'Session verification failed.', { transient: isTransientAuthError(error) });
     const member = findTeamMember(data?.user?.email);
     return member ? { ...member, cloudCacheScope: `${endpoint}:${data.user.id || data.user.email}` } : null;
   } finally { clearTimeout(timer); }
