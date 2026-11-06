@@ -54,4 +54,14 @@ describe('PMS-F-013 team workload and capacity', () => {
     expect(html).not.toContain('NaN');
     expect(renderToStaticMarkup(React.createElement(WorkloadList, { tasks: [], members }))).not.toContain('Unassigned');
   });
+
+  it('says "1 task" for a single task and "tasks" for any other count (DEF-05, #100)', () => {
+    const html = renderToStaticMarkup(React.createElement(WorkloadList, { tasks, members }));
+    expect(html).toContain('2 tasks • 8 story points assigned');
+    expect(html).toContain('1 task • 8 story points assigned');
+    expect(html).toContain('0 tasks • 0 story points assigned');
+    expect(html).not.toContain('1 tasks');
+    const oneUnowned = renderToStaticMarkup(React.createElement(WorkloadList, { tasks: tasks.slice(0, 4), members }));
+    expect(oneUnowned).toContain('Unassigned: 1 task • 2 story points');
+  });
 });
