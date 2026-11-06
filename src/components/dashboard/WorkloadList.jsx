@@ -1,6 +1,8 @@
 import React from 'react';
 import { summarizeWorkload } from '../../utils/estimation';
 
+const taskCountLabel = count => `${count} ${count === 1 ? 'task' : 'tasks'}`;
+
 export default function WorkloadList({ tasks, members }) {
   const summary = summarizeWorkload(tasks, members);
 
@@ -17,7 +19,7 @@ export default function WorkloadList({ tasks, members }) {
               <span className="member-usn">{m.usn}</span>
             </div>
             <div className="workload-metrics-row">
-              <span>{m.taskCount} tasks • {m.assignedPoints} story points assigned</span>
+              <span>{taskCountLabel(m.taskCount)} • {m.assignedPoints} story points assigned</span>
               <span className="tone-success">{m.completedPoints} pts done ({m.completionRate}%)</span>
             </div>
             <div
@@ -38,7 +40,7 @@ export default function WorkloadList({ tasks, members }) {
       ))}
       {summary.unassignedTasks > 0 && (
         <p className="card-subtitle">
-          Unassigned: {summary.unassignedTasks} tasks • {summary.unassignedPoints} story points not yet owned by a team member
+          Unassigned: {taskCountLabel(summary.unassignedTasks)} • {summary.unassignedPoints} story points not yet owned by a team member
         </p>
       )}
     </div>
