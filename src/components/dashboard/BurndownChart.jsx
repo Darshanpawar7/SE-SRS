@@ -23,7 +23,7 @@ export default function BurndownChart({ data }) {
           ))}
           {data.map((point, i) => (
             <g key={point.date}>
-              {point.actual !== null && <circle className="burndown-point" cx={x(i)} cy={y(point.actual)} r="4"><title>{point.date}: {point.actual} points remaining</title></circle>}
+              {point.actual !== null && <circle className="burndown-point" cx={x(i)} cy={y(point.actual)} r="4"><title>{`${point.date}: ${point.actual} points remaining`}</title></circle>}
               <text className="burndown-label" x={x(i)} y="168" fontSize="10" textAnchor="middle">D{i}</text>
               <text className="burndown-label" x={x(i)} y="183" fontSize="9" textAnchor="middle">{point.date.slice(5)}</text>
             </g>
