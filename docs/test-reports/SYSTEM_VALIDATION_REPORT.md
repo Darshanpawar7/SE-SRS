@@ -6,6 +6,7 @@
 **Owner (STP §9, Test Engineer -- Frontend):** Dhatri Shivaprasad (PES2UG24CS158) -- tracking issue #92
 **Testing phase:** 2--6 November 2026 | **Executed:** 6 November 2026
 **Related Documents:** `docs/STP_Document_Team11.md` (Sections 5, 13), `docs/TEST_CASE_SPECIFICATION.md`, `docs/SRS_Document_Team11.md`, `docs/SPRINT1_DEVIATIONS.md`
+**PDF version (as submitted):** [Team11_System_Validation_Report.pdf](Team11_System_Validation_Report.pdf)
 
 ---
 
@@ -64,13 +65,15 @@ the actual result of every expected result.
 | Cases executed in full (pass + fail) | 29 of 33 (87.9%) | 100% |
 | Cases with at least one step executed | 31 of 33 (93.9%) | -- |
 | Pass rate of executed cases | 28 of 29 (96.6%) | 95% or higher |
+| Pass rate after the DEF-04 fix was retested | 29 of 29 (100%) | 95% or higher |
 | Open critical or high defects | 0 | 0 |
 
-**Verdict: PASS for the zero-configuration system, with one low-severity defect and four
-cases waiting on a Supabase test project.**
+**Verdict: PASS for the zero-configuration system, with one low-severity defect (fixed in
+PR #98 and retested), one cosmetic defect (#100) and four cases waiting on a Supabase test
+project.**
 
 - Every requirement that can be exercised without a cloud database passes, except one
-  usability detail in filtering (DEF-04, Section 5).
+  usability detail in filtering (DEF-04, Section 5). Its fix in PR #98 passed retest.
 - The cases that need a live Supabase project are listed in Section 6 and tracked in
   issue #96.
 
@@ -127,7 +130,8 @@ Defect IDs continue the series in `docs/TEST_EXECUTION_AND_CICD.md` (DEF-01 to D
 
 | ID | Found by | Severity | Summary | Issue | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| DEF-04 | TC-FILT-01, step 2 | Low (usability) | When the board's filters match no task, the five columns show "Drop tasks here" and nothing says that filters are hiding the work or which filters are active. "Reset Filters" is shown and restores the board. | #95 | Open |
+| DEF-04 | TC-FILT-01, step 2 | Low (usability) | When the board's filters match no task, the five columns show "Drop tasks here" and nothing says that filters are hiding the work or which filters are active. "Reset Filters" is shown and restores the board. | #95, fixed in PR #98 | Fixed; retest passed on 6 Nov 2026 |
+| DEF-05 | Review of TC-WORK-01 evidence | Cosmetic | The Capacity & Workload panel reads "1 tasks" for a member with one task, because `WorkloadList.jsx` always prints the plural. TC-WORK-01 still passes; the totals are correct. | #100 | Open |
 
 ### DEF-04 in detail
 
@@ -138,6 +142,30 @@ Defect IDs continue the series in `docs/TEST_EXECUTION_AND_CICD.md` (DEF-01 to D
 - **Comparison:** the Work items view already shows "No work items match." for the same
   situation, so the board is the only place affected. No data is lost or changed.
 - **Screenshot:** [`evidence/TC-FILT-01-chrome-failure.png`](evidence/TC-FILT-01-chrome-failure.png).
+
+### DEF-04 retest (PR #98)
+
+PR #98 (Dhatri Shivaprasad) adds a status message above the board that names the active
+filters, with a Reset Filters button. Its build (commit `e8f5905`) was retested in Chrome
+on 6 Nov 2026 at 21:37 IST:
+
+- TC-FILT-01: all four checks pass. The message reads "No tasks match the active filters:
+  Priority: High; Search: “no-such-task-xyz”."
+- Regression: the full Chrome suite on the same build gives 29 pass, 0 fail and 4 blocked
+  (the same four cloud cases).
+- On the fix branch, `npm test` passes 237 of 237 tests; lint and the build succeed.
+- Evidence: [`evidence/DEF-04-before-fix.png`](evidence/DEF-04-before-fix.png),
+  [`evidence/DEF-04-after-fix-PR98.png`](evidence/DEF-04-after-fix-PR98.png) and
+  [`evidence/system-validation-retest-PR98.json`](evidence/system-validation-retest-PR98.json).
+
+### DEF-05 in detail
+
+While checking the screenshots for this report we noticed that the workload panel says
+"1 tasks • 8 story points assigned" (Dhatri) and "1 tasks • 5 story points assigned"
+(Chandan). The text is built as `{taskCount} tasks` on lines 20 and 41 of
+`src/components/dashboard/WorkloadList.jsx`. No number is affected, so TC-WORK-01 passes.
+Logged as issue #100. Screenshot:
+[`evidence/screenshots/sv-workload.png`](evidence/screenshots/sv-workload.png).
 
 No other defects were found. In particular:
 
@@ -219,7 +247,7 @@ leaves open. They should be carried into the update of the Test Case Specificati
 | PMS-F-014 | Audit trail | TC-LOG-01 | Pass |
 | PMS-F-015 | Supabase synchronisation | TC-SUPA-01, TC-SET-01 | **Blocked** (Section 6) |
 | PMS-F-016 | Offline mode | TC-OFF-01, TC-AVAIL-01 | Pass |
-| PMS-F-017 | Filtering | TC-FILT-01 | **Fail**, DEF-04 (Low) |
+| PMS-F-017 | Filtering | TC-FILT-01 | **Fail** in the main run, DEF-04 (Low); **Pass** on retest of the fix (PR #98) |
 | PMS-F-018 | CI/CD pipeline | GitHub Actions history (Unit Test Report, Section 8) | Pass |
 | PMS-NF-001 | Performance, under 50 ms | TC-PERF-01 (p95 6.6 ms), TC-LOAD-01 (p95 8.9 ms with 106 tasks) | Pass |
 | PMS-NF-002 | Availability through offline fallback | TC-AVAIL-01 | Pass |
@@ -262,6 +290,11 @@ positions and widths were compared with Chrome.
 | :---: | :---: | :---: |
 | ![Board in Chrome](evidence/TC-COMPAT-01-chrome-board.png) | ![Board in Edge](evidence/TC-COMPAT-01-edge-board.png) | ![Board in Firefox](evidence/TC-COMPAT-01-firefox-board.png) |
 
+The three board screenshots were captured again on 6 Nov 2026 after the run, on the same
+build, because the first Chrome capture was taken while the board was still fading in. The
+results above are unchanged. Further screenshots for individual cases are in
+[`evidence/screenshots/`](evidence/screenshots/).
+
 ---
 
 ## 10. Security Validation (STP Section 5.4)
@@ -282,15 +315,15 @@ positions and widths were compared with Chrome.
 | Exit criterion | Status | Detail |
 | :--- | :--- | :--- |
 | 100% of planned test cases executed | **Not met** | 23 of the 26 specified cases ran in full; TC-SUPA-01, TC-SET-01 (steps 1--2) and TC-SEC-01 wait on a Supabase test project (#96) |
-| 0 critical or high-severity defects open | Met | The only open defect, DEF-04, is low severity |
-| All functional requirements verified against acceptance criteria | **Partly met** | 16 of 18 SRS functional requirements pass; PMS-F-017 has DEF-04 and PMS-F-015 is blocked |
+| 0 critical or high-severity defects open | Met | DEF-04 (low) is fixed in PR #98 and passed retest; DEF-05 (cosmetic) is open as #100 |
+| All functional requirements verified against acceptance criteria | **Partly met** | 17 of 18 SRS functional requirements pass once the DEF-04 fix is counted; PMS-F-015 is blocked |
 | All non-functional requirements measured and within threshold | **Partly met** | 4 of 5 SRS non-functional requirements measured, all within threshold. PMS-NF-003 (Lighthouse above 90) has no test case and was not measured. |
 | RTM shows complete coverage | Met | Every SRS requirement maps to a test case or objective evidence (Section 8) |
 | Test Summary Report reviewed and approved | Pending | Review requested on the pull request that adds this report |
 
 To close the exit criteria:
 
-1. Fix DEF-04 (#95).
+1. Merge the DEF-04 fix (PR #98) and fix DEF-05 (#100).
 2. Run Section 6 on a Supabase test project (#96).
 3. Add a Lighthouse accessibility measurement for PMS-NF-003 to the Test Case
    Specification.
@@ -307,7 +340,8 @@ In zero-configuration mode, SprintFlow behaves as specified in Chrome, Edge and 
 - **Performance:** drag-and-drop renders within 9 ms at the 95th percentile, even with
   106 tasks on the board.
 - **Security:** no XSS payload executes and no credential is exposed.
-- **Defects:** one low-severity usability defect (DEF-04).
+- **Defects:** one low-severity usability defect (DEF-04), fixed in PR #98 and retested,
+  and one cosmetic wording defect (DEF-05, #100).
 - **Outstanding:** the cloud-database cases need a Supabase test project before they can
   be run.
 
