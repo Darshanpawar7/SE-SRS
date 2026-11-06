@@ -56,6 +56,7 @@ describe('Task form validation and persistence', () => {
     };
     const payload = buildTaskPayload(formValues, currentUser, TEAM_MEMBERS);
     expect(payload).toEqual({
+      due_date: null, blocked_reason: '',
       title: 'Add sign in',
       description: 'Add the sign in flow',
       status: 'todo',

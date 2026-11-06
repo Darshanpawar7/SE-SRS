@@ -10,6 +10,7 @@ import { advanceTaskByOneStage, getNextTaskStatus } from '../../utils/workflow';
 import { activateCardFromKeyDown } from '../../utils/accessibility';
 import LabelPills from './LabelPills';
 import { PriorityBadge } from '../workspace/TaskSignals';
+import WorkSignals from '../workspace/WorkSignals';
 import SignalIcon from '../workspace/SignalIcon';
 
 export default function KanbanBoard({ onOpenTaskModal }) {
@@ -34,6 +35,19 @@ export default function KanbanBoard({ onOpenTaskModal }) {
 
   const filteredTasks = filterTasks(activeSprintTasks, { filterAssignee, filterPriority, searchQuery });
   const kanbanColumns = getKanbanColumns(filteredTasks);
+  const activeFilterDescriptions = [];
+  if (filterAssignee !== 'all') {
+    const assignee = TEAM_MEMBERS.find(member => member.id === filterAssignee);
+    activeFilterDescriptions.push(`Assignee: ${assignee?.name || filterAssignee}`);
+  }
+  if (filterPriority !== 'all') {
+    const priority = TASK_PRIORITIES.find(item => item.id === filterPriority);
+    activeFilterDescriptions.push(`Priority: ${priority?.label || filterPriority}`);
+  }
+  if (searchQuery.trim()) activeFilterDescriptions.push(`Search: “${searchQuery.trim()}”`);
+  const hasActiveFilters = activeFilterDescriptions.length > 0;
+  const noMatchingTasks = hasActiveFilters && filteredTasks.length === 0;
+  const resetFilters = () => resetTaskFilters({ setFilterAssignee, setFilterPriority, setSearchQuery });
 
   // Drag and Drop handlers
   const handleDragStart = (e, taskId) => {
@@ -102,18 +116,23 @@ export default function KanbanBoard({ onOpenTaskModal }) {
           </select>
 
           {/* Quick Clear */}
-          {(filterAssignee !== 'all' || filterPriority !== 'all' || searchQuery.trim()) && (
+          {hasActiveFilters && !noMatchingTasks && (
             <button 
               className="btn btn-text"
-              onClick={() => {
-                resetTaskFilters({ setFilterAssignee, setFilterPriority, setSearchQuery });
-              }}
+              onClick={resetFilters}
             >
               Reset Filters
             </button>
           )}
         </div>
       </div>
+
+      {noMatchingTasks && (
+        <div className="kanban-filter-empty" role="status" aria-live="polite">
+          <p>No tasks match the active filters: {activeFilterDescriptions.join('; ')}.</p>
+          <button type="button" className="btn btn-secondary" onClick={resetFilters}>Reset Filters</button>
+        </div>
+      )}
 
           {boardError && <p role="alert" aria-live="assertive" className="form-error">{boardError}</p>}
 
@@ -179,6 +198,7 @@ export default function KanbanBoard({ onOpenTaskModal }) {
                           <p className="task-desc">{task.description}</p>
                         )}
 
+                        <WorkSignals task={task}/>
                         {/* Labels */}
                         <LabelPills labels={task.labels} />
 

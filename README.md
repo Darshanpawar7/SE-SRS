@@ -68,6 +68,21 @@ The detailed work breakdown, SAD and STP section ownership, and viva guide are i
 
 - **Product Demo Video (60 seconds, 1080p):** [`docs/demo/SprintFlow_Demo.mp4`](docs/demo/SprintFlow_Demo.mp4), a captioned walkthrough of all 18 functional backlog items (PMS-F-001 to PMS-F-018) in the refreshed interface
 
+### Testing -- Test Reports (2-6 November 2026)
+
+All reports are in [`docs/test-reports/`](docs/test-reports/README.md), with their raw evidence and an HTML coverage report.
+
+| Report | Result | Location |
+| :--- | :--- | :--- |
+| **Unit Test Report** | 234 of 234 tests pass | [`docs/test-reports/UNIT_TEST_REPORT.md`](docs/test-reports/UNIT_TEST_REPORT.md) |
+| **System Validation Report** | 33 cases in Chrome, Edge and Firefox: 28 pass, 1 low-severity defect, 4 waiting on a Supabase test project | [`docs/test-reports/SYSTEM_VALIDATION_REPORT.md`](docs/test-reports/SYSTEM_VALIDATION_REPORT.md) |
+| **Code Coverage Report** | Utility modules 99.3% of lines (target 80%) | [`docs/test-reports/CODE_COVERAGE_REPORT.md`](docs/test-reports/CODE_COVERAGE_REPORT.md) |
+| **Branch Coverage Report** | Utility modules 92.9%, logic layer 87.9% of branch outcomes | [`docs/test-reports/BRANCH_COVERAGE_REPORT.md`](docs/test-reports/BRANCH_COVERAGE_REPORT.md) |
+
+### Delivery analytics extension (owner review)
+
+The selected-sprint dashboard adds observed cumulative flow, completion throughput, recorded cycle-time samples and open-work age. Missing history is not estimated; definitions and data tables are in the UI. See [analytics behavior and coverage](docs/enhancements/12-flow-analytics.md). This extends existing visibility requirements and does not replace the required Sprint 2 submission evidence.
+
 ### Common to All Phases
 
 - **Team Work Breakdown and Viva Guide:** `docs/Team_Work_Division.md`
@@ -141,10 +156,10 @@ The application adopts a decoupled, reactive architecture:
 
 ## 5. Application Screenshots
 
-Captured from the running production build in its default zero-configuration mode, with no
-database credentials supplied. Each screen is mapped to the SRS requirements it satisfies,
-the SAD components that implement it, and the test cases that verify it in
-[docs/APPLICATION_SCREENSHOTS.md](docs/APPLICATION_SCREENSHOTS.md).
+Captured on 3 November 2026 from the running production build in its default
+zero-configuration mode, with no database credentials supplied. Each screen is mapped to
+the SRS requirements it satisfies, the SAD components that implement it, and the test
+cases that verify it in [docs/APPLICATION_SCREENSHOTS.md](docs/APPLICATION_SCREENSHOTS.md).
 
 ### 5.1 Kanban Workflow Board
 
@@ -156,11 +171,14 @@ Evidences PMS-F-002, PMS-F-003, PMS-F-004, PMS-F-005, PMS-F-007 and PMS-F-017.
 
 ### 5.2 Executive Visibility Dashboard
 
-Sprint KPIs, the SVG burndown curve comparing ideal trajectory against actual points
-remaining, workflow distribution, per-student capacity, and the immutable audit trail.
+Sprint KPIs and delivery signals at the top of the page. Further down: the SVG burndown
+chart (the ideal trajectory, with actual points remaining recorded once a day in the
+browser), workflow distribution, per-student capacity, and the immutable audit trail.
 Evidences PMS-F-009, PMS-F-011, PMS-F-012, PMS-F-013 and PMS-F-014.
 
 ![Executive visibility dashboard](docs/screenshots/02-dashboard-kpis.png)
+
+![Burndown, workflow distribution, team capacity and audit trail](docs/screenshots/02b-dashboard-burndown.png)
 
 ### 5.3 Sprint Management and Estimation
 
@@ -213,6 +231,12 @@ Navigate to `http://localhost:5173` in a web browser. The system initializes imm
 # Execute Vitest test suite
 npm test
 
+# Measure code and branch coverage (HTML report in coverage/index.html)
+npm run test:coverage
+
+# System validation in Chrome, Edge and Firefox, against `npm run preview` in another terminal
+npm run test:system
+
 # Run the ESLint code quality gate
 npm run lint
 
@@ -256,6 +280,7 @@ SE-SRS/
 |   +-- Team_Work_Division.md           # Work Breakdown & Viva Guide
 |   +-- CONTRIBUTION_*.md               # Individual Contribution Records
 |   +-- screenshots/                    # Application screenshots
+|   +-- test-reports/                   # Unit, system validation, code and branch coverage reports
 |   +-- uml_*.png                       # UML diagrams (use-case, component, sequence)
 |   +-- Team11_*_Report.docx / .pdf     # Formal reports (Word / PDF)
 +-- src/
@@ -267,6 +292,7 @@ SE-SRS/
 |   +-- App.jsx
 |   +-- index.css
 |   +-- main.jsx
++-- tests/system/                       # Browser system validation suite (Playwright)
 +-- Team11_Project_Report.pdf           # Phase 1 SRS report
 +-- Team11_SAD_Report.pdf / .docx       # Phase 2 SAD report
 +-- Team11_STP_Report.pdf / .docx       # Phase 2 STP report

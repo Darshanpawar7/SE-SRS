@@ -4,7 +4,7 @@ import { createStatusChangeActivity } from './taskUpdates';
 // attributable, timestamped record. Records are frozen and never edited or removed.
 export const AUDIT_TYPES = Object.freeze({ CREATE: 'CREATE', UPDATE: 'UPDATE', DELETE: 'DELETE' });
 
-const TRACKED_TASK_FIELDS = ['title', 'description', 'status', 'priority', 'story_points', 'assignee_name', 'sprint_id', 'labels'];
+const TRACKED_TASK_FIELDS = ['title', 'description', 'status', 'priority', 'story_points', 'assignee_name', 'sprint_id', 'due_date', 'blocked_reason', 'labels'];
 
 export function createAuditRecord({
   actor,

@@ -13,6 +13,7 @@ export default function CommandMenu({ onNavigate, onNewTask, onOpenTask, onSetti
     { id: 'kanban', label: 'Go to board', hint: 'Workspace' },
     { id: 'sprints', label: 'Go to sprints', hint: 'Workspace' },
     { id: 'explorer', label: 'Go to task explorer', hint: 'Workspace' },
+    { id: 'map', label: 'Go to project map', hint: 'Workspace' },
     { id: 'docs', label: 'Go to documentation', hint: 'Workspace' },
     { id: 'new', label: 'Create a task', hint: 'Action' },
     { id: 'settings', label: 'Open connections', hint: 'Action' },
