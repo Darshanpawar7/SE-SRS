@@ -41,12 +41,15 @@ checks. The combined demo branch has its own checks on GitHub Actions.
 Local source checks before the connection dropped also passed. Do not interpret
 unit/fake-backend tests as live cloud or native hardware certification.
 
+Combined verification: 272 tests in 41 files, lint, build and audit checks passed on GitHub Actions.
 The unit report for your issue #91 is already on main and the issue is closed.
 Darshan fixed and merged #85, including transient-auth retry and 15 regression
 tests, while this review was in progress. Those changes are included here.
 
-Issue #96 remains open and assigned to Chandan: live Supabase integration, HTTPS
-request inspection and cross-account RLS require the backend test project.
+The team closed issue #96 on 6 November, but the current System Validation Report
+still marks four live-cloud checks as Blocked and its result table is empty.
+Those results are not certified here; the backend tester must supply the test-project
+evidence for Supabase integration, HTTPS request inspection and cross-account RLS.
 No live cloud checks or migrations are claimed by this demo. New planning
 values require database/migrations/20261103_work_signals.sql; it is not applied
 automatically. Local demo requires no database.
