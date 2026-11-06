@@ -34,6 +34,7 @@ Unit and integration results are in the [Unit Test Report](UNIT_TEST_REPORT.md).
 | Script | [`tests/system/system-validation.mjs`](../../tests/system/system-validation.mjs) (`npm run test:system`) |
 | Raw results | [`evidence/system-validation-results.json`](evidence/system-validation-results.json) |
 | Run | 6 Nov 2026, 12:07--12:09 UTC, one uninterrupted run |
+| Second-machine pre-check | Build, lint, the 234 unit tests and the preview server were also checked independently on a second machine by Dhatri Shivaprasad ([`evidence/system-validation-precheck-dhatri.md`](evidence/system-validation-precheck-dhatri.md)) |
 
 The specification marks most cases as manual. For this phase, each manual step was
 written into the script as a browser action, and each expected result as a check that

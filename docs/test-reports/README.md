@@ -48,6 +48,7 @@ Specification (`docs/TEST_CASE_SPECIFICATION.md`) against `main` at commit `f9e0
 | `evidence/TC-FILT-01-chrome-failure.png` | Screenshot of DEF-04 |
 | `evidence/DEF-04-before-fix.png`, `evidence/DEF-04-after-fix-PR98.png` | DEF-04 before the fix and on the retest of PR #98 |
 | `evidence/system-validation-retest-PR98.json` | Raw results of the Chrome retest on the PR #98 build |
+| `evidence/system-validation-precheck-dhatri.md` | Independent pre-check on a second machine (build, lint, unit tests, preview server); its browser cases were run in the main report |
 | `evidence/screenshots/` | Screenshots of individual system test cases (System Validation Report PDF, Appendix B) |
 | `Team11_*.pdf` | The reports as submitted (PDF) |
 | `coverage-html/index.html` | Line-by-line HTML coverage report. Open it in a browser. |
