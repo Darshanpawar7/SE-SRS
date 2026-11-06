@@ -1,6 +1,6 @@
 export const clampMapZoom = value => Math.max(.1, Math.min(1.6, Number.isFinite(value) ? value : 1));
 export function buildProjectMap(project, sprints, tasks, query = '') {
-  if (!project?.id) return { nodes:[],edges:[],groups:[],matches:[],width:900,height:500,total:0 };
+  if (!project?.id) return { nodes:[],edges:[],groups:[],matches:[],width:900,height:500,total:0,shown:0,taskGroups:new Map() };
   const projectSprints = sprints.filter(s=>s.project_id===project.id);
   const sprintIds = new Set(projectSprints.map(s=>s.id));
   const projectTasks = tasks.filter(t=>t.project_id===project.id);
@@ -10,7 +10,12 @@ export function buildProjectMap(project, sprints, tasks, query = '') {
   const projectMatches = `${project.key} ${project.name}`.toLocaleLowerCase().includes(needle);
   const matches = projectTasks.filter(t=>!needle||projectMatches||`${t.id} ${t.title} ${t.assignee_name || ''} ${(t.labels || []).join(' ')} ${allGroups.find(g=>g.id===groupFor(t))?.name}`.toLocaleLowerCase().includes(needle));
   const groups = allGroups.map(g=>({...g,tasks:matches.filter(t=>groupFor(t)===g.id)})).filter(g=>!needle||g.tasks.length||g.name.toLocaleLowerCase().includes(needle)||projectMatches);
-  const drawn = new Set(matches.slice(0,80).map(t=>t.id));
+  const drawn = new Set();
+  for(let row=0;row<20&&drawn.size<80;row++){
+    for(const group of groups){if(group.tasks[row]&&drawn.size<80)drawn.add(group.tasks[row].id);}
+  }
+  const taskGroups = new Map(groups.flatMap(group=>group.tasks.map(task=>[task.id,group.name])));
+  for(const group of groups)group.shown=group.tasks.filter(task=>drawn.has(task.id)).length;
   const width = Math.max(900,groups.length*310+80);
   const nodes = [{key:'project',kind:'project',data:project,label:project.name,x:width/2-125,y:35,w:250,h:110}];
   const edges = [];
@@ -26,5 +31,5 @@ export function buildProjectMap(project, sprints, tasks, query = '') {
       height = Math.max(height,y+130);
     });
   });
-  return {nodes,edges,groups,matches,width,height,total:projectTasks.length,shown:drawn.size};
+  return {nodes,edges,groups,matches,width,height,total:projectTasks.length,shown:drawn.size,taskGroups};
 }

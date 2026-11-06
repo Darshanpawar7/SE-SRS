@@ -1,8 +1,18 @@
 import React,{useEffect,useRef,useSyncExternalStore} from 'react';
 import {useProject} from '../../context/ProjectContext';
-import {workspaceKey,hapticFeedback} from '../../utils/workspaceFeedback';
+import {useAuth} from '../../context/AuthContext';
+import {workspaceKey,hapticFeedback,selectSavedEvent} from '../../utils/workspaceFeedback';
 import {subscribeFeedback,getFeedbackSettings,getFeedbackNotice,saveFeedbackSettings,announceSaved,dismissFeedback} from '../../services/feedbackStore';
 import './workspaceFeedback.css';
+export function WorkspaceAppearance(){
+ const p=useSyncExternalStore(subscribeFeedback,getFeedbackSettings,getFeedbackSettings);
+ useEffect(()=>{
+  document.documentElement.dataset.workspaceMotion=p.animations?'on':'off';
+  document.documentElement.dataset.workspaceTheme=p.theme;
+  document.documentElement.dataset.compactNavigation=String(p.compactNavigation);
+ },[p.animations,p.theme,p.compactNavigation]);
+ return null;
+}
 export function FeedbackSettings(){
  const p=useSyncExternalStore(subscribeFeedback,getFeedbackSettings,getFeedbackSettings);
  const supported=typeof navigator!=='undefined'&&typeof navigator.vibrate==='function';
@@ -10,22 +20,17 @@ export function FeedbackSettings(){
 }
 export default function WorkspaceFeedback({onNewTask}){
  const {activities,loading}=useProject();
+ const {currentUser}=useAuth();
  const p=useSyncExternalStore(subscribeFeedback,getFeedbackSettings,getFeedbackSettings);
  const notice=useSyncExternalStore(subscribeFeedback,getFeedbackNotice,()=>null);
  const known=useRef(null),help=useRef(null);
  useEffect(()=>()=>dismissFeedback(),[]);
  useEffect(()=>{
-  document.documentElement.dataset.workspaceMotion=p.animations?'on':'off';
-  document.documentElement.dataset.workspaceTheme=p.theme;
-  document.documentElement.dataset.compactNavigation=String(p.compactNavigation);
-  return()=>{delete document.documentElement.dataset.workspaceMotion;delete document.documentElement.dataset.workspaceTheme;delete document.documentElement.dataset.compactNavigation;};
- },[p.animations,p.theme,p.compactNavigation]);
- useEffect(()=>{
   if(loading)return;
   const ids=new Set(activities.map(a=>a.id));
-  if(known.current){const fresh=activities.filter(a=>!known.current.has(a.id)&&Date.now()-Date.parse(a.timestamp)<15000&&Date.now()>=Date.parse(a.timestamp));if(fresh[0])announceSaved(fresh[0]);}
+  if(known.current){const fresh=selectSavedEvent(activities,known.current,currentUser?.name);if(fresh)announceSaved(fresh);}
   known.current=ids;
- },[activities,loading]);
+ },[activities,loading,currentUser?.name]);
  useEffect(()=>{
   const handler=event=>{
    const action=workspaceKey(event);

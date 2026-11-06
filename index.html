@@ -3,6 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      // Apply validated appearance before styles/React paint sign-in.
+      try {
+        const preferences = JSON.parse(localStorage.getItem('sprintflow_feedback_preferences') || '{}') || {};
+        document.documentElement.dataset.workspaceTheme = preferences.theme === 'dark' ? 'dark' : 'light';
+        document.documentElement.dataset.workspaceMotion = preferences.animations === false ? 'off' : 'on';
+        document.documentElement.dataset.compactNavigation = String(preferences.compactNavigation === true);
+      } catch { /* Storage may be disabled; defaults remain usable. */ }
+    </script>
     <meta name="theme-color" content="#f6f6f3" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>SprintFlow — Project Management System (Team 11)</title>
