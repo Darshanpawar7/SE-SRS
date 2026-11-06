@@ -1050,6 +1050,25 @@ button {
   gap: 10px;
 }
 
+.kanban-filter-empty {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 14px 0;
+  padding: 12px 14px;
+  color: var(--text-main);
+  background: var(--bg-card);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+}
+
+.kanban-filter-empty p {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
 .filter-select {
   padding: 8px 12px;
   background: var(--bg-card);

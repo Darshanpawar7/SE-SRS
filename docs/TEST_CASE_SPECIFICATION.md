@@ -182,23 +182,32 @@ Steps:
 
 Expected Result: the card returns to its original column and its status is unchanged.
 
-### TC-FILT-01 -- Filter by priority
+### TC-FILT-01 -- Combine filters and report an empty result
 
 | Field | Detail |
 | :--- | :--- |
-| Requirement | PMS-F-011 |
-| Precondition | Tasks of mixed priority exist |
-| Test Data | Filter: Priority `High` |
-| Type | Manual |
+| Requirement | PMS-F-017 |
+| Precondition | Authenticated; the board contains tasks with different assignees, priorities and searchable text |
+| Test Data | Priority `High`; a task search term that matches no task |
+| Type | Automated (`src/tests/kanbanEmptyState.test.jsx`, `src/tests/taskFilters.test.js`) and Manual |
 
 Steps:
 
-1. Apply the High priority filter.
-2. Add a free-text search term that matches no task.
+1. Apply a priority filter and a free-text search term that match a task; confirm the matching task remains visible and no empty-state message appears.
+2. Change the search term to `no-such-task-xyz`; confirm the board reports that no task matches and names each active filter.
+3. Activate the one-click **Reset Filters** action in the message; confirm assignee, priority and search are cleared and the board tasks return.
+4. Clear the board data or use a sprint with no tasks while no filters are active; confirm no filter empty-state message appears.
 
-Expected Result: after step 1 only High priority tasks are visible. After step 2 an
-explicit empty state names the active filters and offers to clear them; columns are not
-left silently blank.
+Expected Result: a clear, accessible status message names all active filters only when
+those filters exclude every task. Its **Reset Filters** action restores the unfiltered
+tasks. With matching tasks or with no active filters, the message is absent. Empty
+columns still show their ordinary drop targets.
+
+Automated mapping: `kanbanEmptyState.test.jsx` -- “shows an accessible message naming
+active filters when no task matches”, “hides the empty state while tasks match the active
+filters”, and “hides the empty state when there are no active filters”; `taskFilters.test.js`
+-- “reset clears assignee, priority, and search and restores matching tasks”. The live
+browser interaction remains a manual check and is not recorded as run here.
 
 ---
 
@@ -436,7 +445,7 @@ suite drives.
 | :--- | :--- | :--- |
 | Authentication | TC-AUTH-01 | PMS-F-001 |
 | Task management | TC-TASK-01 to TC-TASK-03 | PMS-F-002, PMS-F-016 |
-| Kanban workflow | TC-KAN-01 to TC-KAN-04, TC-FILT-01 | PMS-F-003 to PMS-F-005, PMS-F-011 |
+| Kanban workflow | TC-KAN-01 to TC-KAN-04, TC-FILT-01 | PMS-F-003 to PMS-F-005, PMS-F-017 |
 | Estimation and sprints | TC-EST-01, TC-EST-02, TC-SPR-01, TC-BURN-01 | PMS-F-006 to PMS-F-009 |
 | Dashboard | TC-DASH-01, TC-WORK-01, TC-DOCS-01 | PMS-F-010, PMS-F-017, PMS-F-018 |
 | Persistence and audit | TC-SUPA-01, TC-OFF-01, TC-SET-01, TC-LOG-01 | PMS-F-012 to PMS-F-015 |
