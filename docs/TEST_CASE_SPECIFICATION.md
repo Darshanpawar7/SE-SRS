@@ -186,7 +186,7 @@ Expected Result: the card returns to its original column and its status is uncha
 
 | Field | Detail |
 | :--- | :--- |
-| Requirement | PMS-F-017 |
+| Requirement | PMS-F-011 (SRS: PMS-F-017) |
 | Precondition | Authenticated; the board contains tasks with different assignees, priorities and searchable text |
 | Test Data | Priority `High`; a task search term that matches no task |
 | Type | Automated (`src/tests/kanbanEmptyState.test.jsx`, `src/tests/taskFilters.test.js`) and Manual |
@@ -445,7 +445,7 @@ suite drives.
 | :--- | :--- | :--- |
 | Authentication | TC-AUTH-01 | PMS-F-001 |
 | Task management | TC-TASK-01 to TC-TASK-03 | PMS-F-002, PMS-F-016 |
-| Kanban workflow | TC-KAN-01 to TC-KAN-04, TC-FILT-01 | PMS-F-003 to PMS-F-005, PMS-F-017 |
+| Kanban workflow | TC-KAN-01 to TC-KAN-04, TC-FILT-01 | PMS-F-003 to PMS-F-005, PMS-F-011 |
 | Estimation and sprints | TC-EST-01, TC-EST-02, TC-SPR-01, TC-BURN-01 | PMS-F-006 to PMS-F-009 |
 | Dashboard | TC-DASH-01, TC-WORK-01, TC-DOCS-01 | PMS-F-010, PMS-F-017, PMS-F-018 |
 | Persistence and audit | TC-SUPA-01, TC-OFF-01, TC-SET-01, TC-LOG-01 | PMS-F-012 to PMS-F-015 |

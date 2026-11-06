@@ -208,15 +208,39 @@ them a defect:
 | OBS-02 | The CI runner uses Node.js 20, and `@supabase/supabase-js` warns in every run that Node.js 20 and below are deprecated. | None today; a future library update may stop working on the CI runner. | Set `node-version` to 22 in `.github/workflows/ci.yml`. |
 | OBS-03 | While rendering `BurndownChart`, React warns that an SVG `<title>` element "received an array with more than 1 element as children". | The tooltip on each burndown point is built from several text pieces; some browsers may not show it as one string. | Build the tooltip as one template string. |
 
+**Status on 6 Nov 2026:** OBS-02 and OBS-03 were fixed in PR #101. CI now runs on
+Node.js 24, and both warnings are gone from the CI log. OBS-01 remains a known
+limitation of the timing test.
+
 ---
 
-## 10. Conclusion
+## 10. Regression on the Final `main` Branch
+
+After the recorded run, four pull requests were merged on 6 November 2026: #98 (fix for
+system test defect DEF-04, with new tests), #99 (second-machine pre-check of the system
+tests), #101 (fix for DEF-05, OBS-02 and OBS-03) and #85 (verified cloud sessions, merged
+after review fixes, with 21 new tests). The whole suite was run again on the final `main`.
+
+| Run | Commit | Test files | Tests | Passed | Failed |
+| :--- | :--- | ---: | ---: | ---: | ---: |
+| Recorded run (Sections 3 to 7) | `f9e0727` | 35 | 234 | 234 | 0 |
+| Final regression, 6 Nov 2026, 23:04 IST | `2b8fdbc` | 38 | 259 | 259 | 0 |
+
+The 25 new tests cover the board's empty filter state (3), the "1 task" wording (1), and
+cloud session verification and cache ownership (21). Lint, the production build and
+`npm audit --audit-level=high` are clean on the same commit, and the GitHub Actions
+pipeline, now on Node.js 24, passed for every merged pull request.
+
+---
+
+## 11. Conclusion
 
 The unit and integration suite is healthy: 234 of 234 tests pass in about two seconds.
 Every SRS functional requirement except PMS-F-018 (CI/CD) has at least one unit test file,
 and PMS-F-018 is the pipeline that runs them. Lint reports 0 errors and 0 warnings, and
 `npm audit --audit-level=high` reports 0 vulnerabilities on the same commit. Unit-level
-evidence is complete for the Testing phase.
+evidence is complete for the Testing phase. After the fixes merged on 6 November, the
+final `main` passes all 259 tests (Section 10).
 
 ---
 
