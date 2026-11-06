@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { ACCESS_ROLE_LABELS, can, findTeamMember, PERMISSIONS, restoreSession, signIn, signOut } from '../services/authService';
@@ -10,6 +11,7 @@ import SignInView from '../components/auth/SignInView';
 import App from '../App';
 
 const [lead, developer] = TEAM_MEMBERS;
+const authSchema = readFileSync(new URL('../../database/migrations/20261106_auth_projects_rls.sql', import.meta.url), 'utf8');
 
 const renderWithProviders = (element) => renderToStaticMarkup(React.createElement(AuthProvider, null,
   React.createElement(ProjectProvider, null, element)));
@@ -159,5 +161,23 @@ describe('PMS-F-001 team sign-in and profile switching', () => {
     storage.delete('supabase_key');
     await project.resetData(lead);
     expect(JSON.parse(storage.get('sprintflow_activity'))[0]).toMatchObject({ actor: lead.name, action: 'reset demo data for' });
+  });
+});
+
+// The cloud auth flow is moving from a hard-coded team allowlist to Supabase
+// Auth identities. Keep the existing offline demo tests above intact; these
+// contract checks cover the database-side verified identity and invitation
+// guarantees until the Supabase-backed UI flow lands in its own stage.
+describe('Supabase Auth identity and invitation contract', () => {
+  it('uses verified auth.uid identity and never accepts a client email when claiming invitations', () => {
+    expect(authSchema).toMatch(/WHERE u\.id = auth\.uid\(\) AND u\.email_confirmed_at IS NOT NULL/i);
+    expect(authSchema).toMatch(/FUNCTION public\.claim_project_invitations\(\)/i);
+    expect(authSchema).not.toMatch(/FUNCTION public\.claim_project_invitations\([^)]/i);
+  });
+
+  it('returns the same invitation response for existing and new addresses', () => {
+    expect(authSchema).toMatch(/response is intentionally invariant/i);
+    expect(authSchema).toMatch(/RETURN 'invited'/i);
+    expect(authSchema).not.toMatch(/RETURN\s+CASE[\s\S]{0,80}added/i);
   });
 });
