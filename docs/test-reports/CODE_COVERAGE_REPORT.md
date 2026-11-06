@@ -6,6 +6,7 @@
 **Owner (STP §9, Test Engineer -- Backend):** Chandan Kumar K (PES2UG24CS128) -- tracking issue #93
 **Testing phase:** 2--6 November 2026 | **Measured:** 6 November 2026
 **Related Documents:** `docs/STP_Document_Team11.md` (Section 14.1), [Unit Test Report](UNIT_TEST_REPORT.md), [Branch Coverage Report](BRANCH_COVERAGE_REPORT.md)
+**PDF version (as submitted, both coverage reports in one file):** [Team11_Code_and_Branch_Coverage_Report.pdf](Team11_Code_and_Branch_Coverage_Report.pdf)
 
 ---
 

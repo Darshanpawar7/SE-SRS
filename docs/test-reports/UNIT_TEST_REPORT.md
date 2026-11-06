@@ -6,6 +6,7 @@
 **Owner (STP §9, QA Lead):** Gurubelli Yekambar Eshwar Rao (PES2UG24CS173) -- tracking issue #91
 **Testing phase:** 2--6 November 2026 | **Executed:** 6 November 2026
 **Related Documents:** `docs/STP_Document_Team11.md` (Sections 5, 13, 14), `docs/TEST_CASE_SPECIFICATION.md`, `docs/test-reports/CODE_COVERAGE_REPORT.md`
+**PDF version (as submitted):** [Team11_Unit_Test_Report.pdf](Team11_Unit_Test_Report.pdf)
 
 ---
 
@@ -45,7 +46,7 @@ when vulnerable dependencies were remediated (issue #30, merged in PR #76).
 | Measure | Result |
 | :--- | ---: |
 | Test files executed | 35 |
-| Test groups (`describe` blocks) | 63 |
+| Test groups (`describe` blocks) | 28 (the other 7 files list their tests at the top level) |
 | Test cases executed | 234 |
 | Passed | **234** |
 | Failed | 0 |
@@ -156,7 +157,9 @@ This test measures wall-clock time, so its margin depends on the machine. Under 
 instrumentation, which slows every statement, it measured 58--78 ms and failed. It has also
 failed on a local machine while other heavy processes were running. It passed in every
 completed CI run on `main` since 3 November. Pass/fail in this report comes from the
-normal, uninstrumented run.
+normal, uninstrumented run. On 6 November it passed 10 out of 10 times when run on its
+own, and measured up to 94 ms in full parallel runs while the laptop was also busy with
+OneDrive sync, Docker and a browser.
 
 ---
 
@@ -196,12 +199,14 @@ above.
 
 ## 9. Defects
 
-No defects were found at unit level: all 234 tests passed. One observation, which is not a
-defect:
+No defects were found at unit level: all 234 tests passed. Three observations, none of
+them a defect:
 
 | ID | Observation | Impact | Recommendation |
 | :--- | :--- | :--- | :--- |
 | OBS-01 | `kanbanPerformance.test.jsx` asserts a wall-clock budget, so it fails under coverage instrumentation and can fail on a heavily loaded machine. | Coverage runs report one failure; the code is not slower. | Skip only the timing assertion when coverage is enabled, or keep the benchmark in a separate `npm run bench` step. |
+| OBS-02 | The CI runner uses Node.js 20, and `@supabase/supabase-js` warns in every run that Node.js 20 and below are deprecated. | None today; a future library update may stop working on the CI runner. | Set `node-version` to 22 in `.github/workflows/ci.yml`. |
+| OBS-03 | While rendering `BurndownChart`, React warns that an SVG `<title>` element "received an array with more than 1 element as children". | The tooltip on each burndown point is built from several text pieces; some browsers may not show it as one string. | Build the tooltip as one template string. |
 
 ---
 

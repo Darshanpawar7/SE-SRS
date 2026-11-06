@@ -6,6 +6,7 @@
 **Owner (STP §9, Test Architect):** Darshan P Pawar (PES2UG24CS143) -- tracking issue #94
 **Testing phase:** 2--6 November 2026 | **Measured:** 6 November 2026
 **Related Documents:** `docs/STP_Document_Team11.md` (Section 14), [Code Coverage Report](CODE_COVERAGE_REPORT.md), [Unit Test Report](UNIT_TEST_REPORT.md)
+**PDF version (as submitted, both coverage reports in one file):** [Team11_Code_and_Branch_Coverage_Report.pdf](Team11_Code_and_Branch_Coverage_Report.pdf)
 
 ---
 
