@@ -22,15 +22,19 @@ describe('task board filters', () => {
     })).toEqual([]);
   });
 
-  it('reset clears assignee, priority, and search state', () => {
-    const setFilterAssignee = vi.fn();
-    const setFilterPriority = vi.fn();
-    const setSearchQuery = vi.fn();
+  it('reset clears assignee, priority, and search and restores matching tasks', () => {
+    const filters = { filterAssignee: 'u-1', filterPriority: 'high', searchQuery: 'no matching task' };
+    const setFilterAssignee = vi.fn(value => { filters.filterAssignee = value; });
+    const setFilterPriority = vi.fn(value => { filters.filterPriority = value; });
+    const setSearchQuery = vi.fn(value => { filters.searchQuery = value; });
+
+    expect(filterTasks(tasks, filters)).toEqual([]);
 
     resetTaskFilters({ setFilterAssignee, setFilterPriority, setSearchQuery });
 
     expect(setFilterAssignee).toHaveBeenCalledWith('all');
     expect(setFilterPriority).toHaveBeenCalledWith('all');
     expect(setSearchQuery).toHaveBeenCalledWith('');
+    expect(filterTasks(tasks, filters)).toEqual(tasks);
   });
 });
