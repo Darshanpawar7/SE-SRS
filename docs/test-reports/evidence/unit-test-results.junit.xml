@@ -1,0 +1,562 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="234" failures="0" errors="0" time="2.0460041">
+    <testsuite name="src/tests/accessibility.test.jsx" timestamp="2026-11-06T11:27:12.949Z" hostname="Darshan" tests="6" failures="0" errors="0" skipped="0" time="0.0320245">
+        <testcase classname="src/tests/accessibility.test.jsx" name="keyboard and screen-reader task workflow &gt; opens a focused task card on &quot;Enter&quot; and prevents the default action" time="0.0031988">
+        </testcase>
+        <testcase classname="src/tests/accessibility.test.jsx" name="keyboard and screen-reader task workflow &gt; opens a focused task card on &quot; &quot; and prevents the default action" time="0.0006125">
+        </testcase>
+        <testcase classname="src/tests/accessibility.test.jsx" name="keyboard and screen-reader task workflow &gt; does not activate for other keys or events bubbling from a child" time="0.0009653">
+        </testcase>
+        <testcase classname="src/tests/accessibility.test.jsx" name="keyboard and screen-reader task workflow &gt; renders focusable named task controls without nesting the quick action inside the card button role" time="0.0160013">
+        </testcase>
+        <testcase classname="src/tests/accessibility.test.jsx" name="keyboard and screen-reader task workflow &gt; associates task form labels, names the dialog, and announces validation errors" time="0.0053828">
+        </testcase>
+        <testcase classname="src/tests/accessibility.test.jsx" name="keyboard and screen-reader task workflow &gt; gives search and filter controls accessible names" time="0.0030703">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/tests/auditTrail.test.js" timestamp="2026-11-06T11:27:12.952Z" hostname="Darshan" tests="17" failures="0" errors="0" skipped="0" time="0.180274">
+        <testcase classname="src/tests/auditTrail.test.js" name="PMS-F-014 immutable audit trail &gt; creates frozen records with actor, action, target and timestamp" time="0.0104256">
+        </testcase>
+        <testcase classname="src/tests/auditTrail.test.js" name="PMS-F-014 immutable audit trail &gt; rejects records that could not be attributed or dated" time="0.0012569">
+        </testcase>
+        <testcase classname="src/tests/auditTrail.test.js" name="PMS-F-014 immutable audit trail &gt; TC-LOG-01: create, title edit and delete add exactly three records in order" time="0.0039674">
+        </testcase>
+        <testcase classname="src/tests/auditTrail.test.js" name="PMS-F-014 immutable audit trail &gt; TC-LOG-01 through the app: creating, editing and deleting a task each add one record" time="0.0093516">
+        </testcase>
+        <testcase classname="src/tests/auditTrail.test.js" name="PMS-F-014 immutable audit trail &gt; records sprint creation and start made through the app" time="0.0026417">
+        </testcase>
+        <testcase classname="src/tests/auditTrail.test.js" name="PMS-F-014 immutable audit trail &gt; audits sprint deletion and the task changes caused by detaching its tasks" time="0.0034087">
+        </testcase>
+        <testcase classname="src/tests/auditTrail.test.js" name="PMS-F-014 immutable audit trail &gt; keeps long before and after values in full" time="0.0006012">
+        </testcase>
+        <testcase classname="src/tests/auditTrail.test.js" name="PMS-F-014 immutable audit trail &gt; records a plain move as &quot;moved task&quot; and ignores a save with no changes" time="0.0006207">
+        </testcase>
+        <testcase classname="src/tests/auditTrail.test.js" name="PMS-F-014 immutable audit trail &gt; records sprint creation and lifecycle transitions" time="0.0008027">
+        </testcase>
+        <testcase classname="src/tests/auditTrail.test.js" name="PMS-F-014 immutable audit trail &gt; never truncates history and leaves earlier records unchanged" time="0.0061604">
+        </testcase>
+        <testcase classname="src/tests/auditTrail.test.js" name="PMS-F-014 immutable audit trail &gt; keeps both records when two are logged at the same moment" time="0.0010948">
+        </testcase>
+        <testcase classname="src/tests/auditTrail.test.js" name="PMS-F-014 immutable audit trail &gt; keeps the audit trail when demo data is reset, and records the reset" time="0.0009909">
+        </testcase>
+        <testcase classname="src/tests/auditTrail.test.js" name="PMS-F-014 immutable audit trail &gt; only accepts complete audit records" time="0.0015785">
+        </testcase>
+        <testcase classname="src/tests/auditTrail.test.js" name="PMS-F-014 immutable audit trail &gt; formats record times relative to now, falling back to the old display text" time="0.1236671">
+        </testcase>
+        <testcase classname="src/tests/auditTrail.test.js" name="PMS-F-014 immutable audit trail &gt; shows the latest seven records, the total count and a full-history control" time="0.0066185">
+        </testcase>
+        <testcase classname="src/tests/auditTrail.test.js" name="PMS-F-014 immutable audit trail &gt; shows status labels for moves in the seed history" time="0.0024737">
+        </testcase>
+        <testcase classname="src/tests/auditTrail.test.js" name="PMS-F-014 immutable audit trail &gt; records a description-only project change" time="0.0007257">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/tests/auth.test.js" timestamp="2026-11-06T11:27:12.954Z" hostname="Darshan" tests="10" failures="0" errors="0" skipped="0" time="0.0570868">
+        <testcase classname="src/tests/auth.test.js" name="PMS-F-001 team sign-in and profile switching &gt; TC-AUTH-01: signs in a team account and keeps the session after a reload" time="0.0070715">
+        </testcase>
+        <testcase classname="src/tests/auth.test.js" name="PMS-F-001 team sign-in and profile switching &gt; rejects a wrong password, an empty password and accounts outside the team" time="0.0035478">
+        </testcase>
+        <testcase classname="src/tests/auth.test.js" name="PMS-F-001 team sign-in and profile switching &gt; switches profile by signing out and signing in as another member" time="0.0010256">
+        </testcase>
+        <testcase classname="src/tests/auth.test.js" name="PMS-F-001 team sign-in and profile switching &gt; discards a stored session that was edited or corrupted" time="0.0009789">
+        </testcase>
+        <testcase classname="src/tests/auth.test.js" name="PMS-F-001 team sign-in and profile switching &gt; uses Supabase Auth when configured and still rejects non-team accounts" time="0.0021268">
+        </testcase>
+        <testcase classname="src/tests/auth.test.js" name="PMS-F-001 team sign-in and profile switching &gt; only lets the team lead use lead-only actions" time="0.000842">
+        </testcase>
+        <testcase classname="src/tests/auth.test.js" name="PMS-F-001 team sign-in and profile switching &gt; renders the sign-in view with all four team profiles" time="0.0133267">
+        </testcase>
+        <testcase classname="src/tests/auth.test.js" name="PMS-F-001 team sign-in and profile switching &gt; shows only the sign-in view until a member signs in, then the application" time="0.0148701">
+        </testcase>
+        <testcase classname="src/tests/auth.test.js" name="PMS-F-001 team sign-in and profile switching &gt; offers local demo mode when the Supabase connection was saved in this browser" time="0.0036256">
+        </testcase>
+        <testcase classname="src/tests/auth.test.js" name="PMS-F-001 team sign-in and profile switching &gt; lets only the team lead reset the demo data, and only while Supabase is not connected" time="0.0071073">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/tests/burndown.test.js" timestamp="2026-11-06T11:27:12.956Z" hostname="Darshan" tests="8" failures="0" errors="0" skipped="0" time="0.0476608">
+        <testcase classname="src/tests/burndown.test.js" name="PMS-F-011 recorded daily burndown &gt; records actual observations, keeps past days unchanged and leaves gaps/future days empty" time="0.018611">
+        </testcase>
+        <testcase classname="src/tests/burndown.test.js" name="PMS-F-011 recorded daily burndown &gt; keeps only the latest observation today, tracks scope changes, and fixes the initial ideal baseline" time="0.0013964">
+        </testcase>
+        <testcase classname="src/tests/burndown.test.js" name="PMS-F-011 recorded daily burndown &gt; isolates sprints and records zero after removal or completion" time="0.0006">
+        </testcase>
+        <testcase classname="src/tests/burndown.test.js" name="PMS-F-011 recorded daily burndown &gt; freezes completed history and records late completion on its real date" time="0.0019426">
+        </testcase>
+        <testcase classname="src/tests/burndown.test.js" name="PMS-F-011 recorded daily burndown &gt; does not invent historical values for a legacy sprint first opened after its end" time="0.0007154">
+        </testcase>
+        <testcase classname="src/tests/burndown.test.js" name="PMS-F-011 recorded daily burndown &gt; handles empty, future, one-day and invalid sprints without NaN or crashes" time="0.0011931">
+        </testcase>
+        <testcase classname="src/tests/burndown.test.js" name="PMS-F-011 recorded daily burndown &gt; persists observations across service reads instead of truncating them to the audit feed" time="0.0022926">
+        </testcase>
+        <testcase classname="src/tests/burndown.test.js" name="PMS-F-011 recorded daily burndown &gt; renders exact daily labels and actual values with accessible empty/one-point states" time="0.0178493">
+            <system-err>
+Warning: A title element received an array with more than 1 element as children. In browsers title Elements can only have Text Nodes as children. If the children being rendered output more than a single text node in aggregate the browser will display markup and comments as text in the title and hydration will likely fail and fall back to client rendering
+    at title
+    at circle
+    at g
+    at svg
+    at div
+    at BurndownChart (src/components/dashboard/BurndownChart.jsx:8:26)
+Warning: A title element received an array with more than 1 element as children. In browsers title Elements can only have Text Nodes as children. If the children being rendered output more than a single text node in aggregate the browser will display markup and comments as text in the title and hydration will likely fail and fall back to client rendering
+    at title
+    at circle
+    at g
+    at svg
+    at div
+    at BurndownChart (src/components/dashboard/BurndownChart.jsx:8:26)
+
+            </system-err>
+        </testcase>
+    </testsuite>
+    <testsuite name="src/tests/commands.test.js" timestamp="2026-11-06T11:27:12.957Z" hostname="Darshan" tests="3" failures="0" errors="0" skipped="0" time="0.0051042">
+        <testcase classname="src/tests/commands.test.js" name="Command center &gt; shows actions without flooding the default menu with tasks" time="0.0021375">
+        </testcase>
+        <testcase classname="src/tests/commands.test.js" name="Command center &gt; searches descriptions and titles case-insensitively" time="0.000328">
+        </testcase>
+        <testcase classname="src/tests/commands.test.js" name="Command center &gt; returns navigation and task matches and caps task results" time="0.0009296">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/tests/configSecurity.test.js" timestamp="2026-11-06T11:27:12.958Z" hostname="Darshan" tests="3" failures="0" errors="0" skipped="0" time="0.0080257">
+        <testcase classname="src/tests/configSecurity.test.js" name="Supabase credential configuration &gt; ignores local environment files and keeps the example credential-free" time="0.0033737">
+        </testcase>
+        <testcase classname="src/tests/configSecurity.test.js" name="Supabase credential configuration &gt; accepts only HTTPS URLs and non-secret public key values" time="0.0013916">
+        </testcase>
+        <testcase classname="src/tests/configSecurity.test.js" name="Supabase credential configuration &gt; rejects service-role JWTs while allowing legacy anon public JWTs" time="0.0004895">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/tests/databaseSecurity.test.js" timestamp="2026-11-06T11:27:12.959Z" hostname="Darshan" tests="2" failures="0" errors="0" skipped="0" time="0.0082729">
+        <testcase classname="src/tests/databaseSecurity.test.js" name="Supabase database security schema &gt; enables RLS on every application table and scopes policies to authenticated users" time="0.004667">
+        </testcase>
+        <testcase classname="src/tests/databaseSecurity.test.js" name="Supabase database security schema &gt; makes audit records append-only and prevents project deletion from cascading into history" time="0.0009302">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/tests/deliverySignals.test.js" timestamp="2026-11-06T11:27:12.959Z" hostname="Darshan" tests="6" failures="0" errors="0" skipped="0" time="0.0146613">
+        <testcase classname="src/tests/deliverySignals.test.js" name="Delivery signals &gt; computes counts from unfinished scoped items and independent review totals" time="0.0081382">
+        </testcase>
+        <testcase classname="src/tests/deliverySignals.test.js" name="Delivery signals &gt; provides honest empty and unknown states" time="0.0010187">
+        </testcase>
+        <testcase classname="src/tests/deliverySignals.test.js" name="Delivery signals &gt; uses creation fallback and seven elapsed days boundary" time="0.0006197">
+        </testcase>
+        <testcase classname="src/tests/deliverySignals.test.js" name="Delivery signals &gt; does not silently count unknown/future dates as stale" time="0.0005583">
+        </testcase>
+        <testcase classname="src/tests/deliverySignals.test.js" name="Delivery signals &gt; counts inclusive UTC calendar dates and clamps before/after schedule" time="0.0007027">
+        </testcase>
+        <testcase classname="src/tests/deliverySignals.test.js" name="Delivery signals &gt; handles one day and invalid ranges" time="0.0004579">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/tests/estimation.test.js" timestamp="2026-11-06T11:27:12.960Z" hostname="Darshan" tests="3" failures="0" errors="0" skipped="0" time="0.0066573">
+        <testcase classname="src/tests/estimation.test.js" name="Agile Estimation &amp; Metric Utilities &gt; calculates sprint metrics correctly" time="0.0030471">
+        </testcase>
+        <testcase classname="src/tests/estimation.test.js" name="Agile Estimation &amp; Metric Utilities &gt; handles empty task lists safely without division by zero" time="0.0004797">
+        </testcase>
+        <testcase classname="src/tests/estimation.test.js" name="Agile Estimation &amp; Metric Utilities &gt; calculates member workload and completion rates" time="0.0006773">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/tests/flowAnalytics.test.js" timestamp="2026-11-06T11:27:12.961Z" hostname="Darshan" tests="4" failures="0" errors="0" skipped="0" time="0.0260967">
+        <testcase classname="src/tests/flowAnalytics.test.js" name="recorded flow analytics &gt; uses paired real transitions, deduplicates events, and measures cycles" time="0.0184311">
+        </testcase>
+        <testcase classname="src/tests/flowAnalytics.test.js" name="recorded flow analytics &gt; does not invent timing for missing starts or future/corrupt observations" time="0.0017047">
+        </testcase>
+        <testcase classname="src/tests/flowAnalytics.test.js" name="recorded flow analytics &gt; counts reopened completions separately and restricts to current scope" time="0.0007677">
+        </testcase>
+        <testcase classname="src/tests/flowAnalytics.test.js" name="recorded flow analytics &gt; replaces only today, preserves prior observations and leaves missing dates absent" time="0.0022964">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/tests/kanbanPerformance.test.jsx" timestamp="2026-11-06T11:27:12.961Z" hostname="Darshan" tests="1" failures="0" errors="0" skipped="0" time="0.9420406">
+        <testcase classname="src/tests/kanbanPerformance.test.jsx" name="repeatable local Kanban drag/drop and render benchmark &gt; records the state update and Kanban component render path for a 100-task fixture" time="0.9391919">
+            <system-err>
+KANBAN_PERF {&quot;fixtureTasks&quot;:100,&quot;warmups&quot;:5,&quot;samples&quot;:30,&quot;stateUpdateP50Ms&quot;:0.02500000000009095,&quot;stateUpdateP95Ms&quot;:0.09600000000000364,&quot;componentRenderP50Ms&quot;:19.939599999999928,&quot;componentRenderP95Ms&quot;:34.16560000000004,&quot;combinedP50Ms&quot;:19.964699999999993,&quot;combinedP95Ms&quot;:34.191299999999956,&quot;combinedMaxMs&quot;:41.50410000000011}
+
+            </system-err>
+        </testcase>
+    </testsuite>
+    <testsuite name="src/tests/kpiDashboard.test.js" timestamp="2026-11-06T11:27:12.962Z" hostname="Darshan" tests="4" failures="0" errors="0" skipped="0" time="0.0223162">
+        <testcase classname="src/tests/kpiDashboard.test.js" name="PMS-F-012 executive KPI dashboard &gt; reports total points, delivered velocity, completion and remaining work from the task data" time="0.0046168">
+        </testcase>
+        <testcase classname="src/tests/kpiDashboard.test.js" name="PMS-F-012 executive KPI dashboard &gt; updates every KPI after a task mutation, with no reload" time="0.0025873">
+        </testcase>
+        <testcase classname="src/tests/kpiDashboard.test.js" name="PMS-F-012 executive KPI dashboard &gt; renders the four cards with the computed values and an accessible progress bar" time="0.0104286">
+        </testcase>
+        <testcase classname="src/tests/kpiDashboard.test.js" name="PMS-F-012 executive KPI dashboard &gt; shows zeros, not NaN, when the selected sprint has no tasks" time="0.0017473">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/tests/labels.test.js" timestamp="2026-11-06T11:27:12.963Z" hostname="Darshan" tests="6" failures="0" errors="0" skipped="0" time="0.0203203">
+        <testcase classname="src/tests/labels.test.js" name="PMS-F-007 task labels and tags &gt; normalises typed labels into short lowercase tags" time="0.0054328">
+        </testcase>
+        <testcase classname="src/tests/labels.test.js" name="PMS-F-007 task labels and tags &gt; adds a label once and ignores blank or duplicate input" time="0.0020156">
+        </testcase>
+        <testcase classname="src/tests/labels.test.js" name="PMS-F-007 task labels and tags &gt; removes only the chosen label" time="0.0006662">
+        </testcase>
+        <testcase classname="src/tests/labels.test.js" name="PMS-F-007 task labels and tags &gt; cleans legacy label lists that contain duplicates or non-text values" time="0.0004871">
+        </testcase>
+        <testcase classname="src/tests/labels.test.js" name="PMS-F-007 task labels and tags &gt; renders one distinct pill per saved label on the task card" time="0.0069959">
+        </testcase>
+        <testcase classname="src/tests/labels.test.js" name="PMS-F-007 task labels and tags &gt; keeps added and removed labels across a save and reload" time="0.0020298">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/tests/offlineFallback.test.js" timestamp="2026-11-06T11:27:12.965Z" hostname="Darshan" tests="14" failures="0" errors="0" skipped="0" time="0.0964467">
+        <testcase classname="src/tests/offlineFallback.test.js" name="PMS-F-016 offline CRUD fallback &gt; TC-OFF-01: without credentials, create, update and delete persist in local storage across reloads" time="0.0080843">
+        </testcase>
+        <testcase classname="src/tests/offlineFallback.test.js" name="PMS-F-016 offline CRUD fallback &gt; keeps sprint create, update and delete changes in local storage across reloads" time="0.0052696">
+        </testcase>
+        <testcase classname="src/tests/offlineFallback.test.js" name="PMS-F-016 offline CRUD fallback &gt; queues a sprint deletion and detached tasks until the cloud is reachable" time="0.0051883">
+        </testcase>
+        <testcase classname="src/tests/offlineFallback.test.js" name="PMS-F-016 offline CRUD fallback &gt; keeps a change locally and queues it when the cloud save fails" time="0.0019729">
+        </testcase>
+        <testcase classname="src/tests/offlineFallback.test.js" name="PMS-F-016 offline CRUD fallback &gt; shows the local change after a reload while the cloud is still unreachable, then syncs it" time="0.0022055">
+        </testcase>
+        <testcase classname="src/tests/offlineFallback.test.js" name="PMS-F-016 offline CRUD fallback &gt; TC-RECOV-01: tasks created while disconnected are not lost after reconnecting" time="0.0015236">
+        </testcase>
+        <testcase classname="src/tests/offlineFallback.test.js" name="PMS-F-016 offline CRUD fallback &gt; sends an offline delete later, so the deleted task does not come back" time="0.0021874">
+        </testcase>
+        <testcase classname="src/tests/offlineFallback.test.js" name="PMS-F-016 offline CRUD fallback &gt; queues audit records that fail to upload and inserts them later" time="0.0015529">
+        </testcase>
+        <testcase classname="src/tests/offlineFallback.test.js" name="PMS-F-016 offline CRUD fallback &gt; runs one retry at a time, so a queued record is sent once" time="0.001977">
+        </testcase>
+        <testcase classname="src/tests/offlineFallback.test.js" name="PMS-F-016 offline CRUD fallback &gt; marks a change before sending it, so a reload during a slow save keeps the local copy" time="0.0084885">
+        </testcase>
+        <testcase classname="src/tests/offlineFallback.test.js" name="PMS-F-016 offline CRUD fallback &gt; loads the local copy, not the older cloud row, when writes fail but reads still work" time="0.0017325">
+        </testcase>
+        <testcase classname="src/tests/offlineFallback.test.js" name="PMS-F-016 offline CRUD fallback &gt; does not let an older save that finishes late clear a newer failed one" time="0.0133059">
+        </testcase>
+        <testcase classname="src/tests/offlineFallback.test.js" name="PMS-F-016 offline CRUD fallback &gt; shows waiting changes in the navbar instead of &quot;Supabase Connected&quot;" time="0.03541">
+        </testcase>
+        <testcase classname="src/tests/offlineFallback.test.js" name="PMS-F-016 offline CRUD fallback &gt; keeps every queued change when a retry fails again" time="0.0044828">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/tests/persistenceRecovery.test.js" timestamp="2026-11-06T11:27:12.967Z" hostname="Darshan" tests="11" failures="0" errors="0" skipped="0" time="0.2162464">
+        <testcase classname="src/tests/persistenceRecovery.test.js" name="PMS-NF-004 fresh-session recovery &gt; restores all saved entity types, activity, selection and burndown after a new module session" time="0.1596913">
+        </testcase>
+        <testcase classname="src/tests/persistenceRecovery.test.js" name="PMS-NF-004 fresh-session recovery &gt; queues the audit event before an unanswered entity upload and restores it in a fresh session" time="0.0118346">
+        </testcase>
+        <testcase classname="src/tests/persistenceRecovery.test.js" name="PMS-NF-004 fresh-session recovery &gt; keeps all configured-mode entities through failed uploads, restart and retry" time="0.0117418">
+        </testcase>
+        <testcase classname="src/tests/persistenceRecovery.test.js" name="PMS-NF-004 fresh-session recovery &gt; does not let an older projects read overwrite a newer save" time="0.0054283">
+        </testcase>
+        <testcase classname="src/tests/persistenceRecovery.test.js" name="PMS-NF-004 fresh-session recovery &gt; does not let an older sprints read overwrite a newer save" time="0.0037327">
+        </testcase>
+        <testcase classname="src/tests/persistenceRecovery.test.js" name="PMS-NF-004 fresh-session recovery &gt; does not let an older tasks read overwrite a newer save" time="0.0039578">
+        </testcase>
+        <testcase classname="src/tests/persistenceRecovery.test.js" name="PMS-NF-004 fresh-session recovery &gt; replays an interrupted multi-key write before exposing saved state" time="0.0040287">
+        </testcase>
+        <testcase classname="src/tests/persistenceRecovery.test.js" name="PMS-NF-004 fresh-session recovery &gt; preserves the journal if applying it is interrupted, then replays it" time="0.0025607">
+        </testcase>
+        <testcase classname="src/tests/persistenceRecovery.test.js" name="PMS-NF-004 fresh-session recovery &gt; does not overwrite existing entities when the initial journal cannot be saved" time="0.0011269">
+        </testcase>
+        <testcase classname="src/tests/persistenceRecovery.test.js" name="PMS-NF-004 fresh-session recovery &gt; keeps an audit event saved while an older shared-history read is pending" time="0.0037353">
+        </testcase>
+        <testcase classname="src/tests/persistenceRecovery.test.js" name="PMS-NF-004 fresh-session recovery &gt; recovers sprint deletion, detached tasks, audit and delete retry intent together" time="0.0060366">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/tests/projectMap.test.js" timestamp="2026-11-06T11:27:12.968Z" hostname="Darshan" tests="5" failures="0" errors="0" skipped="0" time="0.0119575">
+        <testcase classname="src/tests/projectMap.test.js" name="never includes foreign project tasks or sprints in the map" time="0.0045344">
+        </testcase>
+        <testcase classname="src/tests/projectMap.test.js" name="distinguishes unscheduled work from a missing or foreign sprint" time="0.0011015">
+        </testcase>
+        <testcase classname="src/tests/projectMap.test.js" name="searches real labels and owners while preserving membership" time="0.000986">
+        </testcase>
+        <testcase classname="src/tests/projectMap.test.js" name="limits canvas nodes while keeping every matching task available to the table" time="0.0022567">
+        </testcase>
+        <testcase classname="src/tests/projectMap.test.js" name="bounds zoom and recovers non-finite values" time="0.0004548">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/tests/projectMetadata.test.js" timestamp="2026-11-06T11:27:12.969Z" hostname="Darshan" tests="20" failures="0" errors="0" skipped="0" time="0.0483739">
+        <testcase classname="src/tests/projectMetadata.test.js" name="PMS-F-002 project metadata &gt; accepts and normalises a valid key, name and date range" time="0.0071068">
+        </testcase>
+        <testcase classname="src/tests/projectMetadata.test.js" name="PMS-F-002 project metadata &gt; rejects the invalid key &quot;&quot;" time="0.001945">
+        </testcase>
+        <testcase classname="src/tests/projectMetadata.test.js" name="PMS-F-002 project metadata &gt; rejects the invalid key &quot;P&quot;" time="0.0007869">
+        </testcase>
+        <testcase classname="src/tests/projectMetadata.test.js" name="PMS-F-002 project metadata &gt; rejects the invalid key &quot;1PMS&quot;" time="0.0006556">
+        </testcase>
+        <testcase classname="src/tests/projectMetadata.test.js" name="PMS-F-002 project metadata &gt; rejects the invalid key &quot;PM-S&quot;" time="0.0006122">
+        </testcase>
+        <testcase classname="src/tests/projectMetadata.test.js" name="PMS-F-002 project metadata &gt; rejects the invalid key &quot;PMS 2&quot;" time="0.0004798">
+        </testcase>
+        <testcase classname="src/tests/projectMetadata.test.js" name="PMS-F-002 project metadata &gt; rejects the invalid key &quot;ABCDEFGHIJK&quot;" time="0.0004782">
+        </testcase>
+        <testcase classname="src/tests/projectMetadata.test.js" name="PMS-F-002 project metadata &gt; rejects a key already used by another project, ignoring case" time="0.0007491">
+        </testcase>
+        <testcase classname="src/tests/projectMetadata.test.js" name="PMS-F-002 project metadata &gt; rejects invalid details {&quot;name&quot;:&quot;AB&quot;}" time="0.0008532">
+        </testcase>
+        <testcase classname="src/tests/projectMetadata.test.js" name="PMS-F-002 project metadata &gt; rejects invalid details {&quot;name&quot;:&quot;xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx&quot;}" time="0.0008508">
+        </testcase>
+        <testcase classname="src/tests/projectMetadata.test.js" name="PMS-F-002 project metadata &gt; rejects invalid details {&quot;start_date&quot;:&quot;2026-02-30&quot;}" time="0.0005513">
+        </testcase>
+        <testcase classname="src/tests/projectMetadata.test.js" name="PMS-F-002 project metadata &gt; rejects invalid details {&quot;target_date&quot;:&quot;30/10/2026&quot;}" time="0.0004098">
+        </testcase>
+        <testcase classname="src/tests/projectMetadata.test.js" name="PMS-F-002 project metadata &gt; rejects invalid details {&quot;start_date&quot;:&quot;2026-11-01&quot;}" time="0.0004197">
+        </testcase>
+        <testcase classname="src/tests/projectMetadata.test.js" name="PMS-F-002 project metadata &gt; saves the details and shows the same values after a reload" time="0.001681">
+        </testcase>
+        <testcase classname="src/tests/projectMetadata.test.js" name="PMS-F-002 project metadata &gt; checks key uniqueness against every Supabase project and syncs the new dates" time="0.0032641">
+        </testcase>
+        <testcase classname="src/tests/projectMetadata.test.js" name="PMS-F-002 project metadata &gt; rejects edits from members other than the lead, and edits before the project has loaded" time="0.0075979">
+        </testcase>
+        <testcase classname="src/tests/projectMetadata.test.js" name="PMS-F-002 project metadata &gt; stores new details and their audit record before Supabase answers" time="0.0075949">
+        </testcase>
+        <testcase classname="src/tests/projectMetadata.test.js" name="PMS-F-002 project metadata &gt; records which project fields changed in the audit trail" time="0.0007383">
+        </testcase>
+        <testcase classname="src/tests/projectMetadata.test.js" name="PMS-F-002 project metadata &gt; lets only the team lead edit; other members see the details read-only" time="0.0077943">
+        </testcase>
+        <testcase classname="src/tests/projectMetadata.test.js" name="PMS-F-002 project metadata &gt; falls back to placeholder text before the project has loaded" time="0.0005827">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/tests/recovery.test.js" timestamp="2026-11-06T11:27:12.971Z" hostname="Darshan" tests="1" failures="0" errors="0" skipped="0" time="0.0069556">
+        <testcase classname="src/tests/recovery.test.js" name="Workspace recovery screen &gt; offers non-destructive retry and reload without exposing exception details" time="0.0056782">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/tests/savedWorkViews.test.js" timestamp="2026-11-06T11:27:12.972Z" hostname="Darshan" tests="5" failures="0" errors="0" skipped="0" time="0.0293013">
+        <testcase classname="src/tests/savedWorkViews.test.js" name="separates saved views by endpoint/account, member and project without key collisions" time="0.0036238">
+        </testcase>
+        <testcase classname="src/tests/savedWorkViews.test.js" name="recovers corrupt saved data and validates persisted filters against current enums" time="0.0036868">
+        </testcase>
+        <testcase classname="src/tests/savedWorkViews.test.js" name="bounds saved view count and text and handles duplicate stored identities" time="0.0031313">
+        </testcase>
+        <testcase classname="src/tests/savedWorkViews.test.js" name="intersects inclusive due-date filters and leaves undated tasks out of a dated range" time="0.0155465">
+        </testcase>
+        <testcase classname="src/tests/savedWorkViews.test.js" name="orders recorded timestamps with missing dates last and supports explicit unassigned work" time="0.0009884">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/tests/sprintLifecycle.test.js" timestamp="2026-11-06T11:27:12.973Z" hostname="Darshan" tests="16" failures="0" errors="0" skipped="0" time="0.0160461">
+        <testcase classname="src/tests/sprintLifecycle.test.js" name="PMS-F-010 sprint lifecycle &gt; persists planned → active → completed and selected sprint" time="0.004987">
+        </testcase>
+        <testcase classname="src/tests/sprintLifecycle.test.js" name="PMS-F-010 sprint lifecycle &gt; rejects planned → completed" time="0.0011617">
+        </testcase>
+        <testcase classname="src/tests/sprintLifecycle.test.js" name="PMS-F-010 sprint lifecycle &gt; rejects planned → planned" time="0.0002828">
+        </testcase>
+        <testcase classname="src/tests/sprintLifecycle.test.js" name="PMS-F-010 sprint lifecycle &gt; rejects active → planned" time="0.0002726">
+        </testcase>
+        <testcase classname="src/tests/sprintLifecycle.test.js" name="PMS-F-010 sprint lifecycle &gt; rejects active → active" time="0.0003081">
+        </testcase>
+        <testcase classname="src/tests/sprintLifecycle.test.js" name="PMS-F-010 sprint lifecycle &gt; rejects completed → active" time="0.000178">
+        </testcase>
+        <testcase classname="src/tests/sprintLifecycle.test.js" name="PMS-F-010 sprint lifecycle &gt; rejects completed → completed" time="0.0005228">
+        </testcase>
+        <testcase classname="src/tests/sprintLifecycle.test.js" name="PMS-F-010 sprint lifecycle &gt; rejects planned → unknown" time="0.000403">
+        </testcase>
+        <testcase classname="src/tests/sprintLifecycle.test.js" name="PMS-F-010 sprint lifecycle &gt; rejects missing sprints and multiple active sprints in the same project" time="0.0011414">
+        </testcase>
+        <testcase classname="src/tests/sprintLifecycle.test.js" name="PMS-F-010 sprint lifecycle &gt; rejects invalid sprint metadata {&quot;name&quot;:&quot;   &quot;}" time="0.0008229">
+        </testcase>
+        <testcase classname="src/tests/sprintLifecycle.test.js" name="PMS-F-010 sprint lifecycle &gt; rejects invalid sprint metadata {&quot;start_date&quot;:&quot;invalid&quot;}" time="0.0006262">
+        </testcase>
+        <testcase classname="src/tests/sprintLifecycle.test.js" name="PMS-F-010 sprint lifecycle &gt; rejects invalid sprint metadata {&quot;start_date&quot;:&quot;2026-02-30&quot;}" time="0.0004419">
+        </testcase>
+        <testcase classname="src/tests/sprintLifecycle.test.js" name="PMS-F-010 sprint lifecycle &gt; rejects invalid sprint metadata {&quot;end_date&quot;:&quot;2026-09-01&quot;}" time="0.0006362">
+        </testcase>
+        <testcase classname="src/tests/sprintLifecycle.test.js" name="PMS-F-010 sprint lifecycle &gt; rejects invalid sprint metadata {&quot;end_date&quot;:&quot;&quot;}" time="0.0004314">
+        </testcase>
+        <testcase classname="src/tests/sprintLifecycle.test.js" name="PMS-F-010 sprint lifecycle &gt; accepts a same-day sprint and trims its name" time="0.0003054">
+        </testcase>
+        <testcase classname="src/tests/sprintLifecycle.test.js" name="PMS-F-010 sprint lifecycle &gt; restores a valid selection, otherwise prefers an active sprint, then first, then empty" time="0.000417">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/tests/sprintMetrics.test.js" timestamp="2026-11-06T11:27:12.975Z" hostname="Darshan" tests="6" failures="0" errors="0" skipped="0" time="0.008359">
+        <testcase classname="src/tests/sprintMetrics.test.js" name="PMS-F-009 selected sprint totals &gt; uses points, not task counts or other sprint/backlog points" time="0.0039198">
+        </testcase>
+        <testcase classname="src/tests/sprintMetrics.test.js" name="PMS-F-009 selected sprint totals &gt; returns zero metrics for empty scope null" time="0.0004287">
+        </testcase>
+        <testcase classname="src/tests/sprintMetrics.test.js" name="PMS-F-009 selected sprint totals &gt; returns zero metrics for empty scope undefined" time="0.0002694">
+        </testcase>
+        <testcase classname="src/tests/sprintMetrics.test.js" name="PMS-F-009 selected sprint totals &gt; returns zero metrics for empty scope " time="0.000233">
+        </testcase>
+        <testcase classname="src/tests/sprintMetrics.test.js" name="PMS-F-009 selected sprint totals &gt; returns zero metrics for empty scope missing" time="0.0001944">
+        </testcase>
+        <testcase classname="src/tests/sprintMetrics.test.js" name="PMS-F-009 selected sprint totals &gt; recalculates after completion, estimation, reassignment and deletion" time="0.0005375">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/tests/sprintReports.test.js" timestamp="2026-11-06T11:27:12.976Z" hostname="Darshan" tests="4" failures="0" errors="0" skipped="0" time="0.0248159">
+        <testcase classname="src/tests/sprintReports.test.js" name="validates bounded inclusive UTC ranges, including real calendar dates" time="0.0042178">
+        </testcase>
+        <testcase classname="src/tests/sprintReports.test.js" name="reconciles snapshot totals including unknown statuses, priorities and owners" time="0.0023548">
+        </testcase>
+        <testcase classname="src/tests/sprintReports.test.js" name="exports recorded transitions in the range and excludes duplicates, other tasks and future events" time="0.0142305">
+        </testcase>
+        <testcase classname="src/tests/sprintReports.test.js" name="drills into unique current tasks even when a task has multiple completion transitions" time="0.0013799">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/tests/storyPoints.test.js" timestamp="2026-11-06T11:27:12.977Z" hostname="Darshan" tests="16" failures="0" errors="0" skipped="0" time="0.0226173">
+        <testcase classname="src/tests/storyPoints.test.js" name="PMS-F-008 Fibonacci estimates &gt; offers exactly the SRS scale" time="0.0044348">
+        </testcase>
+        <testcase classname="src/tests/storyPoints.test.js" name="PMS-F-008 Fibonacci estimates &gt; rejects invalid estimate 0 before replacing saved tasks" time="0.0036138">
+        </testcase>
+        <testcase classname="src/tests/storyPoints.test.js" name="PMS-F-008 Fibonacci estimates &gt; rejects invalid estimate -1 before replacing saved tasks" time="0.0007663">
+        </testcase>
+        <testcase classname="src/tests/storyPoints.test.js" name="PMS-F-008 Fibonacci estimates &gt; rejects invalid estimate 4 before replacing saved tasks" time="0.0006667">
+        </testcase>
+        <testcase classname="src/tests/storyPoints.test.js" name="PMS-F-008 Fibonacci estimates &gt; rejects invalid estimate 6 before replacing saved tasks" time="0.0005049">
+        </testcase>
+        <testcase classname="src/tests/storyPoints.test.js" name="PMS-F-008 Fibonacci estimates &gt; rejects invalid estimate 34 before replacing saved tasks" time="0.0005155">
+        </testcase>
+        <testcase classname="src/tests/storyPoints.test.js" name="PMS-F-008 Fibonacci estimates &gt; rejects invalid estimate 1.5 before replacing saved tasks" time="0.0005562">
+        </testcase>
+        <testcase classname="src/tests/storyPoints.test.js" name="PMS-F-008 Fibonacci estimates &gt; rejects invalid estimate NaN before replacing saved tasks" time="0.0004922">
+        </testcase>
+        <testcase classname="src/tests/storyPoints.test.js" name="PMS-F-008 Fibonacci estimates &gt; rejects invalid estimate Infinity before replacing saved tasks" time="0.0005102">
+        </testcase>
+        <testcase classname="src/tests/storyPoints.test.js" name="PMS-F-008 Fibonacci estimates &gt; rejects invalid estimate null before replacing saved tasks" time="0.0006413">
+        </testcase>
+        <testcase classname="src/tests/storyPoints.test.js" name="PMS-F-008 Fibonacci estimates &gt; rejects invalid estimate undefined before replacing saved tasks" time="0.0005867">
+        </testcase>
+        <testcase classname="src/tests/storyPoints.test.js" name="PMS-F-008 Fibonacci estimates &gt; rejects invalid estimate  before replacing saved tasks" time="0.0011464">
+        </testcase>
+        <testcase classname="src/tests/storyPoints.test.js" name="PMS-F-008 Fibonacci estimates &gt; rejects invalid estimate 5 before replacing saved tasks" time="0.0010087">
+        </testcase>
+        <testcase classname="src/tests/storyPoints.test.js" name="PMS-F-008 Fibonacci estimates &gt; rejects invalid estimate true before replacing saved tasks" time="0.0008823">
+        </testcase>
+        <testcase classname="src/tests/storyPoints.test.js" name="PMS-F-008 Fibonacci estimates &gt; persists every allowed estimate through a read after save" time="0.0007472">
+        </testcase>
+        <testcase classname="src/tests/storyPoints.test.js" name="PMS-F-008 Fibonacci estimates &gt; keeps the seed data on the scale so a fresh board can be saved" time="0.0024642">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/tests/supabaseSync.test.js" timestamp="2026-11-06T11:27:12.979Z" hostname="Darshan" tests="15" failures="0" errors="0" skipped="0" time="0.0406724">
+        <testcase classname="src/tests/supabaseSync.test.js" name="PMS-F-015 Supabase synchronisation &gt; reads project, sprint and task records from Supabase and keeps a local copy" time="0.0103171">
+        </testcase>
+        <testcase classname="src/tests/supabaseSync.test.js" name="PMS-F-015 Supabase synchronisation &gt; publishes local data in foreign-key order on first connection to an empty project" time="0.0030678">
+        </testcase>
+        <testcase classname="src/tests/supabaseSync.test.js" name="PMS-F-015 Supabase synchronisation &gt; maps rows onto columns that really exist in database/schema.sql" time="0.005789">
+        </testcase>
+        <testcase classname="src/tests/supabaseSync.test.js" name="PMS-F-015 Supabase synchronisation &gt; upserts only those columns, dropping client-only fields" time="0.0019669">
+        </testcase>
+        <testcase classname="src/tests/supabaseSync.test.js" name="PMS-F-015 Supabase synchronisation &gt; stores a change and its audit record locally before the request, even if it never answers" time="0.00268">
+        </testcase>
+        <testcase classname="src/tests/supabaseSync.test.js" name="PMS-F-015 Supabase synchronisation &gt; repairs the 6-point task left by earlier seed data so the board can be saved" time="0.0023045">
+        </testcase>
+        <testcase classname="src/tests/supabaseSync.test.js" name="PMS-F-015 Supabase synchronisation &gt; names the task when a stored estimate cannot be saved" time="0.0018686">
+        </testcase>
+        <testcase classname="src/tests/supabaseSync.test.js" name="PMS-F-015 Supabase synchronisation &gt; surfaces a sync error without discarding the local change" time="0.0012246">
+        </testcase>
+        <testcase classname="src/tests/supabaseSync.test.js" name="PMS-F-015 Supabase synchronisation &gt; deletes the task row in Supabase so a deleted task cannot come back" time="0.0007442">
+        </testcase>
+        <testcase classname="src/tests/supabaseSync.test.js" name="PMS-F-015 Supabase synchronisation &gt; stores audit records in activity_logs and never overwrites or duplicates one" time="0.0014163">
+        </testcase>
+        <testcase classname="src/tests/supabaseSync.test.js" name="PMS-F-015 Supabase synchronisation &gt; loads project audit records from Supabase and caches the mapped history" time="0.0009534">
+        </testcase>
+        <testcase classname="src/tests/supabaseSync.test.js" name="PMS-F-015 Supabase synchronisation &gt; merges local-only audit events with cloud history without duplicates" time="0.0009474">
+        </testcase>
+        <testcase classname="src/tests/supabaseSync.test.js" name="PMS-F-015 Supabase synchronisation &gt; falls back to local audit history and reports a cloud read failure" time="0.0008884">
+        </testcase>
+        <testcase classname="src/tests/supabaseSync.test.js" name="PMS-F-015 Supabase synchronisation &gt; TC-SET-01: rejects a malformed URL and keeps the previous configuration" time="0.0015424">
+        </testcase>
+        <testcase classname="src/tests/supabaseSync.test.js" name="PMS-F-015 Supabase synchronisation &gt; seeds UUID identifiers that satisfy the schema and its foreign keys" time="0.0016661">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/tests/taskExplorer.test.js" timestamp="2026-11-06T11:27:12.982Z" hostname="Darshan" tests="10" failures="0" errors="0" skipped="0" time="0.0218532">
+        <testcase classname="src/tests/taskExplorer.test.js" name="Task explorer and CSV &gt; combines every predicate without mutating input" time="0.0033971">
+        </testcase>
+        <testcase classname="src/tests/taskExplorer.test.js" name="Task explorer and CSV &gt; orders priorities, estimates and titles" time="0.0139563">
+        </testcase>
+        <testcase classname="src/tests/taskExplorer.test.js" name="Task explorer and CSV &gt; neutralises spreadsheet formulas =1+1" time="0.0004814">
+        </testcase>
+        <testcase classname="src/tests/taskExplorer.test.js" name="Task explorer and CSV &gt; neutralises spreadsheet formulas +cmd" time="0.0001719">
+        </testcase>
+        <testcase classname="src/tests/taskExplorer.test.js" name="Task explorer and CSV &gt; neutralises spreadsheet formulas -cmd" time="0.0001182">
+        </testcase>
+        <testcase classname="src/tests/taskExplorer.test.js" name="Task explorer and CSV &gt; neutralises spreadsheet formulas @SUM(1)" time="0.0000885">
+        </testcase>
+        <testcase classname="src/tests/taskExplorer.test.js" name="Task explorer and CSV &gt; neutralises spreadsheet formulas   =1" time="0.0001543">
+        </testcase>
+        <testcase classname="src/tests/taskExplorer.test.js" name="Task explorer and CSV &gt; neutralises spreadsheet formulas 	=cmd" time="0.0001587">
+        </testcase>
+        <testcase classname="src/tests/taskExplorer.test.js" name="Task explorer and CSV &gt; escapes quotes, delimiters, unicode and newlines" time="0.0005996">
+        </testcase>
+        <testcase classname="src/tests/taskExplorer.test.js" name="Task explorer and CSV &gt; exports an empty table with headers" time="0.0002709">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/tests/taskFilters.test.js" timestamp="2026-11-06T11:27:12.984Z" hostname="Darshan" tests="2" failures="0" errors="0" skipped="0" time="0.0081437">
+        <testcase classname="src/tests/taskFilters.test.js" name="task board filters &gt; combines assignee, priority, and text query using every selected predicate" time="0.0031771">
+        </testcase>
+        <testcase classname="src/tests/taskFilters.test.js" name="task board filters &gt; reset clears assignee, priority, and search state" time="0.0025222">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/tests/taskForm.test.js" timestamp="2026-11-06T11:27:12.984Z" hostname="Darshan" tests="5" failures="0" errors="0" skipped="0" time="0.0128623">
+        <testcase classname="src/tests/taskForm.test.js" name="Task form validation and persistence &gt; requires a nonblank title and a supported priority" time="0.0045576">
+        </testcase>
+        <testcase classname="src/tests/taskForm.test.js" name="Task form validation and persistence &gt; creates and persists every task form field" time="0.0035377">
+        </testcase>
+        <testcase classname="src/tests/taskForm.test.js" name="Task form validation and persistence &gt; edits and persists task fields while preserving task identity" time="0.0011447">
+        </testcase>
+        <testcase classname="src/tests/taskForm.test.js" name="Task form validation and persistence &gt; restores persisted values when reopening an edit form" time="0.0004436">
+        </testcase>
+        <testcase classname="src/tests/taskForm.test.js" name="Task form validation and persistence &gt; preserves backlog and unassigned values when an existing task is saved" time="0.0002703">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/tests/taskSignals.test.js" timestamp="2026-11-06T11:27:12.985Z" hostname="Darshan" tests="1" failures="0" errors="0" skipped="0" time="0.0089284">
+        <testcase classname="src/tests/taskSignals.test.js" name="pairs non-colour labels and icons for every priority and lifecycle status" time="0.007394">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/tests/taskUpdates.test.js" timestamp="2026-11-06T11:27:12.985Z" hostname="Darshan" tests="3" failures="0" errors="0" skipped="0" time="0.0115721">
+        <testcase classname="src/tests/taskUpdates.test.js" name="Kanban task transitions &gt; moves a dropped task to the target stage and ignores a same-stage drop" time="0.0036292">
+        </testcase>
+        <testcase classname="src/tests/taskUpdates.test.js" name="Kanban task transitions &gt; records the local update duration" time="0.0042701">
+        </testcase>
+        <testcase classname="src/tests/taskUpdates.test.js" name="Kanban task transitions &gt; records actor, task, prior and next stage, and timestamp for the transition" time="0.0007455">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/tests/userText.test.js" timestamp="2026-11-06T11:27:12.986Z" hostname="Darshan" tests="4" failures="0" errors="0" skipped="0" time="0.0216694">
+        <testcase classname="src/tests/userText.test.js" name="shared user text sanitization &gt; neutralizes script and HTML payloads in task title, description, and tags before saving" time="0.0053934">
+        </testcase>
+        <testcase classname="src/tests/userText.test.js" name="shared user text sanitization &gt; neutralizes project name and description and enforces their length limits" time="0.0050757">
+        </testcase>
+        <testcase classname="src/tests/userText.test.js" name="shared user text sanitization &gt; cleans tag and search-view text, while React renders tags as text" time="0.0077335">
+        </testcase>
+        <testcase classname="src/tests/userText.test.js" name="shared user text sanitization &gt; enforces task title, description, and tag limits and rejects a title sanitized to blank" time="0.0007543">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/tests/workflow.test.js" timestamp="2026-11-06T11:27:12.986Z" hostname="Darshan" tests="8" failures="0" errors="0" skipped="0" time="0.012621">
+        <testcase classname="src/tests/workflow.test.js" name="Workflow Enums and Constants Verification &gt; verifies 5 Kanban status columns are defined in sequence" time="0.0031407">
+        </testcase>
+        <testcase classname="src/tests/workflow.test.js" name="Workflow Enums and Constants Verification &gt; provides all five named columns in board order" time="0.0006884">
+        </testcase>
+        <testcase classname="src/tests/workflow.test.js" name="Workflow Enums and Constants Verification &gt; counts exactly the tasks shown in each matching column" time="0.000772">
+        </testcase>
+        <testcase classname="src/tests/workflow.test.js" name="Workflow Enums and Constants Verification &gt; verifies Team 11 members match official PES allocation" time="0.0011853">
+        </testcase>
+        <testcase classname="src/tests/workflow.test.js" name="Workflow Enums and Constants Verification &gt; verifies Fibonacci estimation scale" time="0.0003051">
+        </testcase>
+        <testcase classname="src/tests/workflow.test.js" name="Workflow Enums and Constants Verification &gt; advances a task by exactly one stage with one update call" time="0.0024399">
+        </testcase>
+        <testcase classname="src/tests/workflow.test.js" name="Workflow Enums and Constants Verification &gt; has no enabled next-stage action for Done tasks" time="0.0005758">
+        </testcase>
+        <testcase classname="src/tests/workflow.test.js" name="Workflow Enums and Constants Verification &gt; persists an advanced task through the local data service" time="0.0010915">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/tests/workload.test.js" timestamp="2026-11-06T11:27:12.988Z" hostname="Darshan" tests="5" failures="0" errors="0" skipped="0" time="0.0195251">
+        <testcase classname="src/tests/workload.test.js" name="PMS-F-013 team workload and capacity &gt; matches each member&apos;s assigned and completed points to their own tasks" time="0.0041687">
+        </testcase>
+        <testcase classname="src/tests/workload.test.js" name="PMS-F-013 team workload and capacity &gt; reports a 0% completion rate, never NaN, for a member with no assigned points" time="0.0005724">
+        </testcase>
+        <testcase classname="src/tests/workload.test.js" name="PMS-F-013 team workload and capacity &gt; reconciles member totals with the sprint total by separating unowned work" time="0.0010781">
+        </testcase>
+        <testcase classname="src/tests/workload.test.js" name="PMS-F-013 team workload and capacity &gt; recalculates after a task is reassigned or completed" time="0.0005167">
+        </testcase>
+        <testcase classname="src/tests/workload.test.js" name="PMS-F-013 team workload and capacity &gt; renders every member with their points and the unowned work" time="0.0104447">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/tests/workSignals.test.js" timestamp="2026-11-06T11:27:12.989Z" hostname="Darshan" tests="3" failures="0" errors="0" skipped="0" time="0.0150641">
+        <testcase classname="src/tests/workSignals.test.js" name="validates real calendar dates and sanitizes bounded blocker text" time="0.0077117">
+        </testcase>
+        <testcase classname="src/tests/workSignals.test.js" name="classifies overdue and blocked work while excluding completed work" time="0.0007549">
+        </testcase>
+        <testcase classname="src/tests/workSignals.test.js" name="audits planning changes and protects exported blocker formulas" time="0.0043844">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/tests/workspaceFeedback.test.js" timestamp="2026-11-06T11:27:12.989Z" hostname="Darshan" tests="5" failures="0" errors="0" skipped="0" time="0.0142829">
+        <testcase classname="src/tests/workspaceFeedback.test.js" name="defaults to visual motion with opt-in vibration and handles corrupt preferences" time="0.0036038">
+        </testcase>
+        <testcase classname="src/tests/workspaceFeedback.test.js" name="never vibrates without consent, activation, capability, or with reduced motion" time="0.0031779">
+        </testcase>
+        <testcase classname="src/tests/workspaceFeedback.test.js" name="single-key actions never interrupt typing, composition or platform shortcuts" time="0.0007025">
+        </testcase>
+        <testcase classname="src/tests/workspaceFeedback.test.js" name="validates appearance preferences and preserves legacy settings" time="0.0004337">
+        </testcase>
+        <testcase classname="src/tests/workspaceFeedback.test.js" name="keeps preference changes usable when browser storage is denied" time="0.0039496">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/tests/workViews.test.js" timestamp="2026-11-06T11:27:12.990Z" hostname="Darshan" tests="2" failures="0" errors="0" skipped="0" time="0.0071485">
+        <testcase classname="src/tests/workViews.test.js" name="combines a selected scope with distinct actionable quick views" time="0.0042705">
+        </testcase>
+        <testcase classname="src/tests/workViews.test.js" name="keeps empty scopes empty and does not assign someone else’s tasks to the current user" time="0.0005297">
+        </testcase>
+    </testsuite>
+</testsuites>

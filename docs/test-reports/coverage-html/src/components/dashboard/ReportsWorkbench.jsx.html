@@ -1,0 +1,226 @@
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Code coverage report for src/components/dashboard/ReportsWorkbench.jsx</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../../prettify.css" />
+    <link rel="stylesheet" href="../../../base.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="../../../favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+    
+<body>
+<div class='wrapper'>
+    <div class='pad1'>
+        <h1><a href="../../../index.html">All files</a> / <a href="index.html">src/components/dashboard</a> ReportsWorkbench.jsx</h1>
+        <div class='clearfix'>
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Statements</span>
+                <span class='fraction'>0/60</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Branches</span>
+                <span class='fraction'>0/40</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Functions</span>
+                <span class='fraction'>0/36</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Lines</span>
+                <span class='fraction'>0/27</span>
+            </div>
+        
+            
+        </div>
+        <p class="quiet">
+            Press <em>n</em> or <em>j</em> to go to the next uncovered block, <em>b</em>, <em>p</em> or <em>k</em> for the previous block.
+        </p>
+        <template id="filterTemplate">
+            <div class="quiet">
+                Filter:
+                <input type="search" id="fileSearch">
+            </div>
+        </template>
+    </div>
+    <div class='status-line low'></div>
+    <pre><table class="coverage">
+<tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
+<a name='L2'></a><a href='#L2'>2</a>
+<a name='L3'></a><a href='#L3'>3</a>
+<a name='L4'></a><a href='#L4'>4</a>
+<a name='L5'></a><a href='#L5'>5</a>
+<a name='L6'></a><a href='#L6'>6</a>
+<a name='L7'></a><a href='#L7'>7</a>
+<a name='L8'></a><a href='#L8'>8</a>
+<a name='L9'></a><a href='#L9'>9</a>
+<a name='L10'></a><a href='#L10'>10</a>
+<a name='L11'></a><a href='#L11'>11</a>
+<a name='L12'></a><a href='#L12'>12</a>
+<a name='L13'></a><a href='#L13'>13</a>
+<a name='L14'></a><a href='#L14'>14</a>
+<a name='L15'></a><a href='#L15'>15</a>
+<a name='L16'></a><a href='#L16'>16</a>
+<a name='L17'></a><a href='#L17'>17</a>
+<a name='L18'></a><a href='#L18'>18</a>
+<a name='L19'></a><a href='#L19'>19</a>
+<a name='L20'></a><a href='#L20'>20</a>
+<a name='L21'></a><a href='#L21'>21</a>
+<a name='L22'></a><a href='#L22'>22</a>
+<a name='L23'></a><a href='#L23'>23</a>
+<a name='L24'></a><a href='#L24'>24</a>
+<a name='L25'></a><a href='#L25'>25</a>
+<a name='L26'></a><a href='#L26'>26</a>
+<a name='L27'></a><a href='#L27'>27</a>
+<a name='L28'></a><a href='#L28'>28</a>
+<a name='L29'></a><a href='#L29'>29</a>
+<a name='L30'></a><a href='#L30'>30</a>
+<a name='L31'></a><a href='#L31'>31</a>
+<a name='L32'></a><a href='#L32'>32</a>
+<a name='L33'></a><a href='#L33'>33</a>
+<a name='L34'></a><a href='#L34'>34</a>
+<a name='L35'></a><a href='#L35'>35</a>
+<a name='L36'></a><a href='#L36'>36</a>
+<a name='L37'></a><a href='#L37'>37</a>
+<a name='L38'></a><a href='#L38'>38</a>
+<a name='L39'></a><a href='#L39'>39</a>
+<a name='L40'></a><a href='#L40'>40</a>
+<a name='L41'></a><a href='#L41'>41</a>
+<a name='L42'></a><a href='#L42'>42</a>
+<a name='L43'></a><a href='#L43'>43</a>
+<a name='L44'></a><a href='#L44'>44</a>
+<a name='L45'></a><a href='#L45'>45</a>
+<a name='L46'></a><a href='#L46'>46</a>
+<a name='L47'></a><a href='#L47'>47</a>
+<a name='L48'></a><a href='#L48'>48</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import React, { useState } from 'react';
+import { buildSprintReport, dailyReportCsv, reportRange, reportTasks, rollingRange } from '../../utils/sprintReports';
+import { PriorityBadge, StatusBadge } from '../workspace/TaskSignals';
+import SignalIcon from '../workspace/SignalIcon';
+import FlowAnalytics from './FlowAnalytics';
+import './reportsWorkbench.css';
+&nbsp;
+function <span class="fstat-no" title="function not covered" >CompletionRing({</span> report }) {
+  const length = <span class="cstat-no" title="statement not covered" >2 * Math.PI * 62;</span>
+<span class="cstat-no" title="statement not covered" >  return &lt;article className="report-card report-health"&gt;&lt;span className="report-eyebrow"&gt;CURRENT SPRINT SNAPSHOT&lt;/span&gt;&lt;h3&gt;Story point completion&lt;/h3&gt;&lt;div className="completion-ring"&gt;&lt;svg viewBox="0 0 160 160" role="img" aria-label={report.completion === null ? 'No estimated points in this sprint' : `${report.completion}% of current story points completed`}&gt;&lt;circle cx="80" cy="80" r="62" className="ring-track"/&gt;&lt;circle cx="80" cy="80" r="62" className="ring-value" strokeDasharray={length} strokeDashoffset={length * (1 - (report.completion || 0) / 100)} style={{ '--ring-length': length }}/&gt;&lt;/svg&gt;&lt;strong&gt;{report.completion === null ? '—' : `${report.completion}%`}&lt;small&gt;{report.donePoints} / {report.points} points&lt;/small&gt;&lt;/strong&gt;&lt;/div&gt;&lt;p&gt;Completed points divided by the points currently in this sprint. Scope changes can change this value.&lt;/p&gt;&lt;/article&gt;;</span>
+}
+function <span class="fstat-no" title="function not covered" >StatusDonut({</span> report, choose, selection }) {
+  const length = <span class="cstat-no" title="statement not covered" >2 * Math.PI * 52, t</span>otal = <span class="cstat-no" title="statement not covered" >report.statuses.reduce(<span class="fstat-no" title="function not covered" >(n</span>, s) =&gt; <span class="cstat-no" title="statement not covered" >n + s.count, 0</span>);</span>
+  const segments = <span class="cstat-no" title="statement not covered" >report.statuses.filter(<span class="fstat-no" title="function not covered" >s =&gt; <span class="cstat-no" title="statement not covered" >s</span>.count)</span>;</span>
+<span class="cstat-no" title="statement not covered" >  return &lt;article className="report-card"&gt;&lt;span className="report-eyebrow"&gt;CURRENT WORK ITEMS&lt;/span&gt;&lt;h3&gt;Workflow distribution&lt;/h3&gt;&lt;div className="status-donut"&gt;&lt;svg viewBox="0 0 160 160" role="img" aria-label={`${total} work items by current status`}&gt;&lt;circle cx="80" cy="80" r="52" className="ring-track"/&gt;{segments.map(<span class="fstat-no" title="function not covered" >(s</span>, index) =&gt; {</span>
+    const segment = <span class="cstat-no" title="statement not covered" >s.count / total * length, s</span>tart = <span class="cstat-no" title="statement not covered" >segments.slice(0,index).reduce(<span class="fstat-no" title="function not covered" >(n</span>,v) =&gt; <span class="cstat-no" title="statement not covered" >n + v.count / total * length, 0</span>);</span>
+<span class="cstat-no" title="statement not covered" >    return &lt;circle key={s.id} cx="80" cy="80" r="52" fill="none" stroke={s.color} strokeWidth="16" strokeDasharray={`${segment} ${length-segment}`} strokeDashoffset={-start} transform="rotate(-90 80 80)"&gt;&lt;title&gt;{s.label}: {s.count}&lt;/title&gt;&lt;/circle&gt;;</span>
+  })}&lt;text x="80" y="80" textAnchor="middle" dominantBaseline="middle"&gt;{total}&lt;/text&gt;&lt;text x="80" y="100" textAnchor="middle" className="donut-caption"&gt;work items&lt;/text&gt;&lt;/svg&gt;&lt;div className="report-legend"&gt;{report.statuses.map(<span class="fstat-no" title="function not covered" >s =&gt; <span class="cstat-no" title="statement not covered" >&lt;</span>button key={s.id} onClick={<span class="fstat-no" title="function not covered" >() =&gt; <span class="cstat-no" title="statement not covered" >c</span>hoose('status',s.id,s.label)} a</span>ria-pressed={selection?.kind==='status'&amp;&amp;selection.id===s.id}&gt;&lt;i style={{background:s.color}}/&gt;&lt;span&gt;{s.label}&lt;/span&gt;&lt;b&gt;{s.count}&lt;/b&gt;&lt;/button&gt;)</span>}&lt;/div&gt;&lt;/div&gt;&lt;/article&gt;;
+}
+export default function <span class="fstat-no" title="function not covered" >ReportsWorkbench({</span> tasks, activities, project, sprint, onOpenTask }) {
+  const [dates, setDates<span class="cstat-no" title="statement not covered" >] = useState(<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >() =&gt; r</span>ollingRange())</span>;</span>
+  const [selection, setSelection<span class="cstat-no" title="statement not covered" >] = useState(null);</span>
+  const <span class="cstat-no" title="statement not covered" >range = reportRange(dates.from, dates.to);</span>
+  const <span class="cstat-no" title="statement not covered" >report = buildSprintReport(tasks, activities, range);</span>
+  const choose = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(k</span>ind,id,label) =&gt; <span class="cstat-no" title="statement not covered" >setSelection(<span class="fstat-no" title="function not covered" >old =&gt; <span class="cstat-no" title="statement not covered" >o</span>ld?.kind===kind&amp;&amp;old.id===id ? null : {kind,id,label})</span>;</span></span>
+  const visible = <span class="cstat-no" title="statement not covered" >report ? reportTasks(tasks,report,selection) : [];</span>
+  const download = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >() =&gt; {</span></span>
+    const url = <span class="cstat-no" title="statement not covered" >URL.createObjectURL(new Blob([dailyReportCsv(report)],{type:'text/csv;charset=utf-8'}));</span>
+    const anchor = <span class="cstat-no" title="statement not covered" >document.createElement('a');<span class="cstat-no" title="statement not covered" >a</span>nchor.href=url;<span class="cstat-no" title="statement not covered" >a</span>nchor.download=`SprintFlow-completions-${range.from}-${range.to}.csv`;<span class="cstat-no" title="statement not covered" >a</span>nchor.click();<span class="cstat-no" title="statement not covered" >s</span>etTimeout(<span class="fstat-no" title="function not covered" >()=&gt;<span class="cstat-no" title="statement not covered" >U</span>RL.revokeObjectURL(url),1</span>000);</span>
+  };
+  const maxOwner = <span class="cstat-no" title="statement not covered" >Math.max(1,...(report?.owners.map(<span class="fstat-no" title="function not covered" >o=&gt;<span class="cstat-no" title="statement not covered" >o</span>.points)</span>||[]));</span>
+  const maxPriority = <span class="cstat-no" title="statement not covered" >Math.max(1,...(report?.priorities.map(<span class="fstat-no" title="function not covered" >p=&gt;<span class="cstat-no" title="statement not covered" >p</span>.count)</span>||[]));</span>
+  const firstWeekday = <span class="cstat-no" title="statement not covered" >range.error ? 0 : (new Date(`${range.from}T00:00:00Z`).getUTCDay()+6)%7;</span>
+<span class="cstat-no" title="statement not covered" >  return &lt;section className="reports-workbench" aria-labelledby="reports-heading"&gt;&lt;header className="report-toolbar"&gt;&lt;div&gt;&lt;span className="report-eyebrow"&gt;DELIVERY INTELLIGENCE&lt;/span&gt;&lt;h3 id="reports-heading"&gt;Sprint reports&lt;/h3&gt;&lt;p&gt;{sprint?.name || 'No sprint selected'} · UTC date ranges · recorded data&lt;/p&gt;&lt;/div&gt;&lt;div className="report-presets" aria-label="Report duration"&gt;{[7,28,90].map(<span class="fstat-no" title="function not covered" >days=&gt;<span class="cstat-no" title="statement not covered" >&lt;</span>button key={days} className="btn btn-secondary btn-sm" onClick={<span class="fstat-no" title="function not covered" >()=&gt;{<span class="cstat-no" title="statement not covered" ></span>setDates(rollingRange(days));<span class="cstat-no" title="statement not covered" >s</span>etSelection(null);}</span>}&gt;{days} days&lt;/button&gt;)</span>}&lt;/div&gt;&lt;/header&gt;</span>
+    &lt;div className="report-date-controls"&gt;&lt;label&gt;From (UTC)&lt;input type="date" className="form-input" value={dates.from} onChange={<span class="fstat-no" title="function not covered" >e=&gt;{<span class="cstat-no" title="statement not covered" ></span>setDates({...dates,from:e.target.value});<span class="cstat-no" title="statement not covered" >s</span>etSelection(null);}</span>}/&gt;&lt;/label&gt;&lt;label&gt;To (UTC)&lt;input type="date" className="form-input" value={dates.to} onChange={<span class="fstat-no" title="function not covered" >e=&gt;{<span class="cstat-no" title="statement not covered" ></span>setDates({...dates,to:e.target.value});<span class="cstat-no" title="statement not covered" >s</span>etSelection(null);}</span>}/&gt;&lt;/label&gt;&lt;button className="btn btn-secondary" disabled={!report} onClick={download}&gt;&lt;SignalIcon name="export" size={15}/&gt;Export daily counts&lt;/button&gt;&lt;p&gt;Dates filter completion history. Snapshot charts use all current items in the selected sprint.&lt;/p&gt;&lt;/div&gt;
+    {range.error ? &lt;p className="form-error" role="alert"&gt;{range.error}&lt;/p&gt; : &lt;&gt;
+      &lt;div className="report-grid" key={`${range.from}/${range.to}`}&gt;&lt;CompletionRing report={report}/&gt;&lt;StatusDonut report={report} choose={choose} selection={selection}/&gt;
+      &lt;article className="report-card report-heatmap"&gt;&lt;span className="report-eyebrow"&gt;{report.completedTransitions} RECORDED COMPLETION TRANSITIONS&lt;/span&gt;&lt;h3&gt;Completion activity&lt;/h3&gt;&lt;p&gt;{range.from} — {range.to}. Click a date to inspect its work items.&lt;/p&gt;&lt;div className="heatmap-scroll"&gt;&lt;div className="heatmap-days"&gt;{['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(<span class="fstat-no" title="function not covered" >d=&gt;<span class="cstat-no" title="statement not covered" >&lt;</span>span key={d}&gt;{d}&lt;/span&gt;)</span>}&lt;/div&gt;&lt;div className="heatmap-grid" style={{gridTemplateColumns:`repeat(${Math.ceil((firstWeekday+range.days)/7)},minmax(16px,1fr))`}}&gt;{report.throughput.map(<span class="fstat-no" title="function not covered" >(d</span>,i)=&gt;<span class="cstat-no" title="statement not covered" >&lt;button key={d.date} className={`heatmap-cell level-${Math.min(4,d.count)}`} style={{gridColumn:Math.floor((firstWeekday+i)/7)+1,gridRow:(firstWeekday+i)%7+1}} title={`${d.date}: ${d.count} recorded completions`} aria-label={`${d.date}: ${d.count} recorded completions`} aria-pressed={selection?.kind==='date'&amp;&amp;selection.id===d.date} onClick={<span class="fstat-no" title="function not covered" >()=&gt;<span class="cstat-no" title="statement not covered" >c</span>hoose('date',d.date,d.date)}/</span>&gt;)</span>}&lt;/div&gt;&lt;/div&gt;&lt;p className="report-footnote"&gt;A zero means no retained completion event. Reopened tasks can complete again; this is not a productivity score.&lt;/p&gt;&lt;/article&gt;
+      &lt;article className="report-card"&gt;&lt;span className="report-eyebrow"&gt;CURRENT PRIORITY × STATUS&lt;/span&gt;&lt;h3&gt;Priority breakdown&lt;/h3&gt;&lt;div className="report-priorities"&gt;{report.priorities.map(<span class="fstat-no" title="function not covered" >p=&gt;<span class="cstat-no" title="statement not covered" >&lt;</span>button key={p.id} aria-pressed={selection?.kind==='priority'&amp;&amp;selection.id===p.id} onClick={<span class="fstat-no" title="function not covered" >()=&gt;<span class="cstat-no" title="statement not covered" >c</span>hoose('priority',p.id,p.label)}&gt;&lt;</span>span&gt;{p.label}&lt;b&gt;{p.count} items&lt;/b&gt;&lt;/span&gt;&lt;i className="report-stack" style={{width:`${Math.max(2,p.count/maxPriority*100)}%`}}&gt;{p.states.map(<span class="fstat-no" title="function not covered" >s=&gt;<span class="cstat-no" title="statement not covered" >&lt;</span>i key={s.id} style={{background:s.color,width:`${p.count?s.count/p.count*100:0}%`}}/&gt;)</span>}&lt;/i&gt;&lt;/button&gt;)</span>}&lt;/div&gt;&lt;details&gt;&lt;summary&gt;Priority and status values&lt;/summary&gt;&lt;div className="report-table-scroll"&gt;&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;Priority&lt;/th&gt;{report.statuses.map(<span class="fstat-no" title="function not covered" >s=&gt;<span class="cstat-no" title="statement not covered" >&lt;</span>th key={s.id}&gt;{s.label}&lt;/th&gt;)</span>}&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;{report.priorities.map(<span class="fstat-no" title="function not covered" >p=&gt;<span class="cstat-no" title="statement not covered" >&lt;</span>tr key={p.id}&gt;&lt;th&gt;{p.label}&lt;/th&gt;{p.states.map(<span class="fstat-no" title="function not covered" >s=&gt;<span class="cstat-no" title="statement not covered" >&lt;</span>td key={s.id}&gt;{s.count}&lt;/td&gt;)</span>}&lt;/tr&gt;)</span>}&lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;&lt;/details&gt;&lt;/article&gt;
+      &lt;article className="report-card"&gt;&lt;span className="report-eyebrow"&gt;CURRENT ASSIGNEES · STORY POINTS&lt;/span&gt;&lt;h3&gt;Workload distribution&lt;/h3&gt;&lt;p&gt;Assigned estimates show work distribution, not individual performance.&lt;/p&gt;&lt;div className="report-workload"&gt;{report.owners.map(<span class="fstat-no" title="function not covered" >o=&gt;<span class="cstat-no" title="statement not covered" >&lt;</span>button key={o.id} aria-pressed={selection?.kind==='owner'&amp;&amp;selection.id===o.id} onClick={<span class="fstat-no" title="function not covered" >()=&gt;<span class="cstat-no" title="statement not covered" >c</span>hoose('owner',o.id,o.name)}&gt;&lt;</span>span&gt;{o.name}&lt;b&gt;{o.points} pt · {o.openPoints} open&lt;/b&gt;&lt;/span&gt;&lt;i className="owner-track"&gt;&lt;i style={{width:`${o.points/maxOwner*100}%`,background:o.color}}/&gt;&lt;/i&gt;&lt;/button&gt;)</span>}&lt;/div&gt;&lt;/article&gt;
+      &lt;article className="report-card"&gt;&lt;span className="report-eyebrow"&gt;CURRENT OPEN WORK&lt;/span&gt;&lt;h3&gt;Oldest work items&lt;/h3&gt;&lt;p&gt;Age since a valid creation timestamp, measured now.&lt;/p&gt;&lt;div className="report-oldest"&gt;{report.ages.slice(0,5).map(<span class="fstat-no" title="function not covered" >({</span>task,days})=&gt;<span class="cstat-no" title="statement not covered" >&lt;button key={task.id} onClick={<span class="fstat-no" title="function not covered" >()=&gt;<span class="cstat-no" title="statement not covered" >o</span>nOpenTask(task)}&gt;&lt;</span>span&gt;{task.title}&lt;/span&gt;&lt;b&gt;{Math.floor(days)} d&lt;/b&gt;&lt;/button&gt;)</span>}{!report.ages.length&amp;&amp;&lt;p&gt;No open work with recorded creation dates.&lt;/p&gt;}&lt;/div&gt;&lt;/article&gt;&lt;/div&gt;
+      &lt;section className="report-card report-drilldown" aria-labelledby="report-drilldown-heading"&gt;&lt;header&gt;&lt;div&gt;&lt;span className="report-eyebrow"&gt;CHART DRILL-DOWN&lt;/span&gt;&lt;h3 id="report-drilldown-heading"&gt;{selection?`${selection.label} · ${visible.length} matching items`:`All ${visible.length} sprint items`}&lt;/h3&gt;&lt;/div&gt;{selection&amp;&amp;&lt;button className="btn btn-secondary btn-sm" onClick={<span class="fstat-no" title="function not covered" >()=&gt;<span class="cstat-no" title="statement not covered" >s</span>etSelection(null)}&gt;C</span>lear chart selection&lt;/button&gt;}&lt;/header&gt;&lt;div className="report-table-scroll"&gt;&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;Work item&lt;/th&gt;&lt;th&gt;Status&lt;/th&gt;&lt;th&gt;Priority&lt;/th&gt;&lt;th&gt;Points&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;{visible.map(<span class="fstat-no" title="function not covered" >t=&gt;<span class="cstat-no" title="statement not covered" >&lt;</span>tr key={t.id}&gt;&lt;td&gt;&lt;button className="task-title-link" onClick={<span class="fstat-no" title="function not covered" >()=&gt;<span class="cstat-no" title="statement not covered" >o</span>nOpenTask(t)}&gt;{t</span>.title}&lt;/button&gt;&lt;/td&gt;&lt;td&gt;&lt;StatusBadge status={t.status}/&gt;&lt;/td&gt;&lt;td&gt;&lt;PriorityBadge priority={t.priority}/&gt;&lt;/td&gt;&lt;td&gt;{t.story_points}&lt;/td&gt;&lt;/tr&gt;)</span>}&lt;/tbody&gt;&lt;/table&gt;&lt;/div&gt;{!visible.length&amp;&amp;&lt;p className="report-footnote"&gt;No current sprint items match this selection.&lt;/p&gt;}&lt;/section&gt;
+      &lt;FlowAnalytics project={project} sprint={sprint} tasks={tasks} activities={activities} onOpenTask={onOpenTask} range={range}/&gt;
+      &lt;p className="report-footnote"&gt;History covers retained audit events for items currently in this sprint. Deleted or moved items are excluded. Chart selections open the matching current tasks; no missing history is reconstructed.&lt;/p&gt;
+    &lt;/&gt;}
+  &lt;/section&gt;;
+}
+&nbsp;</pre></td></tr></table></pre>
+
+                <div class='push'></div><!-- for sticky footer -->
+            </div><!-- /wrapper -->
+            <div class='footer quiet pad2 space-top1 center small'>
+                Code coverage generated by
+                <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
+                at 2026-11-06T11:28:20.379Z
+            </div>
+        <script src="../../../prettify.js"></script>
+        <script>
+            window.onload = function () {
+                prettyPrint();
+            };
+        </script>
+        <script src="../../../sorter.js"></script>
+        <script src="../../../block-navigation.js"></script>
+    </body>
+</html>
+    
