@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
+import WorkspaceFeedback from './components/workspace/WorkspaceFeedback';
 import CommandMenu from './components/workspace/CommandMenu';
 import TaskExplorer from './components/workspace/TaskExplorer';
+import ProjectMap from './components/workspace/ProjectMap';
 import './styles/motion.css';
 import Navbar from './components/layout/Navbar';
 import Sidebar from './components/layout/Sidebar';
@@ -64,6 +66,7 @@ function AuthenticatedWorkspace() {
 
         <main id="workspace-main" ref={mainRef} className="app-content" tabIndex={-1}>
           <CommandMenu onNavigate={navigate} explorerEnabled onNewTask={handleOpenNewTask} onOpenTask={handleOpenEditTask} onSettings={() => setIsSettingsOpen(true)} />
+          <WorkspaceFeedback onNewTask={handleOpenNewTask} />
           {activeTab === 'dashboard' && (
             <DashboardView onNavigateKanban={() => setActiveTab('kanban')} onOpenTask={handleOpenEditTask} />
           )}
@@ -77,6 +80,8 @@ function AuthenticatedWorkspace() {
           )}
 
           {activeTab === 'explorer' && <TaskExplorer onOpenTask={handleOpenEditTask} />}
+
+          {activeTab === 'map' && <ProjectMap onOpenTask={handleOpenEditTask} onOpenProject={() => setIsProjectSettingsOpen(true)} onNavigateBoard={() => setActiveTab('kanban')} />}
 
           {activeTab === 'docs' && (
             <DocsView />

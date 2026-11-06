@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { TASK_STATUSES, TASK_PRIORITIES, STORY_POINTS, TEAM_MEMBERS } from '../../utils/constants';
 import { buildTaskPayload, getTaskFormValues, mergeTaskPayload, sanitizeTaskText, TASK_TITLE_MAX_LENGTH, TASK_DESCRIPTION_MAX_LENGTH, validateTaskForm } from '../../utils/taskForm';
 import { addLabels, getDistinctLabels, removeLabel } from '../../utils/labels';
+import '../../components/workspace/workSignals.css';
 import { sanitizeUserText } from '../../utils/userText';
 
 export default function TaskModal({ task, isOpen, onClose }) {
@@ -29,6 +30,8 @@ function TaskForm({ task, onClose, updateTask, addTask, deleteTask, activeSprint
   const [sprintId, setSprintId] = useState(initial.sprintId);
   const [labelInput, setLabelInput] = useState('');
   const [labels, setLabels] = useState(() => getDistinctLabels(initial.labels));
+  const [dueDate, setDueDate] = useState(task?.due_date || '');
+  const [blockedReason, setBlockedReason] = useState(task?.blocked_reason || '');
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -55,6 +58,8 @@ function TaskForm({ task, onClose, updateTask, addTask, deleteTask, activeSprint
     try {
       formValues = sanitizeTaskText({
       title,
+      due_date: dueDate,
+      blocked_reason: blockedReason,
       description,
       status,
       priority,
@@ -73,7 +78,8 @@ function TaskForm({ task, onClose, updateTask, addTask, deleteTask, activeSprint
       return;
     }
 
-    const taskPayload = buildTaskPayload(formValues, currentUser, TEAM_MEMBERS);
+    let taskPayload;
+    try { taskPayload = buildTaskPayload(formValues, currentUser, TEAM_MEMBERS); } catch(err) { setError(err.message); return; }
 
     setError('');
     setSaving(true);
@@ -230,6 +236,11 @@ function TaskForm({ task, onClose, updateTask, addTask, deleteTask, activeSprint
             </select>
           </div>
 
+          <fieldset className="work-signal-fields"><legend>Planning signals</legend>
+            <div className="form-grid-2"><label className="form-label" htmlFor="task-due">Due date (UTC)<input className="form-input" id="task-due" type="date" value={dueDate} onChange={e=>setDueDate(e.target.value)}/></label>
+            <label className="form-label" htmlFor="task-blocker">Blocker reason<input className="form-input" id="task-blocker" maxLength={300} placeholder="Optional: what is preventing progress?" value={blockedReason} onChange={e=>setBlockedReason(e.target.value)}/></label></div>
+            <small>Clear the blocker reason to unblock. Completed work is excluded from attention counts.</small>
+          </fieldset>
           {/* Labels */}
           <div className="form-group">
             <label className="form-label" htmlFor="task-label-input">Labels (Press Enter or comma to add)</label>
