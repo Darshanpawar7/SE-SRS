@@ -3,7 +3,7 @@
 **Issue:** #92 — Testing: System Validation Report
 **Run date:** 6 November 2026 (Asia/Calcutta)
 **Source:** local `main`, commit `f9e0727`
-**Report state:** local and uncommitted; browser and Supabase-dependent cases remain blocked.
+**Validation status:** browser and Supabase-dependent cases remain blocked.
 
 ## Environment and method
 
