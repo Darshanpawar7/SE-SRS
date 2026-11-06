@@ -1,0 +1,24 @@
+{
+  "base": "62ec271b6b20761200796d370ce4f1e4a676e62f",
+  "pull_requests": [
+    103,
+    104,
+    105
+  ],
+  "heads": [
+    {
+      "key": "analytics",
+      "sha": "ebd69be5edd12e0b276ea352d9f2be980a513065"
+    },
+    {
+      "key": "compatibility",
+      "sha": "f6c5ad1dc47f0c6bc1ba21b44b3b5a88a67834a1"
+    },
+    {
+      "key": "ui",
+      "sha": "76f73e92922c0f1823d71b94f37a9d18aec30569"
+    }
+  ],
+  "merged_into_main": false,
+  "live_cloud_tests_executed": false
+}
