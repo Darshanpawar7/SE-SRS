@@ -1,0 +1,310 @@
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Code coverage report for src/components/workspace/TaskExplorer.jsx</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../../prettify.css" />
+    <link rel="stylesheet" href="../../../base.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="../../../favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+    
+<body>
+<div class='wrapper'>
+    <div class='pad1'>
+        <h1><a href="../../../index.html">All files</a> / <a href="index.html">src/components/workspace</a> TaskExplorer.jsx</h1>
+        <div class='clearfix'>
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Statements</span>
+                <span class='fraction'>0/93</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Branches</span>
+                <span class='fraction'>0/35</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Functions</span>
+                <span class='fraction'>0/41</span>
+            </div>
+        
+            
+            <div class='fl pad1y space-right2'>
+                <span class="strong">0% </span>
+                <span class="quiet">Lines</span>
+                <span class='fraction'>0/47</span>
+            </div>
+        
+            
+        </div>
+        <p class="quiet">
+            Press <em>n</em> or <em>j</em> to go to the next uncovered block, <em>b</em>, <em>p</em> or <em>k</em> for the previous block.
+        </p>
+        <template id="filterTemplate">
+            <div class="quiet">
+                Filter:
+                <input type="search" id="fileSearch">
+            </div>
+        </template>
+    </div>
+    <div class='status-line low'></div>
+    <pre><table class="coverage">
+<tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
+<a name='L2'></a><a href='#L2'>2</a>
+<a name='L3'></a><a href='#L3'>3</a>
+<a name='L4'></a><a href='#L4'>4</a>
+<a name='L5'></a><a href='#L5'>5</a>
+<a name='L6'></a><a href='#L6'>6</a>
+<a name='L7'></a><a href='#L7'>7</a>
+<a name='L8'></a><a href='#L8'>8</a>
+<a name='L9'></a><a href='#L9'>9</a>
+<a name='L10'></a><a href='#L10'>10</a>
+<a name='L11'></a><a href='#L11'>11</a>
+<a name='L12'></a><a href='#L12'>12</a>
+<a name='L13'></a><a href='#L13'>13</a>
+<a name='L14'></a><a href='#L14'>14</a>
+<a name='L15'></a><a href='#L15'>15</a>
+<a name='L16'></a><a href='#L16'>16</a>
+<a name='L17'></a><a href='#L17'>17</a>
+<a name='L18'></a><a href='#L18'>18</a>
+<a name='L19'></a><a href='#L19'>19</a>
+<a name='L20'></a><a href='#L20'>20</a>
+<a name='L21'></a><a href='#L21'>21</a>
+<a name='L22'></a><a href='#L22'>22</a>
+<a name='L23'></a><a href='#L23'>23</a>
+<a name='L24'></a><a href='#L24'>24</a>
+<a name='L25'></a><a href='#L25'>25</a>
+<a name='L26'></a><a href='#L26'>26</a>
+<a name='L27'></a><a href='#L27'>27</a>
+<a name='L28'></a><a href='#L28'>28</a>
+<a name='L29'></a><a href='#L29'>29</a>
+<a name='L30'></a><a href='#L30'>30</a>
+<a name='L31'></a><a href='#L31'>31</a>
+<a name='L32'></a><a href='#L32'>32</a>
+<a name='L33'></a><a href='#L33'>33</a>
+<a name='L34'></a><a href='#L34'>34</a>
+<a name='L35'></a><a href='#L35'>35</a>
+<a name='L36'></a><a href='#L36'>36</a>
+<a name='L37'></a><a href='#L37'>37</a>
+<a name='L38'></a><a href='#L38'>38</a>
+<a name='L39'></a><a href='#L39'>39</a>
+<a name='L40'></a><a href='#L40'>40</a>
+<a name='L41'></a><a href='#L41'>41</a>
+<a name='L42'></a><a href='#L42'>42</a>
+<a name='L43'></a><a href='#L43'>43</a>
+<a name='L44'></a><a href='#L44'>44</a>
+<a name='L45'></a><a href='#L45'>45</a>
+<a name='L46'></a><a href='#L46'>46</a>
+<a name='L47'></a><a href='#L47'>47</a>
+<a name='L48'></a><a href='#L48'>48</a>
+<a name='L49'></a><a href='#L49'>49</a>
+<a name='L50'></a><a href='#L50'>50</a>
+<a name='L51'></a><a href='#L51'>51</a>
+<a name='L52'></a><a href='#L52'>52</a>
+<a name='L53'></a><a href='#L53'>53</a>
+<a name='L54'></a><a href='#L54'>54</a>
+<a name='L55'></a><a href='#L55'>55</a>
+<a name='L56'></a><a href='#L56'>56</a>
+<a name='L57'></a><a href='#L57'>57</a>
+<a name='L58'></a><a href='#L58'>58</a>
+<a name='L59'></a><a href='#L59'>59</a>
+<a name='L60'></a><a href='#L60'>60</a>
+<a name='L61'></a><a href='#L61'>61</a>
+<a name='L62'></a><a href='#L62'>62</a>
+<a name='L63'></a><a href='#L63'>63</a>
+<a name='L64'></a><a href='#L64'>64</a>
+<a name='L65'></a><a href='#L65'>65</a>
+<a name='L66'></a><a href='#L66'>66</a>
+<a name='L67'></a><a href='#L67'>67</a>
+<a name='L68'></a><a href='#L68'>68</a>
+<a name='L69'></a><a href='#L69'>69</a>
+<a name='L70'></a><a href='#L70'>70</a>
+<a name='L71'></a><a href='#L71'>71</a>
+<a name='L72'></a><a href='#L72'>72</a>
+<a name='L73'></a><a href='#L73'>73</a>
+<a name='L74'></a><a href='#L74'>74</a>
+<a name='L75'></a><a href='#L75'>75</a>
+<a name='L76'></a><a href='#L76'>76</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import React, { useRef, useState } from 'react';
+import { useProject } from '../../context/ProjectContext';
+import { TASK_STATUSES, TASK_PRIORITIES, TEAM_MEMBERS } from '../../utils/constants';
+import { exploreTasks, tasksToCsv } from '../../utils/taskExplorer';
+import './taskExplorer.css';
+import { PriorityBadge, StatusBadge } from './TaskSignals';
+import { useAuth } from '../../context/AuthContext';
+import { selectSprintTasks } from '../../utils/estimation';
+import { applyWorkView, WORK_VIEWS } from '../../utils/workViews';
+import WorkSignals from './WorkSignals';
+import {workSignals} from '../../utils/workSignals';
+import SignalIcon from './SignalIcon';
+import TaskPreviewDrawer from './TaskPreviewDrawer';
+import { EMPTY_WORK_FILTERS, savedViewsKey, parseSavedViews, putSavedView } from '../../utils/savedWorkViews';
+export default function <span class="fstat-no" title="function not covered" >TaskExplorer({</span> onOpenTask }) {
+  const { project <span class="cstat-no" title="statement not covered" >} = useProject();</span>
+  const { currentUser <span class="cstat-no" title="statement not covered" >} = useAuth();</span>
+  const <span class="cstat-no" title="statement not covered" >key = savedViewsKey(localStorage.getItem('sprintflow_cache_owner'), currentUser?.id, project?.id);</span>
+<span class="cstat-no" title="statement not covered" >  return &lt;ExplorerWorkspace key={key} storageKey={key} onOpenTask={onOpenTask} /&gt;;</span>
+}
+function <span class="fstat-no" title="function not covered" >ExplorerWorkspace({</span> onOpenTask, storageKey }) {
+  const { tasks, sprints, activeSprintId, project, activities <span class="cstat-no" title="statement not covered" >} = useProject();</span>
+  const { currentUser <span class="cstat-no" title="statement not covered" >} = useAuth();</span>
+  const <span class="cstat-no" title="statement not covered" >drawer = useRef(null);</span>
+  const [previewId, setPreviewId<span class="cstat-no" title="statement not covered" >] = useState(null);</span>
+  const [saved, setSaved<span class="cstat-no" title="statement not covered" >] = useState(<span class="fstat-no" title="function not covered" >() =&gt; {</span> <span class="cstat-no" title="statement not covered" >try { <span class="cstat-no" title="statement not covered" >return parseSavedViews(localStorage.getItem(storageKey)); }</span> catch { <span class="cstat-no" title="statement not covered" >return []; }</span> }</span>);</span>
+  const [viewName, setViewName<span class="cstat-no" title="statement not covered" >] = useState('');</span>
+  const [message, setMessage<span class="cstat-no" title="statement not covered" >] = useState('');</span>
+  const persistViews = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >next =&gt; {</span></span>
+<span class="cstat-no" title="statement not covered" >    try { <span class="cstat-no" title="statement not covered" >localStorage.setItem(storageKey, JSON.stringify(next)); <span class="cstat-no" title="statement not covered" >s</span>etSaved(next); <span class="cstat-no" title="statement not covered" >r</span>eturn true; }</span></span>
+    catch { <span class="cstat-no" title="statement not covered" >setMessage('This browser could not save the view. Free storage and try again.'); <span class="cstat-no" title="statement not covered" >r</span>eturn false; }</span>
+  };
+  const preview = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >task =&gt; {</span> <span class="cstat-no" title="statement not covered" >setPreviewId(task.id); <span class="cstat-no" title="statement not covered" >d</span>rawer.current.showModal(); }</span>;</span>
+&nbsp;
+  const [view, setView<span class="cstat-no" title="statement not covered" >] = useState('all');</span>
+  const [attention, setAttention<span class="cstat-no" title="statement not covered" >] = useState('all');</span>
+  const [scope, setScope<span class="cstat-no" title="statement not covered" >] = useState('sprint');</span>
+  const [filters, setFilters<span class="cstat-no" title="statement not covered" >] = useState({ ...EMPTY_WORK_FILTERS });</span>
+  const update = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >(k</span>ey, value) =&gt; <span class="cstat-no" title="statement not covered" >setFilters(<span class="fstat-no" title="function not covered" >old =&gt; (<span class="cstat-no" title="statement not covered" >{</span>...old,[key]:value}))</span>;</span></span>
+  const invalidDueRange = <span class="cstat-no" title="statement not covered" >filters.dueFrom &amp;&amp; filters.dueTo &amp;&amp; filters.dueFrom &gt; filters.dueTo;</span>
+  const inScope = <span class="cstat-no" title="statement not covered" >scope === 'project' ? tasks : scope === 'backlog' ? tasks.filter(<span class="fstat-no" title="function not covered" >task =&gt; <span class="cstat-no" title="statement not covered" >!</span>task.sprint_id)</span> : selectSprintTasks(tasks, activeSprintId);</span>
+  const members = <span class="cstat-no" title="statement not covered" >TEAM_MEMBERS.map(<span class="fstat-no" title="function not covered" >member =&gt; <span class="cstat-no" title="statement not covered" >m</span>ember.id)</span>;</span>
+  const eligible = <span class="cstat-no" title="statement not covered" >inScope.filter(<span class="fstat-no" title="function not covered" >task=&gt;<span class="cstat-no" title="statement not covered" >a</span>ttention==='all'||workSignals(task)[attention])</span>;</span>
+  const <span class="cstat-no" title="statement not covered" >visible = exploreTasks(applyWorkView(eligible, view, currentUser?.id, members), filters);</span>
+  const points = <span class="cstat-no" title="statement not covered" >visible.reduce(<span class="fstat-no" title="function not covered" >(s</span>um,task) =&gt; <span class="cstat-no" title="statement not covered" >sum + Number(task.story_points || 0),0</span>);</span>
+  const download = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >() =&gt; {</span></span>
+    const url = <span class="cstat-no" title="statement not covered" >URL.createObjectURL(new Blob([tasksToCsv(visible,sprints)],{type:'text/csv;charset=utf-8'}));</span>
+    const anchor = <span class="cstat-no" title="statement not covered" >document.createElement('a');<span class="cstat-no" title="statement not covered" >a</span>nchor.href = url;</span>
+<span class="cstat-no" title="statement not covered" >    anchor.download = `${String(project?.key || 'SprintFlow').replace(/[^a-z0-9_-]/gi,'_')}-work-items.csv`;</span>
+<span class="cstat-no" title="statement not covered" >    anchor.click();<span class="cstat-no" title="statement not covered" >s</span>etTimeout(<span class="fstat-no" title="function not covered" >() =&gt; <span class="cstat-no" title="statement not covered" >U</span>RL.revokeObjectURL(url),1</span>000);</span>
+  };
+<span class="cstat-no" title="statement not covered" >  return &lt;section className="explorer-page" aria-labelledby="explorer-title"&gt;</span>
+    &lt;div className="view-header"&gt;&lt;div&gt;&lt;h2 className="view-title" id="explorer-title"&gt;Work items&lt;/h2&gt;&lt;p className="view-subtitle"&gt;Search, filter and export the work in the selected scope.&lt;/p&gt;&lt;/div&gt;&lt;button className="btn btn-primary" disabled={!visible.length} onClick={download}&gt;&lt;SignalIcon name="export" size={15}/&gt; Export visible rows&lt;/button&gt;&lt;/div&gt;
+    &lt;div className="work-attention" aria-label="Attention filters"&gt;{[['all','All attention'],['blocked','Blocked'],['overdue','Overdue'],['dueToday','Due today']].map(<span class="fstat-no" title="function not covered" >([</span>id,label])=&gt;<span class="cstat-no" title="statement not covered" >&lt;button key={id} aria-pressed={attention===id} onClick={<span class="fstat-no" title="function not covered" >()=&gt;<span class="cstat-no" title="statement not covered" >s</span>etAttention(id)}&gt;{l</span>abel}{id!=='all'&amp;&amp;` (${inScope.filter(<span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >task=&gt;w</span>orkSignals(task)[id])</span>.length})`}&lt;/button&gt;)</span>}&lt;/div&gt;
+    &lt;div className="table-tools" aria-label="Quick work views"&gt;{WORK_VIEWS.map(<span class="fstat-no" title="function not covered" >item =&gt; <span class="cstat-no" title="statement not covered" >&lt;</span>button key={item.id} aria-pressed={view === item.id} onClick={<span class="fstat-no" title="function not covered" >()=&gt;<span class="cstat-no" title="statement not covered" >s</span>etView(item.id)}&gt;&lt;</span>SignalIcon name={item.icon} size={14}/&gt;{item.label}&lt;span&gt;{applyWorkView(inScope,item.id,currentUser?.id,members).length}&lt;/span&gt;&lt;/button&gt;)</span>}&lt;/div&gt;
+    &lt;div className="explorer-layout"&gt;&lt;aside className="explorer-filter-sidebar" aria-label="Work item filters"&gt;
+    &lt;div className="saved-work-views"&gt;&lt;h3&gt;Saved views&lt;/h3&gt;&lt;p&gt;Private to this browser, account and project.&lt;/p&gt;{saved.map(<span class="fstat-no" title="function not covered" >item=&gt;<span class="cstat-no" title="statement not covered" >&lt;</span>div key={item.id}&gt;&lt;button className="saved-view-open" onClick={<span class="fstat-no" title="function not covered" >()=&gt;{<span class="cstat-no" title="statement not covered" ></span>setScope(item.scope);<span class="cstat-no" title="statement not covered" >s</span>etView(item.view);<span class="cstat-no" title="statement not covered" >s</span>etAttention(item.attention);<span class="cstat-no" title="statement not covered" >s</span>etFilters(item.filters);<span class="cstat-no" title="statement not covered" >s</span>etMessage(`Loaded ${item.name}`);}</span>}&gt;{item.name}&lt;/button&gt;&lt;button aria-label={`Delete saved view ${item.name}`} onClick={<span class="fstat-no" title="function not covered" >()=&gt;{<span class="cstat-no" title="statement not covered" ></span>if(persistViews(saved.filter(<span class="fstat-no" title="function not covered" >v=&gt;<span class="cstat-no" title="statement not covered" >v</span>.id!==item.id)</span>))<span class="cstat-no" title="statement not covered" >setMessage('Saved view removed.');}</span></span>}&gt;×&lt;/button&gt;&lt;/div&gt;)</span>}&lt;form onSubmit={<span class="fstat-no" title="function not covered" >e=&gt;{<span class="cstat-no" title="statement not covered" ></span>e.preventDefault();<span class="cstat-no" title="statement not covered" >t</span>ry{const <span class="cstat-no" title="statement not covered" >next=putSavedView(saved,viewName,{scope,view,attention,filters},crypto.randomUUID());<span class="cstat-no" title="statement not covered" >i</span>f(persistViews(next)){<span class="cstat-no" title="statement not covered" >setViewName('');<span class="cstat-no" title="statement not covered" >s</span>etMessage('View saved in this browser.');}</span>}</span>catch(error){<span class="cstat-no" title="statement not covered" >setMessage(error.message);}</span>}</span>}&gt;&lt;label&gt;View name&lt;input className="form-input" maxLength={50} value={viewName} onChange={<span class="fstat-no" title="function not covered" >e=&gt;<span class="cstat-no" title="statement not covered" >s</span>etViewName(e.target.value)} p</span>laceholder="e.g. My high-priority work"/&gt;&lt;/label&gt;&lt;button className="btn btn-secondary btn-sm" disabled={!viewName.trim()}&gt;Save current view&lt;/button&gt;&lt;/form&gt;&lt;p role="status"&gt;{message}&lt;/p&gt;&lt;/div&gt;
+    &lt;div className="explorer-filters"&gt;
+      &lt;label className="explorer-search"&gt;Search work items&lt;input className="form-input" value={filters.query} placeholder="Title, person or label…" onChange={<span class="fstat-no" title="function not covered" >e =&gt; <span class="cstat-no" title="statement not covered" >u</span>pdate('query',e.target.value)} /</span>&gt;&lt;/label&gt;
+      &lt;label&gt;Scope&lt;select className="form-select" value={scope} onChange={<span class="fstat-no" title="function not covered" >e=&gt;<span class="cstat-no" title="statement not covered" >s</span>etScope(e.target.value)}&gt;&lt;</span>option value="sprint"&gt;Selected sprint&lt;/option&gt;&lt;option value="project"&gt;Entire project&lt;/option&gt;&lt;option value="backlog"&gt;Unscheduled backlog&lt;/option&gt;&lt;/select&gt;&lt;/label&gt;
+      &lt;label&gt;Status&lt;select className="form-select" value={filters.status} onChange={<span class="fstat-no" title="function not covered" >e=&gt;<span class="cstat-no" title="statement not covered" >u</span>pdate('status',e.target.value)}&gt;&lt;</span>option value="all"&gt;All statuses&lt;/option&gt;{TASK_STATUSES.map(<span class="fstat-no" title="function not covered" >s=&gt;<span class="cstat-no" title="statement not covered" >&lt;</span>option key={s.id} value={s.id}&gt;{s.label}&lt;/option&gt;)</span>}&lt;/select&gt;&lt;/label&gt;
+      &lt;label&gt;Priority&lt;select className="form-select" value={filters.priority} onChange={<span class="fstat-no" title="function not covered" >e=&gt;<span class="cstat-no" title="statement not covered" >u</span>pdate('priority',e.target.value)}&gt;&lt;</span>option value="all"&gt;All priorities&lt;/option&gt;{TASK_PRIORITIES.map(<span class="fstat-no" title="function not covered" >p=&gt;<span class="cstat-no" title="statement not covered" >&lt;</span>option key={p.id} value={p.id}&gt;{p.label}&lt;/option&gt;)</span>}&lt;/select&gt;&lt;/label&gt;
+      &lt;label&gt;Assignee&lt;select className="form-select" value={filters.assignee} onChange={<span class="fstat-no" title="function not covered" >e=&gt;<span class="cstat-no" title="statement not covered" >u</span>pdate('assignee',e.target.value)}&gt;&lt;</span>option value="all"&gt;Everyone&lt;/option&gt;&lt;option value="unassigned"&gt;Unassigned&lt;/option&gt;{TEAM_MEMBERS.map(<span class="fstat-no" title="function not covered" >m=&gt;<span class="cstat-no" title="statement not covered" >&lt;</span>option key={m.id} value={m.id}&gt;{m.name}&lt;/option&gt;)</span>}&lt;/select&gt;&lt;/label&gt;
+      &lt;label&gt;Order&lt;select className="form-select" value={filters.sort} onChange={<span class="fstat-no" title="function not covered" >e=&gt;<span class="cstat-no" title="statement not covered" >u</span>pdate('sort',e.target.value)}&gt;&lt;</span>option value="priority"&gt;Priority&lt;/option&gt;&lt;option value="points"&gt;Points ↓&lt;/option&gt;&lt;option value="title"&gt;Title A–Z&lt;/option&gt;&lt;option value="due"&gt;Due date ↑&lt;/option&gt;&lt;option value="oldest"&gt;Oldest first&lt;/option&gt;&lt;option value="updated"&gt;Recently updated&lt;/option&gt;&lt;/select&gt;&lt;/label&gt;
+      &lt;label&gt;Due from (UTC)&lt;input type="date" className="form-input" value={filters.dueFrom} onChange={<span class="fstat-no" title="function not covered" >e=&gt;<span class="cstat-no" title="statement not covered" >u</span>pdate('dueFrom',e.target.value)}/</span>&gt;&lt;/label&gt;
+      &lt;label&gt;Due to (UTC)&lt;input type="date" className="form-input" value={filters.dueTo} onChange={<span class="fstat-no" title="function not covered" >e=&gt;<span class="cstat-no" title="statement not covered" >u</span>pdate('dueTo',e.target.value)}/</span>&gt;&lt;/label&gt;
+      &lt;button className="btn btn-secondary" onClick={<span class="fstat-no" title="function not covered" >()=&gt;{<span class="cstat-no" title="statement not covered" ></span>setView('all');<span class="cstat-no" title="statement not covered" >s</span>etAttention('all');<span class="cstat-no" title="statement not covered" >s</span>etScope('sprint');<span class="cstat-no" title="statement not covered" >s</span>etFilters({...EMPTY_WORK_FILTERS});<span class="cstat-no" title="statement not covered" >s</span>etMessage('Filters cleared.');}</span>}&gt;Clear filters&lt;/button&gt;
+    &lt;/div&gt;
+    &lt;/aside&gt;&lt;div className="explorer-results"&gt;{invalidDueRange&amp;&amp;&lt;p className="form-error" role="alert"&gt;Due from must be on or before Due to.&lt;/p&gt;}&lt;div className="explorer-summary" role="status"&gt;&lt;span&gt;{visible.length} / {inScope.length} WORK ITEMS&lt;/span&gt;&lt;span&gt;{points} POINTS IN VIEW&lt;/span&gt;&lt;span&gt;{scope === 'project' ? 'PROJECT SCOPE' : scope === 'backlog' ? 'UNSCHEDULED BACKLOG' : 'SPRINT SCOPE'} · {WORK_VIEWS.find(<span class="fstat-no" title="function not covered" >item=&gt;<span class="cstat-no" title="statement not covered" >i</span>tem.id===view)</span>?.label.toUpperCase()}&lt;/span&gt;&lt;/div&gt;
+    &lt;div className="explorer-table-wrap"&gt;&lt;table className="explorer-table"&gt;&lt;caption className="sr-only"&gt;Filtered project work items. Open a title to preview its task, then choose Edit work item.&lt;/caption&gt;&lt;thead&gt;&lt;tr&gt;&lt;th scope="col"&gt;Work item&lt;/th&gt;&lt;th scope="col"&gt;Status&lt;/th&gt;&lt;th scope="col"&gt;Priority&lt;/th&gt;&lt;th scope="col"&gt;Owner&lt;/th&gt;&lt;th scope="col"&gt;Points&lt;/th&gt;&lt;th scope="col"&gt;Updated (UTC)&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;
+      {visible.map(<span class="fstat-no" title="function not covered" >task=&gt;<span class="cstat-no" title="statement not covered" >&lt;</span>tr key={task.id}&gt;&lt;td&gt;&lt;button className="task-title-link" onClick={<span class="fstat-no" title="function not covered" >()=&gt;<span class="cstat-no" title="statement not covered" >p</span>review(task)}&gt;{t</span>ask.title}&lt;/button&gt;&lt;WorkSignals task={task}/&gt;&lt;small&gt;{(task.labels || []).join(' · ') || 'No labels'}&lt;/small&gt;&lt;/td&gt;&lt;td&gt;&lt;StatusBadge status={task.status} /&gt;&lt;/td&gt;&lt;td&gt;&lt;PriorityBadge priority={task.priority} /&gt;&lt;/td&gt;&lt;td&gt;{task.assignee_name || 'Unassigned'}&lt;/td&gt;&lt;td className="explorer-points"&gt;{task.story_points}&lt;/td&gt;&lt;td className="task-ref"&gt;{Number.isFinite(Date.parse(task.updated_at)) ? new Date(task.updated_at).toISOString().slice(0,10) : "Not recorded"}&lt;/td&gt;&lt;/tr&gt;)</span>}
+    &lt;/tbody&gt;&lt;/table&gt;{!visible.length &amp;&amp; &lt;div className="empty-explorer"&gt;&lt;h3&gt;No work items match.&lt;/h3&gt;&lt;p&gt;Clear filters or switch to the entire project.&lt;/p&gt;&lt;/div&gt;}&lt;/div&gt;
+    &lt;/div&gt;&lt;/div&gt;&lt;TaskPreviewDrawer task={tasks.find(<span class="fstat-no" title="function not covered" >t=&gt;<span class="cstat-no" title="statement not covered" >t</span>.id===previewId)</span>} sprints={sprints} activities={activities} dialogRef={drawer} onClose={<span class="fstat-no" title="function not covered" >()=&gt;<span class="cstat-no" title="statement not covered" >s</span>etPreviewId(null)} o</span>nEdit={onOpenTask}/&gt;
+  &lt;/section&gt;;
+}
+&nbsp;</pre></td></tr></table></pre>
+
+                <div class='push'></div><!-- for sticky footer -->
+            </div><!-- /wrapper -->
+            <div class='footer quiet pad2 space-top1 center small'>
+                Code coverage generated by
+                <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
+                at 2026-11-06T16:04:18.941Z
+            </div>
+        <script src="../../../prettify.js"></script>
+        <script>
+            window.onload = function () {
+                prettyPrint();
+            };
+        </script>
+        <script src="../../../sorter.js"></script>
+        <script src="../../../block-navigation.js"></script>
+    </body>
+</html>
+    
