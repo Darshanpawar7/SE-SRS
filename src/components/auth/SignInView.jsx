@@ -5,7 +5,7 @@ import { clearSupabaseConfig } from '../../services/supabaseClient';
 
 // Shown until a team member signs in, so the app cannot be used anonymously.
 export default function SignInView() {
-  const { teamMembers, signIn } = useAuth();
+  const { teamMembers, signIn, authError } = useAuth();
   const { supabaseConfig, refreshConfig } = useProject();
   const [memberId, setMemberId] = useState(teamMembers[0].id);
   const [password, setPassword] = useState('');
@@ -98,6 +98,7 @@ export default function SignInView() {
           </p>
         </div>
 
+        {authError && <p role="alert" className="form-error">{authError}</p>}
         {error && <p role="alert" className="form-error">{error}</p>}
 
         <button type="submit" className="btn btn-primary" disabled={busy}>
