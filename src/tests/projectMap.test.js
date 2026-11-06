@@ -21,6 +21,6 @@ it('searches real labels and owners while preserving membership',()=>{
 });
 it('limits canvas nodes while keeping every matching task available to the table',()=>{
   const tasks=Array.from({length:100},(_,i)=>({id:String(i),project_id:'p',title:`Task ${i}`}));
-  const g=buildProjectMap(project,sprints,tasks);expect(g.matches).toHaveLength(100);expect(g.shown).toBe(80);expect(g.nodes.filter(n=>n.kind==='task')).toHaveLength(80);
+  const g=buildProjectMap(project,sprints,tasks);expect(g.matches).toHaveLength(100);expect(g.shown).toBe(20);expect(g.nodes.filter(n=>n.kind==='task')).toHaveLength(20);
 });
 it('bounds zoom and recovers non-finite values',()=>{expect(clampMapZoom(-2)).toBe(.1);expect(clampMapZoom(3)).toBe(1.6);expect(clampMapZoom(NaN)).toBe(1);});
