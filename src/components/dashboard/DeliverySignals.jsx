@@ -4,8 +4,8 @@ import { TEAM_MEMBERS } from '../../utils/constants';
 import SignalIcon from '../workspace/SignalIcon';
 import { PriorityBadge } from '../workspace/TaskSignals';
 import './deliverySignals.css';
-export default function DeliverySignals({ tasks, sprint, onOpenTask }) {
-  const signal = deliverySignals(tasks,TEAM_MEMBERS.map(m=>m.id),sprint);
+export default function DeliverySignals({ tasks, sprint, onOpenTask, members = TEAM_MEMBERS }) {
+  const signal = deliverySignals(tasks,members.map(m=>m.user_id || m.id),sprint);
   const cards = [
     ['pulse','Work in progress',signal.wip,'In progress + code review'],
     ['review','Review queue',signal.review,'Awaiting code review'],

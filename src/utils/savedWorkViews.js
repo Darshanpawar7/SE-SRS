@@ -1,16 +1,17 @@
-import { TASK_PRIORITIES, TASK_STATUSES, TEAM_MEMBERS } from './constants';
+import { TASK_PRIORITIES, TASK_STATUSES } from './constants';
 import { WORK_VIEWS } from './workViews';
 import { validateWorkSignals } from './workSignals';
 
 export const EMPTY_WORK_FILTERS = Object.freeze({query:'',status:'all',priority:'all',assignee:'all',sort:'priority',dueFrom:'',dueTo:''});
 export const savedViewsKey = (owner, member, project) => `sprintflow_views:${JSON.stringify([owner || 'demo',member,project])}`;
 const allowed = (value, values, fallback) => values.includes(value) ? value : fallback;
+const assignee = value => typeof value === 'string' && value.length <= 100 && (value === 'all' || value === 'unassigned' || /^[\w:-]+$/.test(value)) ? value : 'all';
 const date = value => { try { return validateWorkSignals({due_date:value}).due_date || ''; } catch { return ''; } };
 export function normalizeWorkView(value = {}) {
   const f = value?.filters || {};
   return {scope:allowed(value?.scope,['sprint','project','backlog'],'sprint'),
     view:allowed(value?.view,WORK_VIEWS.map(v=>v.id),'all'), attention:allowed(value?.attention,['all','blocked','overdue','dueToday'],'all'),
-    filters:{query:typeof f.query==='string'?f.query.slice(0,200):'',status:allowed(f.status,['all',...TASK_STATUSES.map(s=>s.id)],'all'),priority:allowed(f.priority,['all',...TASK_PRIORITIES.map(p=>p.id)],'all'),assignee:allowed(f.assignee,['all','unassigned',...TEAM_MEMBERS.map(m=>m.id)],'all'),sort:allowed(f.sort,['priority','points','title','due','oldest','updated'],'priority'),dueFrom:date(f.dueFrom),dueTo:date(f.dueTo)}};
+    filters:{query:typeof f.query==='string'?f.query.slice(0,200):'',status:allowed(f.status,['all',...TASK_STATUSES.map(s=>s.id)],'all'),priority:allowed(f.priority,['all',...TASK_PRIORITIES.map(p=>p.id)],'all'),assignee:assignee(f.assignee),sort:allowed(f.sort,['priority','points','title','due','oldest','updated'],'priority'),dueFrom:date(f.dueFrom),dueTo:date(f.dueTo)}};
 }
 export function parseSavedViews(raw) {
   try {

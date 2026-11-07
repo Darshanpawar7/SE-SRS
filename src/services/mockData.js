@@ -1,4 +1,4 @@
-// Pre-populated initial dataset for Team 11
+// Pre-populated local demo dataset (not used for Supabase project membership)
 // IDs are UUIDs so the seed data matches database/schema.sql and can be synced to
 // Supabase as-is. The project and Sprint 1 IDs are the schema's own seed rows.
 const PROJECT_ID = '11111111-1111-1111-1111-111111111111';

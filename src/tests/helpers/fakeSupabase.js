@@ -5,7 +5,7 @@
 // `failWritesWith` and `hangWrites` do the same for writes only, while reads still work.
 // With `holdWrites = true`, writes wait in `client.held` until a test calls
 // `finish()` (apply it) or `finish('message')` (fail it), in any order.
-const WRITES = new Set(['upsert', 'insert', 'delete']);
+const WRITES = new Set(['upsert', 'insert', 'delete', 'rpc']);
 
 export function createFakeSupabase(tables = {}) {
   const db = { projects: [], sprints: [], tasks: [], activity_logs: [], ...structuredClone(tables) };
@@ -13,7 +13,11 @@ export function createFakeSupabase(tables = {}) {
     db, calls: [], from,
     failWith: null, hang: false,
     failWritesWith: null, hangWrites: false,
-    holdWrites: false, held: []
+    holdWrites: false, held: [],
+    rpc: (name, args) => {
+      const op = { kind: 'rpc', name, args, table: 'projects' };
+      return new Promise((resolve, reject) => respond(op, resolve, reject));
+    }
   };
 
   function run(op) {
@@ -39,6 +43,20 @@ export function createFakeSupabase(tables = {}) {
     }
     if (op.kind === 'delete') {
       db[op.table] = rows.filter(row => !op.filters.every(([column, value]) => row[column] === value));
+      return { data: null, error: null };
+    }
+    if (op.kind === 'rpc') {
+      if (op.name === 'update_project_details') {
+        const row = db.projects.find(project => project.id === op.args.target_project_id);
+        if (!row) return { data: null, error: { message: 'Project not found' } };
+        Object.assign(row, {
+          name: op.args.project_name,
+          key: op.args.project_key,
+          description: op.args.project_description,
+          start_date: op.args.project_start_date,
+          target_date: op.args.project_target_date
+        });
+      }
       return { data: null, error: null };
     }
     return { data: null, error: { message: `Unsupported operation: ${op.kind}` } };

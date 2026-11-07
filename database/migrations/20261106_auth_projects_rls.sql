@@ -301,3 +301,4 @@ GRANT EXECUTE ON FUNCTION public.claim_project_invitations() TO authenticated;
 GRANT EXECUTE ON FUNCTION public.change_project_member_role(UUID,UUID,TEXT) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.remove_project_member(UUID,UUID) TO authenticated;
 COMMIT;
+NOTIFY pgrst, 'reload schema';

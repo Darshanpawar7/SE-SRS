@@ -39,6 +39,17 @@ describe('Supabase database security schema', () => {
     expect(schema.replaceAll('\r\n', '\n')).toContain(migration.trim().replaceAll('\r\n', '\n'));
   });
 
+  it('creates a project with only its authenticated creator as the initial member', () => {
+    const migration = readFileSync(new URL('../../database/migrations/20261106_auth_projects_rls.sql', import.meta.url), 'utf8');
+    const createFunction = migration.match(/CREATE OR REPLACE FUNCTION public\.create_project\([\s\S]*?\n\$\$;/i)?.[0] ?? '';
+    expect(createFunction).toMatch(/INSERT INTO public\.project_members[\s\S]*?SELECT created_project_id, p\.user_id, p\.full_name, 'lead'[\s\S]*?WHERE p\.auth_user_id = auth\.uid\(\)/i);
+    expect(createFunction).not.toMatch(/TEAM_MEMBERS|u-2|u-3|u-4|INSERT INTO public\.project_members[\s\S]*?VALUES\s*\(/i);
+    const dashboardMigration = readFileSync(new URL('../../database/migrations/20261107_project_dashboard_members.sql', import.meta.url), 'utf8');
+    expect(dashboardMigration.trimEnd()).toMatch(/NOTIFY pgrst, 'reload schema';$/i);
+    expect(schema).toContain("You cannot invite yourself");
+  });
+
+
   it('creates projects atomically and prevents self-service membership changes and loss of the last lead', () => {
     expect(schema).toMatch(/FUNCTION public\.create_project[\s\S]*?SECURITY DEFINER[\s\S]*?SET search_path = pg_catalog, public[\s\S]*?INSERT INTO public\.projects[\s\S]*?INSERT INTO public\.project_members/i);
     expect(schema).toMatch(/FUNCTION public\.change_project_member_role[\s\S]*?Members cannot change their own role/i);

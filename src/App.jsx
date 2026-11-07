@@ -14,10 +14,14 @@ import TaskModal from './components/kanban/TaskModal';
 import SettingsModal from './components/settings/SettingsModal';
 import ProjectSettingsModal from './components/settings/ProjectSettingsModal';
 import SignInView from './components/auth/SignInView';
+import YourProjectsView from './components/auth/YourProjectsView';
+import MembersView from './components/members/MembersView';
 import { useAuth } from './context/AuthContext';
+import { useProject } from './context/ProjectContext';
 
 export default function App() {
-  const { currentUser } = useAuth();
+  const { currentUser, authReady, sessionKind, passwordRecovery } = useAuth();
+  const { project, loading } = useProject();
   const [activeTab, setActiveTab] = useState('kanban');
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -33,7 +37,10 @@ export default function App() {
   const navigate = tab => setActiveTab(tab);
 
   // Unauthenticated visitors only ever see the sign-in view.
-  if (!currentUser) return <SignInView />;
+  if (!authReady) return <main className="auth-loading" role="status">Restoring your session…</main>;
+  if (!currentUser || passwordRecovery) return <SignInView />;
+  if (loading) return <main className="auth-loading" role="status">Loading your workspace…</main>;
+  if (sessionKind === 'supabase' && !project) return <YourProjectsView />;
 
   const handleOpenNewTask = () => {
     setSelectedTask(null);
@@ -65,11 +72,11 @@ export default function App() {
           <CommandMenu onNavigate={navigate} explorerEnabled onNewTask={handleOpenNewTask} onOpenTask={handleOpenEditTask} onSettings={() => setIsSettingsOpen(true)} />
           <WorkspaceFeedback onNewTask={handleOpenNewTask} />
           {activeTab === 'dashboard' && (
-            <DashboardView onNavigateKanban={() => setActiveTab('kanban')} onOpenTask={handleOpenEditTask} />
+            <DashboardView onNavigateKanban={() => setActiveTab('kanban')} onNavigateSprints={() => setActiveTab('sprints')} onOpenNewTask={handleOpenNewTask} onOpenTask={handleOpenEditTask} />
           )}
 
           {activeTab === 'kanban' && (
-            <KanbanBoard onOpenTaskModal={handleOpenEditTask} />
+        <KanbanBoard onOpenTaskModal={handleOpenEditTask} onNavigateSprints={() => setActiveTab('sprints')} />
           )}
 
           {activeTab === 'sprints' && (
@@ -77,6 +84,7 @@ export default function App() {
           )}
 
           {activeTab === 'explorer' && <TaskExplorer onOpenTask={handleOpenEditTask} />}
+      {activeTab === 'members' && <MembersView />}
 
           {activeTab === 'map' && <ProjectMap onOpenTask={handleOpenEditTask} onOpenProject={() => setIsProjectSettingsOpen(true)} onNavigateBoard={() => setActiveTab('kanban')} />}
 

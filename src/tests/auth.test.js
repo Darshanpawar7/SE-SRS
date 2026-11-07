@@ -2,13 +2,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { ACCESS_ROLE_LABELS, can, findTeamMember, PERMISSIONS, restoreSession, signIn, signOut } from '../services/authService';
+import { ACCESS_ROLE_LABELS, can, findTeamMember, PERMISSIONS, requestPasswordReset, restoreSession, signIn, signOut, signUp, updatePassword } from '../services/authService';
 import { setSupabaseClient } from '../services/supabaseClient';
 import { TEAM_MEMBERS } from '../utils/constants';
 import { AuthProvider } from '../context/AuthContext';
 import { ProjectProvider, useProject } from '../context/ProjectContext';
 import SignInView from '../components/auth/SignInView';
 import App from '../App';
+import { isValidAccountPassword, validateAccountName, validateAccountPassword } from '../utils/authValidation';
 
 const [lead, developer] = TEAM_MEMBERS;
 const authSchema = readFileSync(new URL('../../database/migrations/20261106_auth_projects_rls.sql', import.meta.url), 'utf8');
@@ -41,6 +42,9 @@ describe('PMS-F-001 team sign-in and profile switching', () => {
       removeItem: key => storage.delete(key),
     });
     vi.spyOn(console, 'warn').mockImplementation(() => {});
+    // Keep these tests isolated from a developer's local Vite environment.
+    vi.stubEnv('VITE_SUPABASE_URL', '');
+    vi.stubEnv('VITE_SUPABASE_ANON_KEY', '');
     setSupabaseClient(null);
   });
 
@@ -62,7 +66,7 @@ describe('PMS-F-001 team sign-in and profile switching', () => {
   it('rejects a wrong password, an empty password and accounts outside the team', async () => {
     await expect(signIn(lead.email, 'PES2UG24CS158')).rejects.toThrow('Incorrect email or password');
     await expect(signIn(lead.email, '   ')).rejects.toThrow('Enter your password');
-    await expect(signIn('intruder@example.com', 'anything')).rejects.toThrow('Only Team 11 accounts');
+    await expect(signIn('intruder@example.com', 'anything')).rejects.toThrow('not available in local demo mode');
     expect(restoreSession()).toBeNull();
   });
 
@@ -88,19 +92,15 @@ describe('PMS-F-001 team sign-in and profile switching', () => {
     expect(restoreSession()).toBeNull();
   });
 
-  it('uses Supabase Auth when configured and still rejects non-team accounts', async () => {
-    const signInWithPassword = vi.fn(async ({ password }) => (
-      password === 'correct horse' ? { data: {}, error: null } : { data: null, error: { message: 'Invalid login credentials' } }
-    ));
-    setSupabaseClient({ auth: { signInWithPassword, signOut: vi.fn(async () => ({ error: null })) } });
+  it('authenticates any valid cloud identity through Supabase instead of a team allowlist', async () => {
+    const user = { id: 'auth-user-9', email: 'new.person@example.com', user_metadata: { full_name: 'New Person' } };
+    const signInWithPassword = vi.fn(async () => ({ data: { user }, error: null }));
+    setSupabaseClient({ auth: { signInWithPassword } });
 
-    await expect(signIn(developer.email, 'wrong')).rejects.toThrow('Invalid login credentials');
-    expect(await signIn(developer.email, 'correct horse')).toMatchObject({ id: developer.id });
-    expect(signInWithPassword).toHaveBeenLastCalledWith({ email: developer.email, password: 'correct horse' });
-
-    signInWithPassword.mockClear();
-    await expect(signIn('someone@pes.edu', 'correct horse')).rejects.toThrow('Only Team 11 accounts');
-    expect(signInWithPassword).not.toHaveBeenCalled();
+    expect(await signIn(' New.Person@Example.com ', 'cloud-password')).toMatchObject({
+      id: user.id, email: user.email, name: 'New Person', mode: 'supabase'
+    });
+    expect(signInWithPassword).toHaveBeenCalledWith({ email: user.email, password: 'cloud-password' });
   });
 
   it('only lets the team lead use lead-only actions', () => {
@@ -111,41 +111,82 @@ describe('PMS-F-001 team sign-in and profile switching', () => {
     expect(can(null, PERMISSIONS.EDIT_PROJECT)).toBe(false);
     expect(findTeamMember('ESHWAR@pes.edu')).toMatchObject({ usn: 'PES2UG24CS173' });
     expect(ACCESS_ROLE_LABELS[lead.accessRole]).toBe('Team Lead');
-    expect(ACCESS_ROLE_LABELS[developer.accessRole]).toBe('Team Member');
+    expect(ACCESS_ROLE_LABELS[developer.accessRole]).toBe('Developer');
   });
 
-  it('renders the sign-in view with all four team profiles', () => {
+  it('renders email sign-in and account links without listing fixed team identities', () => {
     const html = renderWithProviders(React.createElement(SignInView));
-    TEAM_MEMBERS.forEach(member => expect(html).toContain(member.name));
+    TEAM_MEMBERS.forEach(member => expect(html).not.toContain(member.name));
+    expect(html).toContain('type="email"');
     expect(html).toContain('type="password"');
-    expect(html).toContain('Demo mode: sign in with your USN as the password.');
+    expect(html).toContain('Forgot password?');
+    expect(html).toContain('Create an account');
     expect(html).not.toContain('Use local demo mode instead');
+  });
+
+  it('renders account-creation fields and explicit password visibility controls', () => {
+    const html = renderWithProviders(React.createElement(SignInView, { initialView: 'signup' }));
+    expect(html).toContain('id="signup-name"');
+    expect(html).toContain('id="auth-email"');
+    expect(html).toContain('id="auth-password"');
+    expect(html).toContain('id="auth-confirm-password"');
+    expect(html).toContain('aria-label="Show password"');
+    expect(html).toContain('verify your email');
+  });
+
+  it('applies the documented account name and password requirements', () => {
+    expect(validateAccountName('  New User  ')).toBe('New User');
+    expect(() => validateAccountName(' '.repeat(2))).toThrow('name of 1 to 100 characters');
+    expect(() => validateAccountName('N'.repeat(101))).toThrow('name of 1 to 100 characters');
+    expect(isValidAccountPassword('StrongPass1')).toBe(true);
+    expect(isValidAccountPassword('weakpass1')).toBe(false);
+    expect(() => validateAccountPassword('short')).toThrow('8–128 characters');
   });
 
   it('shows only the sign-in view until a member signs in, then the application', async () => {
     const signedOut = renderWithProviders(React.createElement(App));
-    expect(signedOut).toContain('Team profile');
+    expect(signedOut).toContain('Use your SprintFlow account to continue.');
     expect(signedOut).not.toContain('New Task');
 
     await signIn(developer.email, developer.usn);
     const signedIn = renderWithProviders(React.createElement(App));
-    expect(signedIn).not.toContain('Team profile');
-    expect(signedIn).toContain('New Task');
-    expect(signedIn).toContain(ACCESS_ROLE_LABELS[developer.accessRole]);
+    expect(signedIn).not.toContain('Use your SprintFlow account to continue.');
+    expect(signedIn).toContain('Loading your workspace…');
   });
 
-  it('offers local demo mode when the Supabase connection was saved in this browser', () => {
+  it('does not expose a demo-mode escape when a Supabase connection is configured', () => {
     saveSupabaseConnection(storage);
     const saved = renderWithProviders(React.createElement(SignInView));
-    expect(saved).toContain('Use the password of your Supabase account.');
-    expect(saved).toContain('Use local demo mode instead');
+    expect(saved).toContain('SprintFlow account to continue');
+    expect(saved).not.toContain('Use local demo mode instead');
 
     // A connection built into the deployment cannot be removed from the sign-in view.
     vi.stubEnv('VITE_SUPABASE_URL', 'https://team11.supabase.co');
     vi.stubEnv('VITE_SUPABASE_ANON_KEY', 'anon-key');
     const builtIn = renderWithProviders(React.createElement(SignInView));
-    expect(builtIn).toContain('Use the password of your Supabase account.');
+    expect(builtIn).toContain('SprintFlow account to continue');
     expect(builtIn).not.toContain('Use local demo mode instead');
+  });
+
+  it('creates an account with a full-name profile attribute and supports recovery actions', async () => {
+    const auth = {
+      signUp: vi.fn(async () => ({ data: { user: { id: 'auth-new', email: 'new@example.com', user_metadata: { full_name: 'New User' } }, session: null }, error: null })),
+      resetPasswordForEmail: vi.fn(async () => ({ error: null })),
+      updateUser: vi.fn(async () => ({ error: null }))
+    };
+    setSupabaseClient({ auth });
+    vi.stubGlobal('window', { location: { origin: 'https://app.example', pathname: '/' } });
+
+    await expect(signUp('New User', ' New@Example.com ', 'StrongPass1')).resolves.toMatchObject({
+      needsEmailConfirmation: true, user: { id: 'auth-new', name: 'New User' }
+    });
+    expect(auth.signUp).toHaveBeenCalledWith({
+      email: 'new@example.com', password: 'StrongPass1', options: { data: { full_name: 'New User' } }
+    });
+    await requestPasswordReset('new@example.com');
+    await updatePassword('NewStrongPass2');
+    expect(auth.resetPasswordForEmail).toHaveBeenCalledWith('new@example.com', expect.objectContaining({ redirectTo: expect.any(String) }));
+    expect(auth.updateUser).toHaveBeenCalledWith({ password: 'NewStrongPass2' });
   });
 
   it('lets only the team lead reset the demo data, and only while Supabase is not connected', async () => {

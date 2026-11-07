@@ -6,19 +6,21 @@ import { buildTaskPayload, getTaskFormValues, mergeTaskPayload, sanitizeTaskText
 import { addLabels, getDistinctLabels, removeLabel } from '../../utils/labels';
 import '../../components/workspace/workSignals.css';
 import { sanitizeUserText } from '../../utils/userText';
+import { toAssigneeOptions } from '../../utils/projectDashboard';
 
 export default function TaskModal({ task, isOpen, onClose }) {
-  const { updateTask, addTask, deleteTask, activeSprintId, sprints } = useProject();
-  const { currentUser } = useAuth();
+  const { updateTask, addTask, deleteTask, activeSprintId, sprints, members } = useProject();
+  const { currentUser, sessionKind } = useAuth();
 
   if (!isOpen) return null;
   // Closing unmounts the editor; switching task, sprint or member starts a new draft.
   return <TaskForm key={`${task?.id ?? 'new'}:${activeSprintId ?? ''}:${currentUser?.id ?? ''}`}
     task={task} onClose={onClose} updateTask={updateTask} addTask={addTask}
-    deleteTask={deleteTask} activeSprintId={activeSprintId} sprints={sprints} currentUser={currentUser} />;
+    deleteTask={deleteTask} activeSprintId={activeSprintId} sprints={sprints} currentUser={currentUser}
+    members={sessionKind === 'supabase' ? toAssigneeOptions(members) : TEAM_MEMBERS} />;
 }
 
-function TaskForm({ task, onClose, updateTask, addTask, deleteTask, activeSprintId, sprints, currentUser }) {
+function TaskForm({ task, onClose, updateTask, addTask, deleteTask, activeSprintId, sprints, currentUser, members }) {
   const isEditing = Boolean(task?.id);
   const [initial] = useState(() => getTaskFormValues(task, activeSprintId, currentUser));
   const [title, setTitle] = useState(initial.title);
@@ -79,7 +81,7 @@ function TaskForm({ task, onClose, updateTask, addTask, deleteTask, activeSprint
     }
 
     let taskPayload;
-    try { taskPayload = buildTaskPayload(formValues, currentUser, TEAM_MEMBERS); } catch(err) { setError(err.message); return; }
+    try { taskPayload = buildTaskPayload(formValues, currentUser, members); } catch(err) { setError(err.message); return; }
 
     setError('');
     setSaving(true);
@@ -220,7 +222,7 @@ function TaskForm({ task, onClose, updateTask, addTask, deleteTask, activeSprint
 
           {/* Assignee */}
           <div className="form-group">
-            <label className="form-label" htmlFor="task-assignee">Assignee (Team 11 Member)</label>
+            <label className="form-label" htmlFor="task-assignee">Assignee (project member)</label>
             <select 
               id="task-assignee"
               className="form-select"
@@ -228,7 +230,7 @@ function TaskForm({ task, onClose, updateTask, addTask, deleteTask, activeSprint
               onChange={(e) => setAssigneeId(e.target.value)}
             >
               <option value="">Unassigned</option>
-              {TEAM_MEMBERS.map(m => (
+              {members.map(m => (
                 <option key={m.id} value={m.id}>
                   {m.name} ({m.usn}) — {m.role}
                 </option>

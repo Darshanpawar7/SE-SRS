@@ -6,10 +6,10 @@ import { FeedbackSettings } from '../workspace/WorkspaceFeedback';
 import { PERMISSIONS } from '../../services/authService';
 
 export default function SettingsModal({ isOpen, onClose }) {
-  const { supabaseConfig, syncStatus, pendingChanges, retrySync, refreshConfig, resetData } = useProject();
-  const { currentUser, can } = useAuth();
+  const { supabaseConfig, syncStatus, pendingChanges, retrySync, refreshConfig, resetData, canProject } = useProject();
+  const { currentUser } = useAuth();
   // The reset only replaces the demo data in this browser, never the team's shared cloud data.
-  const resetBlockedReason = !can(PERMISSIONS.RESET_DEMO_DATA)
+  const resetBlockedReason = !canProject(PERMISSIONS.RESET_DEMO_DATA)
     ? 'Only the team lead can reset the demo data.'
     : supabaseConfig.isConfigured
       ? 'Disconnect Supabase to reset: the reset only replaces the demo data in this browser, never the shared cloud data.'
@@ -160,7 +160,7 @@ export default function SettingsModal({ isOpen, onClose }) {
           <div className="danger-zone-box">
             <div>
               <h4>Reset Demo Data</h4>
-              <p>{resetBlockedReason || 'Re-populate the board with original Team 11 mock tasks and sprints'}</p>
+              <p>{resetBlockedReason || 'Re-populate this browser’s demo tasks and sprints'}</p>
               {resetError && <p role="alert" className="form-error">{resetError}</p>}
             </div>
             <button

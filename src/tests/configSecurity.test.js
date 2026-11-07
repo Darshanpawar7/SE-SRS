@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { isValidSupabaseAnonKey, isValidSupabaseUrl } from '../services/supabaseClient';
+import { isValidSupabaseAnonKey, isValidSupabaseUrl, normalizeSupabaseProjectUrl } from '../services/supabaseClient';
 
 const gitignore = readFileSync(new URL('../../.gitignore', import.meta.url), 'utf8');
 const envExample = readFileSync(new URL('../../.env.example', import.meta.url), 'utf8');
@@ -19,6 +19,13 @@ describe('Supabase credential configuration', () => {
 
   it('accepts only HTTPS URLs and non-secret public key values', () => {
     expect(isValidSupabaseUrl('https://team11.supabase.co')).toBe(true);
+    expect(isValidSupabaseUrl('https://team11.supabase.co/')).toBe(true);
+    expect(isValidSupabaseUrl('https://team11.supabase.co/auth/v1')).toBe(true);
+    expect(isValidSupabaseUrl('https://team11.supabase.co/rest/v1/')).toBe(true);
+    expect(normalizeSupabaseProjectUrl('https://team11.supabase.co/rest/v1/')).toBe('https://team11.supabase.co');
+    expect(normalizeSupabaseProjectUrl('https://team11.supabase.co/auth/v1')).toBe('https://team11.supabase.co');
+    expect(isValidSupabaseUrl('https://team11.supabase.co/custom/path')).toBe(false);
+    expect(isValidSupabaseUrl('https://team11.supabase.co?apikey=example')).toBe(false);
     expect(isValidSupabaseUrl('http://team11.supabase.co')).toBe(false);
     expect(isValidSupabaseAnonKey('anon-key')).toBe(true);
     expect(isValidSupabaseAnonKey('your-anon-public-key')).toBe(false);

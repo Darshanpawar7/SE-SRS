@@ -1,9 +1,13 @@
 # Auth and project schema rollout
 
-The additive migration is `database/migrations/20261106_auth_projects_rls.sql`.
-The same migration is included at the end of `database/schema.sql`, so a fresh
-Supabase project receives the base schema, seed rows, and the auth additions.
-Reapplying the migration preserves existing project, task, and seed records.
+For an existing installation, apply these migrations in order:
+`20261103_work_signals.sql`, `20261106_auth_projects_rls.sql`,
+`20261106_create_project_dates.sql`, and
+`20261107_project_dashboard_members.sql`. A fresh installation can run
+`database/schema.sql` once; it includes the schema and these auth/project
+additions without inserting the old four-person demo seed. Existing seed rows
+are not deleted or rewritten. The date overload of `create_project` writes the
+project dates and creator lead membership in one RPC transaction.
 
 ## Legacy text IDs
 
@@ -25,12 +29,55 @@ writes for profile, project, and membership records are revoked.
 
 ## Non-enumerating invitation response
 
-`add_project_member_by_email(project_id, email, role)` returns only `invited`.
-For a verified existing Auth account it adds the profile to the project
-immediately; otherwise it records a pending invitation. The same response is
-returned in both cases. Pending invitations are claimed using
-`claim_project_invitations()`, which reads `auth.uid()` and
-`auth.users.email_confirmed_at`; it accepts no email argument.
+`add_project_member_by_email(project_id, email, role)` always stores a pending
+invitation and returns only `invited`; it does not look up Auth accounts.
+`respond_project_invitation(invitation_id, accept)` verifies the caller's
+confirmed email against the invitation and adds membership only after an
+explicit acceptance. Declines are recorded. The former automatic
+`claim_project_invitations()` RPC is revoked from application roles.
+
+`list_project_members(project_id)` checks project membership before returning
+names, emails and project roles. `list_project_invitations(project_id)` returns
+pending invitations to project members; with a NULL project ID it returns only
+pending invitations matching the caller's verified email. Leads can cancel or
+resend through `manage_project_invitation`. Role changes and removals remain
+lead-only and the last-lead trigger prevents removing or demoting the final
+lead.
+
+The final migration enables Realtime publication membership idempotently for
+`public.tasks`, `public.sprints`, and `public.project_members`. The client
+subscribes with a `project_id` filter, and each authenticated subscription is
+still subject to table grants and RLS policies.
+
+To enable Realtime manually (the migration already does this safely), run these
+statements only for tables not already listed in `supabase_realtime`:
+
+```sql
+ALTER PUBLICATION supabase_realtime ADD TABLE public.tasks;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.sprints;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.project_members;
+```
+
+Check the publication membership and row-security flags with:
+
+```sql
+SELECT schemaname, tablename
+FROM pg_publication_tables
+WHERE pubname = 'supabase_realtime'
+  AND schemaname = 'public'
+  AND tablename IN ('tasks', 'sprints', 'project_members')
+ORDER BY tablename;
+
+SELECT c.relname AS table_name, c.relrowsecurity AS rls_enabled,
+       count(p.policyname) AS policy_count
+FROM pg_class c
+JOIN pg_namespace n ON n.oid = c.relnamespace
+LEFT JOIN pg_policies p ON p.schemaname = n.nspname AND p.tablename = c.relname
+WHERE n.nspname = 'public'
+  AND c.relname IN ('tasks', 'sprints', 'project_members')
+GROUP BY c.relname, c.relrowsecurity
+ORDER BY c.relname;
+```
 
 ## SQL Editor verification
 
@@ -91,3 +138,27 @@ role predicate true; the non-member gets `member = false` and
 demote or remove the only lead through the respective management RPC; it must
 raise `A project must retain at least one lead`. A member cannot target their
 own membership in either management RPC.
+
+## Invitation email deployment
+
+The Members page invokes `supabase/functions/invite-member`. Configure the app
+URL as an allowed redirect in Supabase Auth URL settings. Set the Edge
+Function secrets with
+`supabase secrets set APP_URL=https://your-app.example.com RESEND_API_KEY=<your-resend-key> INVITE_FROM_EMAIL="SprintFlow <invites@your-verified-domain>"`,
+then deploy with `supabase functions deploy invite-member`. Verify the sender
+domain in Resend before using it. Supabase injects the publishable and secret
+key maps into Edge Functions; the function reads them with `Deno.env.get`, and
+no privileged key is stored in this repository or sent by the frontend.
+
+The function verifies the caller JWT and lead role, stores the pending
+invitation through the authenticated RPC, and attempts
+`auth.admin.inviteUserByEmail`. When Auth cannot deliver (including for an
+existing account), it sends a project invitation notice through Resend. The
+recipient signs in or signs up using that address, verifies it, then accepts
+the pending invitation in the app; accepting inserts the membership with the
+invited role. If the function is unavailable, the app falls back to the
+in-app invitation RPC. Supabase's built-in email provider currently permits
+two Auth emails per hour and restricts recipients to authorized organization
+addresses. Configure custom SMTP in Supabase Auth for signup confirmation and
+reliable Auth email delivery. See the README for links to current Supabase
+deployment and email settings documentation.
