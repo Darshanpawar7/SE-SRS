@@ -18,7 +18,7 @@ export default defineConfig({
       exclude: ['src/tests/**', 'src/main.jsx'],
       reporter: ['text', 'html', 'json-summary', 'json'],
       reportsDirectory: 'coverage',
-      // Instrumentation slows the Kanban timing benchmark past its budget; still report.
+      // The unchanged timing benchmark runs in npm test, without instrumentation.
       reportOnFailure: true
     }
   },

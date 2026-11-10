@@ -1,0 +1,138 @@
+name: Sprint 1-2 Testing Evidence
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: testing-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  coverage:
+    name: Unit and coverage evidence
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run test:evidence
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: unit-coverage
+          path: |
+            test-results/unit
+            coverage/coverage-summary.json
+            coverage/coverage-final.json
+            coverage/index.html
+          if-no-files-found: error
+  system:
+    name: Chrome, Edge and Firefox system validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chrome msedge firefox
+      - run: npm run build
+        env:
+          VITE_SUPABASE_URL: ''
+          VITE_SUPABASE_ANON_KEY: ''
+      - name: Start production preview
+        run: |
+          npm run preview -- --host 127.0.0.1 > /tmp/sf-preview.log 2>&1 &
+          for attempt in {1..30}; do curl -fsS http://localhost:4173/ > /dev/null && exit 0; sleep 1; done
+          exit 1
+      - run: npm run test:system
+      - run: node tests/system/cloud-session-check.mjs
+        if: success() || failure()
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: system-validation
+          path: |
+            test-results/system
+            test-results/cloud-session
+          if-no-files-found: error
+  cloud:
+    name: Isolated Supabase persistence and RLS
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - uses: supabase/setup-cli@v3
+        with:
+          version: 2.84.2
+      - name: Start disposable database and Auth
+        run: |
+          supabase init
+          sed -i 's/^project_id = .*/project_id = "sprintflow-test"/' supabase/config.toml
+          supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor
+          docker exec -i supabase_db_sprintflow-test psql -U postgres -v ON_ERROR_STOP=1 < database/schema.sql
+          docker exec -i supabase_db_sprintflow-test psql -U postgres -v ON_ERROR_STOP=1 < database/migrations/20261103_work_signals.sql
+          supabase status -o json > .supabase-test.json
+          openssl req -x509 -newkey rsa:2048 -nodes -keyout /tmp/sf-test.key -out /tmp/sf-test.crt -days 1 -subj '/CN=127.0.0.1' -addext 'subjectAltName=IP:127.0.0.1' > /dev/null 2>&1
+      - run: npx playwright install --with-deps chrome
+      - run: npm run build
+      - name: Start production preview
+        run: |
+          npm run preview -- --host 127.0.0.1 > /tmp/sf-preview.log 2>&1 &
+          for attempt in {1..30}; do curl -fsS http://localhost:4173/ > /dev/null && exit 0; sleep 1; done
+          exit 1
+      - run: npm run test:cloud
+      - name: Stop disposable stack
+        if: always()
+        run: supabase stop --no-backup
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: isolated-cloud
+          path: test-results/isolated-cloud
+          if-no-files-found: error
+  reports:
+    name: Generate four reports and enforce coverage
+    needs: [coverage, system, cloud]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@v4
+        with:
+          name: unit-coverage
+          path: .testing-input
+      - uses: actions/download-artifact@v4
+        with:
+          name: system-validation
+          path: .testing-input/test-results
+      - uses: actions/download-artifact@v4
+        with:
+          name: isolated-cloud
+          path: .testing-input/test-results/isolated-cloud
+      - run: npm run test:reports
+        env:
+          INPUT_DIR: .testing-input
+          REPORT_DIR: docs/test-reports/latest
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: four-test-reports
+          path: docs/test-reports/latest
+          if-no-files-found: error
