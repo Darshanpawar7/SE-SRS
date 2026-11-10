@@ -31,3 +31,9 @@ coverage
 
 # Test run output
 test-results
+
+# Disposable test stack (never commit generated credentials)
+.supabase-test.json
+.testing-input
+supabase/.temp
+supabase/.branches

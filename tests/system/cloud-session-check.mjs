@@ -8,7 +8,7 @@
 //
 // Environment: BASE_URL (default http://localhost:4173/), OUT_DIR (default test-results/cloud-session).
 import { chromium } from 'playwright';
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const baseUrl = process.env.BASE_URL || 'http://localhost:4173/';
@@ -92,5 +92,6 @@ if (keptAfterBlip) {
   await page.screenshot({ path: join(outDir, `${label}-after-401.png`) });
 }
 console.log(`${label} | user-endpoint calls: ${userCalls.join(', ')}`);
+writeFileSync(join(outDir, 'cloud-session-results.json'), JSON.stringify({ id: label, environment: 'Real Chrome with simulated Supabase responses; not a database/RLS test', results }, null, 2));
 await browser.close();
 process.exitCode = results.every(r => r.ok) ? 0 : 1;
