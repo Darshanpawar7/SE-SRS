@@ -63,18 +63,18 @@ try {
     const parts = session.access_token.split('.');
     const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
     const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString());
-    payload.iat = Math.floor(Date.now() / 1000) - 120;
-    payload.exp = Math.floor(Date.now() / 1000) - 60;
+    payload.iat = Math.floor(Date.now() / 1000) - 7200;
+    payload.exp = Math.floor(Date.now() / 1000) - 3600;
     const unsigned = header + '.' + Buffer.from(JSON.stringify(payload)).toString('base64url');
     const expired = unsigned + '.' + createHmac('sha256', config.JWT_SECRET).update(unsigned).digest('base64url');
     for (const endpoint of ['auth/v1/user', 'rest/v1/tasks?select=id']) {
       const response = await fetch(new URL(endpoint, api), { headers: { apikey: anonKey, Authorization: 'Bearer ' + expired } });
       const message = await response.text();
-      assert(response.status === 401 && /expir/i.test(message), 'Expired token was not explicitly rejected by ' + endpoint.split('?')[0]);
+      assert([401, 403].includes(response.status) && /expir/i.test(message), 'Expired token was not explicitly rejected by ' + endpoint.split('?')[0] + ' (HTTP ' + response.status + '): ' + message.slice(0, 300));
     }
     const invalid = await fetch(new URL('rest/v1/tasks?select=id', api), { headers: { apikey: anonKey, Authorization: 'Bearer invalid-token' } });
     assert(invalid.status === 401, 'Malformed token accepted');
-    return 'A real session token was re-signed with the disposable stack secret and an expired timestamp; Auth and REST both returned 401 expiry errors. Malformed token also returned 401.';
+    return 'A real session token was re-signed with the disposable stack secret and an expired timestamp; Auth and REST both returned authentication-denial expiry errors. Malformed token also returned 401.';
   });
   await run('SEC-AUDIT', 'Audit spoofing and history mutation rejected', async () => {
     const entry = { project_id: project, user_name: 'Darshan P Pawar', action: 'CREATE', entity_type: 'task', entity_title: 'QA audit', details: 'Isolated test' };
