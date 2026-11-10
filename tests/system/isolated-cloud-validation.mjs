@@ -30,7 +30,7 @@ const run = async (id, title, body) => {
   const start = Date.now();
   try { const detail = await body(); results.push({ id, title, status: 'pass', detail: detail || 'All assertions passed', durationMs: Date.now() - start }); }
   catch (error) { // Only assertion/error messages are recorded; never tokens, request headers or credentials.
-    results.push({ id, title, status: 'fail', detail: String(error.message).replaceAll(serviceKey, '[REDACTED]').replaceAll(anonKey, '[PUBLIC KEY]'), durationMs: Date.now() - start });
+    results.push({ id, title, status: 'fail', detail: String(error.message).replaceAll(serviceKey, '[REDACTED]').replaceAll(anonKey, '[PUBLIC KEY]').replaceAll(password, '[TEST PASSWORD]'), durationMs: Date.now() - start });
   }
   console.log(`${results.at(-1).status.toUpperCase()} ${id}: ${results.at(-1).detail}`);
 };
@@ -107,7 +107,15 @@ try {
     await signIn(password);
     await page.waitForFunction(() => document.querySelectorAll('.task-card').length > 0);
     assert(await page.evaluate(url => localStorage.getItem('supabase_url') === url, tlsUrl), 'Configuration was not retained');
-    return 'Saved valid HTTPS configuration, local session ended, real password authenticated against disposable Supabase.';
+    assert(/Supabase|Synced|Live|Cloud/.test(await page.locator('.status-pill').innerText()), 'Cloud connection indicator did not update');
+    await page.getByRole('button', { name: 'Connections', exact: true }).click();
+    const settings = page.getByRole('dialog');
+    await settings.getByLabel('Supabase Project URL').fill('not-a-url');
+    await settings.getByRole('button', { name: 'Save & Connect' }).click();
+    await settings.getByRole('alert').waitFor();
+    assert(await page.evaluate(url => localStorage.getItem('supabase_url') === url, tlsUrl), 'Malformed URL replaced the working cloud configuration');
+    await settings.getByRole('button', { name: 'Close settings dialog' }).click();
+    return 'Saved valid HTTPS configuration, indicator updated, real Auth sign-in passed, malformed replacement rejected and working cloud configuration retained.';
   });
   const title = `QA cloud persistence ${Date.now()}`;
   await run('TC-SUPA-01', 'UI task write survives a clean browser cache and reload', async () => {
@@ -131,6 +139,29 @@ try {
     await page.screenshot({ path: `${out}/persisted-cloud-task.png` });
     return 'Task created through React UI, independently read from PostgreSQL, then loaded again after clearing application caches.';
   });
+  await run('CLOUD-RECOVERY', 'Offline task is retained and replays to PostgreSQL on reconnect', async () => {
+    const offlineTitle = 'QA offline recovery ' + Date.now();
+    await context.setOffline(true);
+    await page.getByRole('button', { name: 'New Task', exact: true }).click();
+    const dialog = page.getByRole('dialog');
+    await dialog.getByLabel('Task Title').fill(offlineTitle);
+    await dialog.getByRole('button', { name: 'Create Task', exact: true }).click();
+    await dialog.waitFor({ state: 'detached' });
+    await page.locator('.task-title', { hasText: offlineTitle }).waitFor();
+    assert(requireOk(await admin.from('tasks').select('id').eq('title', offlineTitle)).length === 0, 'Task reached the database while the browser was offline');
+    await context.setOffline(false);
+    await page.evaluate(() => window.dispatchEvent(new Event('online')));
+    let rows = [];
+    for (let i = 0; i < 80; i++) {
+      rows = requireOk(await admin.from('tasks').select('id').eq('title', offlineTitle));
+      if (rows.length) break;
+      await page.waitForTimeout(250);
+    }
+    assert(rows.length === 1, 'Queued offline task did not replay to PostgreSQL');
+    await page.reload();
+    await page.locator('.task-title', { hasText: offlineTitle }).waitFor();
+    return 'Browser was genuinely offline; task remained visible locally, database had no row until reconnect, then exactly one persisted row survived reload.';
+  });
   await run('TC-SEC-01', 'HTTPS transport and URL credential hygiene', async () => {
     assert(protocol === 'TLSv1.3', 'TLS 1.3 was not negotiated');
     assert(requests.some(url => url.includes('/auth/v1/')) && requests.some(url => url.includes('/rest/v1/')), 'Auth and REST requests were not exercised');
@@ -139,7 +170,7 @@ try {
   });
   await context.close();
 } catch (error) {
-  results.push({ id: 'CLOUD-SETUP', title: 'Disposable stack and browser setup', status: 'fail', detail: String(error.message).replaceAll(serviceKey, '[REDACTED]').replaceAll(anonKey, '[PUBLIC KEY]') });
+  results.push({ id: 'CLOUD-SETUP', title: 'Disposable stack and browser setup', status: 'fail', detail: String(error.message).replaceAll(serviceKey, '[REDACTED]').replaceAll(anonKey, '[PUBLIC KEY]').replaceAll(password, '[TEST PASSWORD]') });
 } finally {
   await browser?.close();
   if (server) await new Promise(resolve => server.close(resolve));
@@ -147,5 +178,5 @@ try {
   try { commit = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(); } catch { /* ZIP checkout */ }
   const summary = { total: results.length, passed: results.filter(r => r.status === 'pass').length, failed: results.filter(r => r.status === 'fail').length };
   writeFileSync(`${out}/isolated-cloud-results.json`, JSON.stringify({ startedAt, finishedAt: new Date().toISOString(), commit, environment: 'Disposable local Supabase Auth/PostgreSQL; self-signed TLS 1.3 proxy; no hosted project', summary, results }, null, 2));
-  process.exitCode = summary.failed || summary.passed !== 5 ? 1 : 0;
+  process.exitCode = summary.failed || summary.passed !== 6 ? 1 : 0;
 }
