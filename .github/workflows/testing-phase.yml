@@ -1,6 +1,7 @@
 name: Sprint 1-2 Testing Evidence
 on:
   push:
+    branches: [main]
   pull_request:
   workflow_dispatch:
 permissions:
@@ -20,6 +21,7 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
+      - run: node --test tests/reporting/*.test.mjs
       - run: npm run test:evidence
       - uses: actions/upload-artifact@v4
         if: always()
