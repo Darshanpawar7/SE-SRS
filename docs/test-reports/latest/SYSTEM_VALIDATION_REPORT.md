@@ -2,7 +2,7 @@
 
 SprintFlow · Team 11 · Sprint 1/2 testing phase
 
-Generated from an actual run on **2026-11-10T18:29:14.750Z**. Source commit: `f6b389140eeb7e2f772f6a4daf598acf023b68d0`. Node: v24.22.2, linux. Application/test input SHA-256: `20a46f7b089bedc2be8236f3da5e40070b81c108158694b83a777b12fd4809bb`.
+Generated from an actual run on **2026-11-10T18:40:04.869Z**. Source commit: `db1e9c6c66da1c64a22091bacea36efae1c215ed`. Node: v24.22.2, linux. Application/test input SHA-256: `4d717c194d04502c687212d626138a17c70a4ad6d1572b8bf076c43177fb0bdb`.
 
 Numeric evidence and provenance are in [evidence](evidence/). Full raw JSON/JUnit evidence is retained in the four-test-reports Actions artifact. Original November 6 reports and submitted PDFs are historical snapshots; this report describes the revision above. Report-only commits can differ from this source revision.
 
@@ -52,8 +52,8 @@ Additional security and compatibility evidence:
 
 | Check | Result | Detail |
 | --- | --- | --- |
-| PMS-NF-003: Sign in | pass | Lighthouse accessibility 96/100 (SRS target >90). Automatic checks only; not a full manual accessibility review. |
-| PMS-NF-003: Board | pass | Lighthouse accessibility 98/100 (SRS target >90). Automatic checks only; not a full manual accessibility review. |
+| PMS-NF-003: Sign in | pass | Lighthouse accessibility 100/100 (SRS target >90); remaining automatic findings: none. Automatic checks only; not a full manual accessibility review. |
+| PMS-NF-003: Board | pass | Lighthouse accessibility 100/100 (SRS target >90); remaining automatic findings: none. Automatic checks only; not a full manual accessibility review. |
 | SEC-EXPIRED | pass | A real session token was re-signed with the disposable stack secret and an expired timestamp; Auth and REST both returned authentication-denial expiry errors. Malformed token also returned 401. |
 | SEC-AUDIT | pass | All assertions passed |
 | CLOUD-RECOVERY | pass | Browser was genuinely offline; task remained visible locally, database had no row until reconnect, then exactly one persisted row survived reload. |
