@@ -10,6 +10,7 @@ function fixture(change = () => {}) {
   const stats = { total: 100, covered: 90, pct: 90 };
   const metrics = { lines: {...stats}, statements: {...stats}, functions: {...stats}, branches: {...stats} };
   const files = {
+    'test-results/lighthouse/lighthouse-results.json': {commit: 'abc123456', views: [{name: 'Sign in', score: 1}, {name: 'Board', score: 1}]},
     'test-results/unit/unit.json': {numTotalTests: 2, numPassedTests: 2, numFailedTests: 0, numPendingTests: 0, testResults: []},
     'test-results/unit/coverage.json': {numTotalTests: 1, numPassedTests: 1, numFailedTests: 0, numPendingTests: 0, testResults: []},
     'test-results/unit/manifest.json': {commit: 'abc123456', node: 'synthetic', platform: 'fixture', inputSha256: 'fixture', finishedAt: 'fixture', runs: [{exitCode: 0}]},
@@ -46,3 +47,5 @@ test('missing session failure checks fail the gate', () => assert.notEqual(run(f
 
 test('empty coverage cannot masquerade as 100 percent coverage', () => assert.notEqual(run(f => { delete f['coverage/coverage-summary.json']['/fixture/src/utils/example.js']; }).status, 0));
 test('declaring Firefox without executing its compatibility cases fails', () => assert.notEqual(run(f => { f['test-results/system/system-validation-results.json'].results = f['test-results/system/system-validation-results.json'].results.filter(r => !(r.compat && r.browser === 'firefox')); }).status, 0));
+
+test('a Lighthouse score of 90 fails the strictly above 90 SRS target', () => assert.notEqual(run(f => { f['test-results/lighthouse/lighthouse-results.json'].views[1].score = 0.9; }).status, 0));
