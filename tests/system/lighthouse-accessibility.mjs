@@ -36,4 +36,5 @@ try {
   await context.close();
   writeFileSync(out + '/lighthouse-results.json', JSON.stringify({commit, executedAt: new Date().toISOString(), views, environment: 'Actual Chrome, Lighthouse 13.6.0, desktop 1440x900; local demo account'}, null, 2));
 }
-process.exitCode = views.length === 2 && views.every(v => v.score > 0.9) ? 0 : 1;
+const fixedRules = ['landmark-one-main', 'heading-order', 'label-content-name-mismatch'];
+process.exitCode = views.length === 2 && views.every(v => v.score > 0.9 && !v.failedAudits.some(a => fixedRules.includes(a.id))) ? 0 : 1;

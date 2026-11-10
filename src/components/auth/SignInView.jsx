@@ -39,7 +39,7 @@ export default function SignInView() {
   };
 
   return (
-    <div className="signin-page">
+    <main className="signin-page">
       <form className="signin-card" onSubmit={handleSubmit}>
         <div className="brand-logo">
           <div className="logo-badge">
@@ -117,6 +117,6 @@ export default function SignInView() {
           </>
         )}
       </form>
-    </div>
+    </main>
   );
 }
