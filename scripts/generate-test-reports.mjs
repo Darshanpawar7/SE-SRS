@@ -34,7 +34,7 @@ const primary = system.results.filter(result => !result.compat).map(result => {
   return actual && result.status === 'blocked' ? { ...result, status: actual.status, notes: [actual.detail], isolated: true } : result;
 });
 const unresolved = primary.filter(result => result.status !== 'pass');
-const expectedCloud = ['TC-SUPA-01', 'TC-SET-01', 'TC-SEC-01', 'SEC-RLS', 'SEC-AUDIT', 'CLOUD-RECOVERY'];
+const expectedCloud = ['TC-SUPA-01', 'TC-SET-01', 'TC-SEC-01', 'SEC-RLS', 'SEC-AUDIT', 'CLOUD-RECOVERY', 'SEC-EXPIRED'];
 const completeCloud = expectedCloud.every(id => cloudMap.get(id)?.status === 'pass');
 const requiredCases = ["TC-AUTH-01","TC-PROJ-01","TC-TASK-01","TC-TASK-02","TC-TASK-03","TC-LABEL-01","TC-KAN-01","TC-KAN-02","TC-KAN-03","TC-KAN-04","TC-FILT-01","TC-EST-01","TC-EST-02","TC-SPR-01","TC-BURN-01","TC-DASH-01","TC-WORK-01","TC-DOCS-01","TC-OFF-01","TC-SET-01","TC-LOG-01","TC-PERF-01","TC-AVAIL-01","TC-SEC-01","TC-LOAD-01","TC-RECOV-01","SEC-XSS","SEC-TOKEN","SEC-FUZZ","TC-SUPA-01","SEC-RLS","SEC-KEYS","TC-COMPAT-01"];
 const completeSystem = requiredCases.every(id => primary.some(r => r.id === id)) && primary.length === 33 && new Set(primary.map(r => r.id)).size === 33 && ['chrome', 'edge', 'firefox'].every(name => system.browsers.includes(name));
