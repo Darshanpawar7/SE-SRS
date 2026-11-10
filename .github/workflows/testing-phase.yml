@@ -56,6 +56,12 @@ jobs:
       - run: npm run test:system
       - run: node tests/system/cloud-session-check.mjs
         if: (success() || failure()) && steps.preview.outcome == 'success'
+      - name: Install pinned accessibility auditor
+        if: (success() || failure()) && steps.preview.outcome == 'success'
+        run: npm install --prefix /tmp/sf-lighthouse --no-save --ignore-scripts lighthouse@13.6.0
+      - name: Measure SRS Lighthouse accessibility target
+        if: (success() || failure()) && steps.preview.outcome == 'success'
+        run: node tests/system/lighthouse-accessibility.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -63,6 +69,8 @@ jobs:
           path: |
             test-results/system
             test-results/cloud-session
+            test-results/lighthouse/*.json
+            test-results/lighthouse/*.html
           if-no-files-found: error
   cloud:
     name: Isolated Supabase persistence and RLS

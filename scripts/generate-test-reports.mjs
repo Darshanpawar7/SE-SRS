@@ -11,8 +11,9 @@ const coverage = load('coverage/coverage-summary.json');
 const system = load('test-results/system/system-validation-results.json');
 const cloud = load('test-results/isolated-cloud/isolated-cloud-results.json');
 const session = load('test-results/cloud-session/cloud-session-results.json');
+const lighthouse = load('test-results/lighthouse/lighthouse-results.json');
 mkdirSync(join(out, 'evidence'), { recursive: true });
-for (const file of ['test-results/unit/unit.json', 'test-results/unit/unit.xml', 'test-results/unit/coverage.json', 'test-results/unit/manifest.json', 'coverage/coverage-summary.json', 'test-results/system/system-validation-results.json', 'test-results/isolated-cloud/isolated-cloud-results.json', 'test-results/cloud-session/cloud-session-results.json']) {
+for (const file of ['test-results/unit/unit.json', 'test-results/unit/unit.xml', 'test-results/unit/coverage.json', 'test-results/unit/manifest.json', 'coverage/coverage-summary.json', 'test-results/system/system-validation-results.json', 'test-results/isolated-cloud/isolated-cloud-results.json', 'test-results/cloud-session/cloud-session-results.json', 'test-results/lighthouse/lighthouse-results.json']) {
   copyFileSync(join(input, file), join(out, 'evidence', basename(file)));
 }
 const cell = value => String(value ?? '').replaceAll('|', '\\|').replaceAll('\n', ' ');
@@ -27,7 +28,7 @@ const sum = (prefix, metric) => {
 const utils = sum('src/utils/', 'lines');
 const utilityTargetPassed = utils.total > 0 && utils.pct >= 80;
 const allPass = unit.numTotalTests > 0 && instrumented.numTotalTests > 0 && manifest.runs.length > 0 && manifest.runs.every(run => run.exitCode === 0) && unit.numFailedTests === 0 && unit.numPendingTests === 0 && instrumented.numFailedTests === 0;
-const commitsMatch = [system.commit, cloud.commit].every(sha => manifest.commit.startsWith(sha));
+const commitsMatch = [system.commit, cloud.commit, lighthouse.commit].every(sha => manifest.commit.startsWith(sha));
 const cloudMap = new Map(cloud.results.map(r => [r.id, r]));
 const primary = system.results.filter(result => !result.compat).map(result => {
   const actual = cloudMap.get(result.id);
@@ -39,7 +40,8 @@ const completeCloud = expectedCloud.every(id => cloudMap.get(id)?.status === 'pa
 const requiredCases = ["TC-AUTH-01","TC-PROJ-01","TC-TASK-01","TC-TASK-02","TC-TASK-03","TC-LABEL-01","TC-KAN-01","TC-KAN-02","TC-KAN-03","TC-KAN-04","TC-FILT-01","TC-EST-01","TC-EST-02","TC-SPR-01","TC-BURN-01","TC-DASH-01","TC-WORK-01","TC-DOCS-01","TC-OFF-01","TC-SET-01","TC-LOG-01","TC-PERF-01","TC-AVAIL-01","TC-SEC-01","TC-LOAD-01","TC-RECOV-01","SEC-XSS","SEC-TOKEN","SEC-FUZZ","TC-SUPA-01","SEC-RLS","SEC-KEYS","TC-COMPAT-01"];
 const completeSystem = requiredCases.every(id => primary.some(r => r.id === id)) && primary.length === 33 && new Set(primary.map(r => r.id)).size === 33 && ['chrome', 'edge', 'firefox'].every(name => system.browsers.includes(name));
 const completeCompatibility = ['chrome', 'edge', 'firefox'].every(browser => ['TC-KAN-01', 'TC-KAN-02', 'TC-TASK-01'].every(id => system.results.some(r => r.compat && r.browser === browser && r.id === id && r.status === 'pass')));
-const systemPass = commitsMatch && completeCompatibility && completeSystem && completeCloud && !unresolved.length && !cloud.summary.failed && session.results.length === 4 && session.results.every(r => r.ok);
+const accessibilityPass = lighthouse.views.length === 2 && ['Sign in', 'Board'].every(name => lighthouse.views.some(v => v.name === name && v.score > 0.9));
+const systemPass = accessibilityPass && commitsMatch && completeCompatibility && completeSystem && completeCloud && !unresolved.length && !cloud.summary.failed && session.results.length === 4 && session.results.every(r => r.ok);
 const intro = title => `# ${title}\n\nSprintFlow · Team 11 · Sprint 1/2 testing phase\n\nGenerated from an actual run on **${manifest.finishedAt}**. Source commit: \`${manifest.commit}\`. Node: ${manifest.node}, ${manifest.platform}. Application/test input SHA-256: \`${manifest.inputSha256}\`.\n\nNumeric evidence and provenance are in [evidence](evidence/). Full raw JSON/JUnit evidence is retained in the four-test-reports Actions artifact. Original November 6 reports and submitted PDFs are historical snapshots; this report describes the revision above. Report-only commits can differ from this source revision.\n\n`;
 const write = (name, text) => writeFileSync(join(out, name), text);
 write('UNIT_TEST_REPORT.md', intro('Unit Test Report') +
@@ -62,6 +64,7 @@ write('SYSTEM_VALIDATION_REPORT.md', intro('System Validation Report') +
   table(['Case', 'SRS / plan', 'Result', 'Environment / evidence'], primary.map(result => [result.id, `${result.requirement} / ${result.plan}`, result.status, result.isolated ? `Real isolated Supabase: ${result.notes.join(' ')}` : `${result.browser}: ${result.blockedReason || result.checks.filter(c => !c.ok).map(c => c.actual).join('; ') || result.title}`])) +
   '\nAdditional security and compatibility evidence:\n\n' +
   table(['Check', 'Result', 'Detail'], [
+    ...lighthouse.views.map(v => ['PMS-NF-003: ' + v.name, v.score > 0.9 ? 'pass' : 'fail', 'Lighthouse accessibility ' + Math.round(v.score * 100) + '/100 (SRS target >90). Automatic checks only; not a full manual accessibility review.']),
     ...cloud.results.filter(r => !primary.some(p => p.id === r.id)).map(r => [r.id, r.status, r.detail]),
     ...session.results.map(r => [`TC-SESS-01: ${r.step}`, r.ok ? 'pass' : 'fail', `Real Chrome with simulated network/Auth responses: ${r.detail}`]),
     ...system.results.filter(r => r.compat).map(r => [`${r.id} (${r.browser})`, r.status, r.title])
