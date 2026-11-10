@@ -5,7 +5,7 @@ import { createClient } from '@supabase/supabase-js';
 import { createServer } from 'node:https';
 import { request } from 'node:http';
 import { connect } from 'node:tls';
-import { randomUUID } from 'node:crypto';
+import { randomUUID, createHmac } from 'node:crypto';
 import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 
@@ -56,6 +56,25 @@ try {
     assert(requireOk(await outsider.from('tasks').select('*').eq('project_id', project)).length === 0, 'Second account saw team data');
     assert((await publicClient().from('tasks').select('*')).error, 'Anonymous table read accepted');
     return 'Two real Auth accounts; foreign reads return zero rows, insert denied, update/delete affect zero rows; private row unchanged; anonymous read denied.';
+  });
+  await run('SEC-EXPIRED', 'Real Auth and REST reject correctly signed expired JWTs', async () => {
+    assert(config.JWT_SECRET, 'Disposable JWT signing secret unavailable');
+    const session = requireOk(await lead.auth.getSession()).session;
+    const parts = session.access_token.split('.');
+    const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
+    const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString());
+    payload.iat = Math.floor(Date.now() / 1000) - 120;
+    payload.exp = Math.floor(Date.now() / 1000) - 60;
+    const unsigned = header + '.' + Buffer.from(JSON.stringify(payload)).toString('base64url');
+    const expired = unsigned + '.' + createHmac('sha256', config.JWT_SECRET).update(unsigned).digest('base64url');
+    for (const endpoint of ['auth/v1/user', 'rest/v1/tasks?select=id']) {
+      const response = await fetch(new URL(endpoint, api), { headers: { apikey: anonKey, Authorization: 'Bearer ' + expired } });
+      const message = await response.text();
+      assert(response.status === 401 && /expir/i.test(message), 'Expired token was not explicitly rejected by ' + endpoint.split('?')[0]);
+    }
+    const invalid = await fetch(new URL('rest/v1/tasks?select=id', api), { headers: { apikey: anonKey, Authorization: 'Bearer invalid-token' } });
+    assert(invalid.status === 401, 'Malformed token accepted');
+    return 'A real session token was re-signed with the disposable stack secret and an expired timestamp; Auth and REST both returned 401 expiry errors. Malformed token also returned 401.';
   });
   await run('SEC-AUDIT', 'Audit spoofing and history mutation rejected', async () => {
     const entry = { project_id: project, user_name: 'Darshan P Pawar', action: 'CREATE', entity_type: 'task', entity_title: 'QA audit', details: 'Isolated test' };
@@ -178,5 +197,5 @@ try {
   try { commit = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(); } catch { /* ZIP checkout */ }
   const summary = { total: results.length, passed: results.filter(r => r.status === 'pass').length, failed: results.filter(r => r.status === 'fail').length };
   writeFileSync(`${out}/isolated-cloud-results.json`, JSON.stringify({ startedAt, finishedAt: new Date().toISOString(), commit, environment: 'Disposable local Supabase Auth/PostgreSQL; self-signed TLS 1.3 proxy; no hosted project', summary, results }, null, 2));
-  process.exitCode = summary.failed || summary.passed !== 6 ? 1 : 0;
+  process.exitCode = summary.failed || summary.passed !== 7 ? 1 : 0;
 }

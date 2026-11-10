@@ -15,7 +15,7 @@ function fixture(change = () => {}) {
     'test-results/unit/manifest.json': {commit: 'abc123456', node: 'synthetic', platform: 'fixture', inputSha256: 'fixture', finishedAt: 'fixture', runs: [{exitCode: 0}]},
     'coverage/coverage-summary.json': {total: metrics, '/fixture/src/utils/example.js': structuredClone(metrics)},
     'test-results/system/system-validation-results.json': {commit: 'abc1234', browsers: ['chrome', 'edge', 'firefox'], summary: {passed: 29, failed: 0, blocked: 4}, results: ids.map(id => ({id, title: id, status: ['TC-SUPA-01','TC-SET-01','TC-SEC-01','SEC-RLS'].includes(id) ? 'blocked' : 'pass', checks: [], notes: []}))},
-    'test-results/isolated-cloud/isolated-cloud-results.json': {commit: 'abc123456', summary: {passed: 6, failed: 0}, results: ['TC-SUPA-01','TC-SET-01','TC-SEC-01','SEC-RLS','SEC-AUDIT','CLOUD-RECOVERY'].map(id => ({id, status: 'pass', detail: 'Synthetic fixture'}))},
+    'test-results/isolated-cloud/isolated-cloud-results.json': {commit: 'abc123456', summary: {passed: 7, failed: 0}, results: ['TC-SUPA-01','TC-SET-01','TC-SEC-01','SEC-RLS','SEC-AUDIT','CLOUD-RECOVERY','SEC-EXPIRED'].map(id => ({id, status: 'pass', detail: 'Synthetic fixture'}))},
     'test-results/cloud-session/cloud-session-results.json': {results: Array.from({length: 4}, () => ({ok: true, detail: 'Synthetic fixture'}))}
   };
   for (const browser of ['chrome', 'edge', 'firefox']) for (const id of ['TC-KAN-01', 'TC-KAN-02', 'TC-TASK-01']) files['test-results/system/system-validation-results.json'].results.push({id, browser, compat: true, status: 'pass', checks: [], notes: []});
