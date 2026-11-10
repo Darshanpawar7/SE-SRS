@@ -138,3 +138,25 @@ jobs:
           name: four-test-reports
           path: docs/test-reports/latest
           if-no-files-found: error
+
+  save-reports:
+    name: Save four reports to this PR
+    needs: reports
+    if: github.event_name == 'pull_request' && github.head_ref == 'test/eshwar-testing-phase' && github.event.pull_request.head.repo.full_name == github.repository
+    permissions:
+      contents: write
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: test/eshwar-testing-phase
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@v4
+        with:
+          name: four-test-reports
+          path: test-results/validated-reports
+      - name: Commit the requested reports and allowlisted numeric evidence
+        run: node scripts/save-report-snapshot.mjs
