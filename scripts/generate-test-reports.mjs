@@ -33,7 +33,10 @@ const primary = system.results.filter(result => !result.compat).map(result => {
   return actual && result.status === 'blocked' ? { ...result, status: actual.status, notes: [actual.detail], isolated: true } : result;
 });
 const unresolved = primary.filter(result => result.status !== 'pass');
-const systemPass = commitsMatch && !unresolved.length && !cloud.summary.failed && session.results.length === 4 && session.results.every(r => r.ok);
+const expectedCloud = ['TC-SUPA-01', 'TC-SET-01', 'TC-SEC-01', 'SEC-RLS', 'SEC-AUDIT'];
+const completeCloud = expectedCloud.every(id => cloudMap.get(id)?.status === 'pass');
+const completeSystem = primary.length === 33 && new Set(primary.map(r => r.id)).size === 33 && ['chrome', 'edge', 'firefox'].every(name => system.browsers.includes(name));
+const systemPass = commitsMatch && completeSystem && completeCloud && !unresolved.length && !cloud.summary.failed && session.results.length === 4 && session.results.every(r => r.ok);
 const intro = title => `# ${title}\n\nSprintFlow · Team 11 · Sprint 1/2 testing phase\n\nGenerated from an actual run on **${manifest.finishedAt}**. Source commit: \`${manifest.commit}\`. Node: ${manifest.node}, ${manifest.platform}. Application/test input SHA-256: \`${manifest.inputSha256}\`.\n\nRaw evidence is in [evidence](evidence/). Original November 6 reports and submitted PDFs are historical snapshots; this report describes the revision above. Report-only commits can differ from this source revision.\n\n`;
 const write = (name, text) => writeFileSync(join(out, name), text);
 write('UNIT_TEST_REPORT.md', intro('Unit Test Report') +

@@ -11,7 +11,7 @@ concurrency:
 jobs:
   coverage:
     name: Unit and coverage evidence
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
@@ -27,13 +27,11 @@ jobs:
           name: unit-coverage
           path: |
             test-results/unit
-            coverage/coverage-summary.json
-            coverage/coverage-final.json
-            coverage/index.html
+            coverage
           if-no-files-found: error
   system:
     name: Chrome, Edge and Firefox system validation
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
@@ -48,13 +46,14 @@ jobs:
           VITE_SUPABASE_URL: ''
           VITE_SUPABASE_ANON_KEY: ''
       - name: Start production preview
+        id: preview
         run: |
           npm run preview -- --host 127.0.0.1 > /tmp/sf-preview.log 2>&1 &
           for attempt in {1..30}; do curl -fsS http://localhost:4173/ > /dev/null && exit 0; sleep 1; done
           exit 1
       - run: npm run test:system
       - run: node tests/system/cloud-session-check.mjs
-        if: success() || failure()
+        if: (success() || failure()) && steps.preview.outcome == 'success'
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -65,7 +64,7 @@ jobs:
           if-no-files-found: error
   cloud:
     name: Isolated Supabase persistence and RLS
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
@@ -89,6 +88,7 @@ jobs:
       - run: npx playwright install --with-deps chrome
       - run: npm run build
       - name: Start production preview
+        id: preview
         run: |
           npm run preview -- --host 127.0.0.1 > /tmp/sf-preview.log 2>&1 &
           for attempt in {1..30}; do curl -fsS http://localhost:4173/ > /dev/null && exit 0; sleep 1; done
@@ -107,7 +107,7 @@ jobs:
     name: Generate four reports and enforce coverage
     needs: [coverage, system, cloud]
     if: always()
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
