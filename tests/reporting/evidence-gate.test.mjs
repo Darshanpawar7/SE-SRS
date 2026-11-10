@@ -49,3 +49,5 @@ test('empty coverage cannot masquerade as 100 percent coverage', () => assert.no
 test('declaring Firefox without executing its compatibility cases fails', () => assert.notEqual(run(f => { f['test-results/system/system-validation-results.json'].results = f['test-results/system/system-validation-results.json'].results.filter(r => !(r.compat && r.browser === 'firefox')); }).status, 0));
 
 test('a Lighthouse score of 90 fails the strictly above 90 SRS target', () => assert.notEqual(run(f => { f['test-results/lighthouse/lighthouse-results.json'].views[1].score = 0.9; }).status, 0));
+
+test('a semantic accessibility regression fails even when its score remains above 90', () => assert.notEqual(run(f => { f['test-results/lighthouse/lighthouse-results.json'].views[1].failedAudits = [{id: 'label-content-name-mismatch'}]; }).status, 0));

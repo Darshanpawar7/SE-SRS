@@ -154,7 +154,7 @@ export default function KanbanBoard({ onOpenTaskModal }) {
               <div className="column-header" style={{ borderTopColor: col.color }}>
                 <div className="column-title-wrap">
                   <span className="column-dot" style={{ backgroundColor: col.color }}></span>
-                  <h3 className="column-name">{col.label}</h3>
+                  <h2 className="column-name">{col.label}</h2>
                   <span className="column-count">{col.count}</span>
                 </div>
                 <span className="column-points" title="Total Story Points">{colPoints} pts</span>
@@ -179,12 +179,12 @@ export default function KanbanBoard({ onOpenTaskModal }) {
                           className="task-card"
                           role="button"
                           tabIndex={0}
-                          aria-label={`Open task: ${task.title}`}
                           draggable
                           onDragStart={(e) => handleDragStart(e, task.id)}
                           onClick={() => onOpenTaskModal(task)}
                           onKeyDown={(event) => activateCardFromKeyDown(event, () => onOpenTaskModal(task))}
                         >
+                        <span className="sr-only">Open task: </span>
                         <div className="card-top-row">
                           <PriorityBadge priority={task.priority} />
 
@@ -193,7 +193,7 @@ export default function KanbanBoard({ onOpenTaskModal }) {
                           </span>
                         </div>
 
-                        <h4 className="task-title">{task.title}</h4>
+                        <h3 className="task-title">{task.title}</h3>
                         {task.description && (
                           <p className="task-desc">{task.description}</p>
                         )}
