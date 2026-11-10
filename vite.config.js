@@ -9,6 +9,8 @@ export default defineConfig({
     }
   },
   test: {
+    // Application tests use Vitest; reporting gate tests use node:test separately.
+    include: ['src/tests/**/*.{test,spec}.{js,jsx,mjs}'],
     globals: true,
     environment: 'node',
     coverage: {
