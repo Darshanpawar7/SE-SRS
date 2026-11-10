@@ -18,6 +18,7 @@ function fixture(change = () => {}) {
     'test-results/isolated-cloud/isolated-cloud-results.json': {commit: 'abc123456', summary: {passed: 6, failed: 0}, results: ['TC-SUPA-01','TC-SET-01','TC-SEC-01','SEC-RLS','SEC-AUDIT','CLOUD-RECOVERY'].map(id => ({id, status: 'pass', detail: 'Synthetic fixture'}))},
     'test-results/cloud-session/cloud-session-results.json': {results: Array.from({length: 4}, () => ({ok: true, detail: 'Synthetic fixture'}))}
   };
+  for (const browser of ['chrome', 'edge', 'firefox']) for (const id of ['TC-KAN-01', 'TC-KAN-02', 'TC-TASK-01']) files['test-results/system/system-validation-results.json'].results.push({id, browser, compat: true, status: 'pass', checks: [], notes: []});
   change(files);
   for (const [file, content] of Object.entries(files)) { mkdirSync(dirname(join(root, file)), {recursive: true}); writeFileSync(join(root, file), JSON.stringify(content)); }
   mkdirSync(join(root, 'test-results/unit'), {recursive: true});
@@ -42,3 +43,6 @@ test('results from different source revisions fail', () => assert.notEqual(run(f
 test('coverage below the STP floor fails', () => assert.notEqual(run(f => { f['coverage/coverage-summary.json']['/fixture/src/utils/example.js'].lines.covered = 79; }).status, 0));
 test('missing raw unit evidence fails rather than generating an all-clear', () => assert.notEqual(run(f => { delete f['test-results/unit/unit.json']; }).status, 0));
 test('missing session failure checks fail the gate', () => assert.notEqual(run(f => { f['test-results/cloud-session/cloud-session-results.json'].results.pop(); }).status, 0));
+
+test('empty coverage cannot masquerade as 100 percent coverage', () => assert.notEqual(run(f => { delete f['coverage/coverage-summary.json']['/fixture/src/utils/example.js']; }).status, 0));
+test('declaring Firefox without executing its compatibility cases fails', () => assert.notEqual(run(f => { f['test-results/system/system-validation-results.json'].results = f['test-results/system/system-validation-results.json'].results.filter(r => !(r.compat && r.browser === 'firefox')); }).status, 0));

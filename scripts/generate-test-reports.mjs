@@ -25,7 +25,8 @@ const sum = (prefix, metric) => {
   return { total, covered, pct: total ? Math.floor(covered / total * 10000) / 100 : 100 };
 };
 const utils = sum('src/utils/', 'lines');
-const allPass = manifest.runs.every(run => run.exitCode === 0) && unit.numFailedTests === 0 && unit.numPendingTests === 0 && instrumented.numFailedTests === 0;
+const utilityTargetPassed = utils.total > 0 && utils.pct >= 80;
+const allPass = unit.numTotalTests > 0 && instrumented.numTotalTests > 0 && manifest.runs.length > 0 && manifest.runs.every(run => run.exitCode === 0) && unit.numFailedTests === 0 && unit.numPendingTests === 0 && instrumented.numFailedTests === 0;
 const commitsMatch = [system.commit, cloud.commit].every(sha => manifest.commit.startsWith(sha));
 const cloudMap = new Map(cloud.results.map(r => [r.id, r]));
 const primary = system.results.filter(result => !result.compat).map(result => {
@@ -37,7 +38,8 @@ const expectedCloud = ['TC-SUPA-01', 'TC-SET-01', 'TC-SEC-01', 'SEC-RLS', 'SEC-A
 const completeCloud = expectedCloud.every(id => cloudMap.get(id)?.status === 'pass');
 const requiredCases = ["TC-AUTH-01","TC-PROJ-01","TC-TASK-01","TC-TASK-02","TC-TASK-03","TC-LABEL-01","TC-KAN-01","TC-KAN-02","TC-KAN-03","TC-KAN-04","TC-FILT-01","TC-EST-01","TC-EST-02","TC-SPR-01","TC-BURN-01","TC-DASH-01","TC-WORK-01","TC-DOCS-01","TC-OFF-01","TC-SET-01","TC-LOG-01","TC-PERF-01","TC-AVAIL-01","TC-SEC-01","TC-LOAD-01","TC-RECOV-01","SEC-XSS","SEC-TOKEN","SEC-FUZZ","TC-SUPA-01","SEC-RLS","SEC-KEYS","TC-COMPAT-01"];
 const completeSystem = requiredCases.every(id => primary.some(r => r.id === id)) && primary.length === 33 && new Set(primary.map(r => r.id)).size === 33 && ['chrome', 'edge', 'firefox'].every(name => system.browsers.includes(name));
-const systemPass = commitsMatch && completeSystem && completeCloud && !unresolved.length && !cloud.summary.failed && session.results.length === 4 && session.results.every(r => r.ok);
+const completeCompatibility = ['chrome', 'edge', 'firefox'].every(browser => ['TC-KAN-01', 'TC-KAN-02', 'TC-TASK-01'].every(id => system.results.some(r => r.compat && r.browser === browser && r.id === id && r.status === 'pass')));
+const systemPass = commitsMatch && completeCompatibility && completeSystem && completeCloud && !unresolved.length && !cloud.summary.failed && session.results.length === 4 && session.results.every(r => r.ok);
 const intro = title => `# ${title}\n\nSprintFlow · Team 11 · Sprint 1/2 testing phase\n\nGenerated from an actual run on **${manifest.finishedAt}**. Source commit: \`${manifest.commit}\`. Node: ${manifest.node}, ${manifest.platform}. Application/test input SHA-256: \`${manifest.inputSha256}\`.\n\nNumeric evidence and provenance are in [evidence](evidence/). Full raw JSON/JUnit evidence is retained in the four-test-reports Actions artifact. Original November 6 reports and submitted PDFs are historical snapshots; this report describes the revision above. Report-only commits can differ from this source revision.\n\n`;
 const write = (name, text) => writeFileSync(join(out, name), text);
 write('UNIT_TEST_REPORT.md', intro('Unit Test Report') +
@@ -48,7 +50,7 @@ write('UNIT_TEST_REPORT.md', intro('Unit Test Report') +
 write('CODE_COVERAGE_REPORT.md', intro('Code Coverage Report') +
   'Method: Vitest V8, every `src/**/*.{js,jsx}` file including unimported modules; excludes test files and the Vite entry point (`src/main.jsx`) only. See `vite.config.js` and the unit manifest for exact commands.\n\n' +
   table(['Scope', 'Covered lines', 'Total lines', 'Line coverage', 'Statements', 'Functions'], ['src/utils/', 'src/services/', 'src/context/', 'src/components/', 'src/'].map(prefix => [prefix, sum(prefix, 'lines').covered, sum(prefix, 'lines').total, `${sum(prefix, 'lines').pct}%`, `${sum(prefix, 'statements').pct}%`, `${sum(prefix, 'functions').pct}%`])) +
-  `\nSTP §14 utility code coverage target: **≥80%**. Measured utility line coverage: **${utils.pct}% — ${utils.pct >= 80 ? 'PASS' : 'FAIL'}**. This threshold is enforced by the report command/CI. Browser execution is reported separately and is not added to V8 unit coverage. Low UI/context coverage is visible here rather than omitted from the denominator.\n\n` +
+  `\nSTP §14 utility code coverage target: **≥80%**. Measured utility line coverage: **${utils.pct}% — ${utilityTargetPassed ? 'PASS' : 'FAIL'}**. This threshold is enforced by the report command/CI. Browser execution is reported separately and is not added to V8 unit coverage. Low UI/context coverage is visible here rather than omitted from the denominator.\n\n` +
   table(['Source file', 'Lines', 'Statements', 'Functions'], fileRows.map(([name, stats]) => [name, `${stats.lines.pct}%`, `${stats.statements.pct}%`, `${stats.functions.pct}%`])));
 write('BRANCH_COVERAGE_REPORT.md', intro('Branch Coverage Report') +
   'Method: V8 branch outcomes reported by Vitest, aggregated by covered/total outcomes, not by averaging percentages. A line can be covered while an alternate condition is never exercised. No separate mandatory branch percentage is specified in the STP; no invented branch target is claimed.\n\n' +
@@ -66,4 +68,4 @@ write('SYSTEM_VALIDATION_REPORT.md', intro('System Validation Report') +
   ]) + '\nTransport scope: the browser-facing disposable endpoint negotiates TLS 1.3; the test alone accepts its self-signed loopback certificate and proxies to the local stack over HTTP. Hosted certificate trust, hosted configuration and deployment-specific policies must be checked after deployment. No service key is sent to the browser.\n');
 write('README.md', `# Current testing evidence\n\nSource: \`${manifest.commit}\`; executed ${manifest.finishedAt}.\n\n- [Unit Test Report](UNIT_TEST_REPORT.md)\n- [System Validation Report](SYSTEM_VALIDATION_REPORT.md)\n- [Code Coverage Report](CODE_COVERAGE_REPORT.md)\n- [Branch Coverage Report](BRANCH_COVERAGE_REPORT.md)\n\nRegenerate with the instructions in [TESTING_PHASE.md](../../TESTING_PHASE.md). Historical submitted PDFs remain in the parent folder.\n`);
 console.log(`Reports written to ${out}; utility line coverage ${utils.pct}%; system ${systemPass ? 'pass' : 'incomplete/fail'}`);
-if (!allPass || !systemPass || utils.pct < 80 || !existsSync(join(out, 'BRANCH_COVERAGE_REPORT.md'))) process.exitCode = 1;
+if (!allPass || !systemPass || !utilityTargetPassed || !existsSync(join(out, 'BRANCH_COVERAGE_REPORT.md'))) process.exitCode = 1;
