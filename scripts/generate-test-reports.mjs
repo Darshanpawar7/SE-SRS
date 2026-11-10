@@ -64,7 +64,7 @@ write('SYSTEM_VALIDATION_REPORT.md', intro('System Validation Report') +
   table(['Case', 'SRS / plan', 'Result', 'Environment / evidence'], primary.map(result => [result.id, `${result.requirement} / ${result.plan}`, result.status, result.isolated ? `Real isolated Supabase: ${result.notes.join(' ')}` : `${result.browser}: ${result.blockedReason || result.checks.filter(c => !c.ok).map(c => c.actual).join('; ') || result.title}`])) +
   '\nAdditional security and compatibility evidence:\n\n' +
   table(['Check', 'Result', 'Detail'], [
-    ...lighthouse.views.map(v => ['PMS-NF-003: ' + v.name, v.score > 0.9 ? 'pass' : 'fail', 'Lighthouse accessibility ' + Math.round(v.score * 100) + '/100 (SRS target >90). Automatic checks only; not a full manual accessibility review.']),
+    ...lighthouse.views.map(v => ['PMS-NF-003: ' + v.name, v.score > 0.9 && !(v.failedAudits || []).some(a => ['landmark-one-main', 'heading-order', 'label-content-name-mismatch'].includes(a.id)) ? 'pass' : 'fail', 'Lighthouse accessibility ' + Math.round(v.score * 100) + '/100 (SRS target >90); remaining automatic findings: ' + ((v.failedAudits || []).map(a => a.id).join(', ') || 'none') + '. Automatic checks only; not a full manual accessibility review.']),
     ...cloud.results.filter(r => !primary.some(p => p.id === r.id)).map(r => [r.id, r.status, r.detail]),
     ...session.results.map(r => [`TC-SESS-01: ${r.step}`, r.ok ? 'pass' : 'fail', `Real Chrome with simulated network/Auth responses: ${r.detail}`]),
     ...system.results.filter(r => r.compat).map(r => [`${r.id} (${r.browser})`, r.status, r.title])
