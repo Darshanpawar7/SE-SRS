@@ -15,13 +15,15 @@ npm run preview -- --host 127.0.0.1
 # In a second terminal in the same folder:
 npm run test:system
 node tests/system/cloud-session-check.mjs
+npm install --prefix /tmp/sf-lighthouse --no-save --ignore-scripts lighthouse@13.6.0
+node tests/system/lighthouse-accessibility.mjs
 ```
 
-The system suite records blocked cloud cases until supplemented by real database evidence. The session regression uses intercepted responses to exercise network failure and 401 handling; it is not proof of database persistence or RLS.
+The system suite records blocked cloud cases until supplemented by real database evidence. The actual Chrome/Lighthouse audit measures the SRS PMS-NF-003 accessibility target (>90) on sign-in and the board, and rejects regressions in the three fixed semantic rules. The session regression uses intercepted responses to exercise network failure and 401 handling; it is not proof of database persistence or RLS.
 
 ## Disposable Supabase tests
 
-The `Sprint 1-2 Testing Evidence` workflow starts a fresh local Supabase stack on the GitHub runner with the repository schema and migration. It creates two real Auth accounts and another private project. It checks task writes through the UI and reload after cache removal, cross-project read/write/update/delete denial, anonymous denial, audit author spoofing and audit immutability. No team credentials or GitHub secrets are needed.
+The `Sprint 1-2 Testing Evidence` workflow starts a fresh local Supabase stack on the GitHub runner with the repository schema and migration. It creates two real Auth accounts and another private project. It checks task writes through the UI and reload after cache removal, cross-project read/write/update/delete denial, anonymous denial, audit author spoofing/immutability, correctly signed expired-token rejection, and genuine offline replay to PostgreSQL. No team credentials or GitHub secrets are needed.
 
 See `.github/workflows/testing-phase.yml` for the exact setup commands. To run locally, Docker, Supabase CLI 2.84.2, OpenSSL, and Chrome are required. Copy the workflow's disposable stack, schema, status-file and certificate steps, start the preview, then run `npm run test:cloud`. The harness refuses non-loopback database targets. Never upload `.supabase-test.json`, certificates, keys, or the generated `supabase` folder. Stop with `supabase stop --no-backup` after the run.
 
@@ -38,5 +40,5 @@ The full coverage HTML can be regenerated with `npm run test:coverage`; the work
 - Darshan reviews and merges the open feature/fix/testing PRs after checks pass, then reruns this workflow on final main.
 - Review the SRS/SAD/STP and traceability against final merged behavior; document deviations rather than changing requirements silently.
 - Check the existing recordings in `docs/demo/` against the final merged product and the required one-minute Sprint 1/two-minute Sprint 2 lengths; update them only if they no longer match.
-- Review/sign off the final Test Summary Report. A script cannot supply a human approval.
+- Review/sign off [the prepared Test Summary Report](test-reports/TEST_SUMMARY_REPORT.md). A script cannot supply a human approval.
 - If the product will be hosted, verify that deployment's certificate, configuration and RLS separately; isolated results do not certify a particular hosted database.

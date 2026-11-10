@@ -1,6 +1,6 @@
 # Current repeatable testing
 
-The [latest four reports](latest/README.md) contain the fresh Sprint 1/2 automated acceptance results, exact tested revision and numeric evidence. See [TESTING_PHASE.md](../TESTING_PHASE.md) for commands and CI artifacts. The reports and submitted PDFs below are preserved as the November 6 historical baseline; their blocked-cloud status is superseded only for the isolated test environment described in the latest report.
+The [latest four reports](latest/README.md) contain the fresh Sprint 1/2 automated acceptance results, exact tested revision and numeric evidence. The [Test Summary Report](TEST_SUMMARY_REPORT.md) maps requirements and records owner sign-off items. See [TESTING_PHASE.md](../TESTING_PHASE.md) for commands and CI artifacts. The reports and submitted PDFs below are preserved as the November 6 historical baseline; their blocked-cloud status is superseded only for the isolated test environment described in the latest report.
 
 # Test Reports -- Testing Phase (2--6 November 2026)
 
