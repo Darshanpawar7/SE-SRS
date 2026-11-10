@@ -29,7 +29,7 @@ The browser-facing endpoint uses TLS 1.3 and a one-day self-signed test certific
 
 ## Four required reports
 
-CI downloads machine evidence from all three jobs, runs `npm run test:reports`, enforces the utility coverage target and records failures or missing evidence as a nonzero result. Download **four-test-reports** from the workflow run. The four Markdown deliverables and their JSON/JUnit evidence are under `docs/test-reports/latest` when generated locally. Copy that folder from the artifact into the repository for a documentation PR; reports must state the exact tested source revision.
+CI downloads machine evidence from all three jobs, runs `npm run test:reports`, enforces the utility coverage target and records failures or missing evidence as a nonzero result. Download **four-test-reports** from the workflow run. The four Markdown deliverables and their JSON/JUnit evidence are under `docs/test-reports/latest` when generated locally. On PR #107, a separate job saves only the four reports and allowlisted numeric evidence to this PR branch after all tests pass. Detailed raw JSON/JUnit results remain in the downloadable artifact. The same application/test input hash prevents repeated report commits. On other branches, copy the four reports from the artifact into a documentation PR; keep the tested revision intact.
 
 The full coverage HTML can be regenerated with `npm run test:coverage`; the workflow keeps JSON totals and the HTML entry separately. The older reports/PDFs are historic submissions, not current evidence.
 
@@ -37,6 +37,6 @@ The full coverage HTML can be regenerated with `npm run test:coverage`; the work
 
 - Darshan reviews and merges the open feature/fix/testing PRs after checks pass, then reruns this workflow on final main.
 - Review the SRS/SAD/STP and traceability against final merged behavior; document deviations rather than changing requirements silently.
-- Record/upload the required one-minute Sprint 1 and two-minute Sprint 2 working-product demo videos (genuine recordings).
+- Check the existing recordings in `docs/demo/` against the final merged product and the required one-minute Sprint 1/two-minute Sprint 2 lengths; update them only if they no longer match.
 - Review/sign off the final Test Summary Report. A script cannot supply a human approval.
 - If the product will be hosted, verify that deployment's certificate, configuration and RLS separately; isolated results do not certify a particular hosted database.
