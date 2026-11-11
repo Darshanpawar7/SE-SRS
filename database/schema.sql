@@ -693,11 +693,11 @@ COMMIT;
 -- Project-scoped member, invitation, date, and realtime support.
 BEGIN;
 
-DO $ BEGIN
+DO $$ BEGIN
   ALTER TABLE public.projects ADD CONSTRAINT projects_target_date_after_start
     CHECK (start_date IS NULL OR target_date IS NULL OR target_date >= start_date) NOT VALID;
 EXCEPTION WHEN duplicate_object THEN NULL;
-END $;
+END $$;
 
 ALTER TABLE public.project_invitations
   ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'pending';
@@ -706,11 +706,11 @@ ALTER TABLE public.project_invitations
 UPDATE public.project_invitations
 SET status = CASE WHEN claimed_at IS NULL THEN 'pending' ELSE 'accepted' END
 WHERE status IS DISTINCT FROM CASE WHEN claimed_at IS NULL THEN 'pending' ELSE 'accepted' END;
-DO $ BEGIN
+DO $$ BEGIN
   ALTER TABLE public.project_invitations ADD CONSTRAINT project_invitations_status_check
     CHECK (status IN ('pending','accepted','declined','cancelled'));
 EXCEPTION WHEN duplicate_object THEN NULL;
-END $;
+END $$;
 CREATE INDEX IF NOT EXISTS project_invitations_pending_email_idx
   ON public.project_invitations (lower(email), project_id) WHERE status = 'pending';
 
@@ -721,13 +721,13 @@ CREATE OR REPLACE FUNCTION public.add_project_member_by_email(
 )
 RETURNS TEXT LANGUAGE plpgsql SECURITY DEFINER
 SET search_path = pg_catalog, public
-AS $
+AS $$
 DECLARE normalized_email TEXT := lower(btrim(invite_email));
 BEGIN
   IF auth.uid() IS NULL OR NOT public.has_project_role(target_project_id, ARRAY['lead']) THEN
     RAISE EXCEPTION 'Project lead permission required';
   END IF;
-  IF normalized_email !~ '^[A-Za-z0-9.!#$%&''*+/=?^_`{|}~-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+ THEN
+  IF normalized_email !~ '^[A-Za-z0-9.!#$%&''*+/=?^_`{|}~-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$' THEN
     RAISE EXCEPTION 'Enter a valid email address';
   END IF;
   IF normalized_email = lower(COALESCE(auth.jwt() ->> 'email', '')) THEN
@@ -743,13 +743,13 @@ BEGIN
         created_at = now(), claimed_at = NULL, status = 'pending', responded_at = NULL;
   RETURN 'invited';
 END;
-$;
+$$;
 
 CREATE OR REPLACE FUNCTION public.list_project_members(target_project_id UUID)
 RETURNS TABLE(member_id UUID, user_id TEXT, member_name TEXT, email TEXT, role TEXT)
 LANGUAGE plpgsql STABLE SECURITY DEFINER
 SET search_path = pg_catalog, public
-AS $
+AS $$
 BEGIN
   IF auth.uid() IS NULL OR NOT public.is_project_member(target_project_id) THEN
     RAISE EXCEPTION 'Project membership required';
@@ -761,13 +761,13 @@ BEGIN
     WHERE pm.project_id = target_project_id
     ORDER BY CASE WHEN pm.role IN ('owner','lead') THEN 0 ELSE 1 END, pm.member_name;
 END;
-$;
+$$;
 
 CREATE OR REPLACE FUNCTION public.list_project_invitations(target_project_id UUID DEFAULT NULL)
 RETURNS TABLE(invitation_id UUID, project_id UUID, project_name TEXT, email TEXT, role TEXT, created_at TIMESTAMPTZ)
 LANGUAGE plpgsql STABLE SECURITY DEFINER
 SET search_path = pg_catalog, public
-AS $
+AS $$
 DECLARE verified_email TEXT;
 BEGIN
   SELECT lower(u.email) INTO verified_email FROM auth.users u
@@ -781,12 +781,12 @@ BEGIN
             AND public.is_project_member(i.project_id))
         OR (target_project_id IS NULL AND lower(i.email) = verified_email));
 END;
-$;
+$$;
 
 CREATE OR REPLACE FUNCTION public.respond_project_invitation(target_invitation_id UUID, accept_invitation BOOLEAN)
 RETURNS VOID LANGUAGE plpgsql SECURITY DEFINER
 SET search_path = pg_catalog, public
-AS $
+AS $$
 DECLARE verified_email TEXT; claimant_user_id TEXT; claimant_name TEXT; invitation RECORD;
 BEGIN
   SELECT lower(u.email) INTO verified_email FROM auth.users u
@@ -810,12 +810,12 @@ BEGIN
     WHERE id=target_invitation_id;
   END IF;
 END;
-$;
+$$;
 
 CREATE OR REPLACE FUNCTION public.manage_project_invitation(target_invitation_id UUID, action TEXT)
 RETURNS TEXT LANGUAGE plpgsql SECURITY DEFINER
 SET search_path = pg_catalog, public
-AS $
+AS $$
 DECLARE invitation RECORD;
 BEGIN
   SELECT i.* INTO invitation FROM public.project_invitations i
@@ -833,7 +833,7 @@ BEGIN
   END IF;
   RETURN 'invited';
 END;
-$;
+$$;
 
 CREATE OR REPLACE FUNCTION public.update_project_details(
   target_project_id UUID, project_name TEXT, project_key TEXT,
@@ -841,7 +841,7 @@ CREATE OR REPLACE FUNCTION public.update_project_details(
 )
 RETURNS VOID LANGUAGE plpgsql SECURITY DEFINER
 SET search_path = pg_catalog, public
-AS $
+AS $$
 BEGIN
   IF NOT public.has_project_role(target_project_id, ARRAY['lead']) THEN
     RAISE EXCEPTION 'Only a project lead can edit project details';
@@ -856,7 +856,7 @@ BEGIN
   WHERE id=target_project_id;
   IF NOT FOUND THEN RAISE EXCEPTION 'Project not found'; END IF;
 END;
-$;
+$$;
 
 REVOKE ALL ON FUNCTION public.add_project_member_by_email(UUID,TEXT,TEXT) FROM PUBLIC, anon;
 REVOKE ALL ON FUNCTION public.list_project_members(UUID) FROM PUBLIC, anon;
@@ -876,7 +876,7 @@ COMMIT;
 
 -- Run once after the migration to publish scoped change events. Supabase Realtime
 -- evaluates each subscriber's SELECT grants and RLS policies for returned rows.
-DO $ BEGIN
+DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_publication_tables WHERE pubname='supabase_realtime' AND schemaname='public' AND tablename='tasks') THEN
     ALTER PUBLICATION supabase_realtime ADD TABLE public.tasks;
   END IF;
@@ -886,5 +886,5 @@ DO $ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_publication_tables WHERE pubname='supabase_realtime' AND schemaname='public' AND tablename='project_members') THEN
     ALTER PUBLICATION supabase_realtime ADD TABLE public.project_members;
   END IF;
-END $;
+END $$;
 NOTIFY pgrst, 'reload schema';
