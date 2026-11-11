@@ -23,6 +23,7 @@ const admin = createClient(api.href, serviceKey, { auth: { persistSession: false
 const publicClient = () => createClient(api.href, anonKey, { auth: { persistSession: false, autoRefreshToken: false } });
 const password = `Test-only-${randomUUID()}!`;
 const project = '11111111-1111-1111-1111-111111111111';
+const projectName = 'Project Management System (Team 11)';
 const foreign = randomUUID();
 const assert = (value, message) => { if (!value) throw new Error(message); };
 const requireOk = response => { assert(!response.error, response.error?.message || 'Request failed'); return response.data; };
@@ -37,9 +38,19 @@ const run = async (id, title, body) => {
 
 let server, browser;
 try {
-  // The outsider's profile exists first, so the schema's sign-up trigger links the new account to it.
-  requireOk(await admin.from('profiles').insert({ user_id: 'qa-outsider', full_name: 'QA Outsider', email: 'qa-outsider@example.test' }));
+  // The schema ships without seed data, so the test creates the team project it uses. Profiles exist
+  // before the accounts, so the schema's sign-up trigger links each new account to its profile.
+  requireOk(await admin.from('profiles').insert([
+    { user_id: 'u-1', full_name: 'Darshan P Pawar', email: 'darshan@pes.edu', usn: 'PES2UG24CS143', role: 'lead' },
+    { user_id: 'qa-outsider', full_name: 'QA Outsider', email: 'qa-outsider@example.test' }
+  ]));
   for (const email of ['darshan@pes.edu', 'qa-outsider@example.test']) requireOk(await admin.auth.admin.createUser({ email, password, email_confirm: true }));
+  const day = offset => new Date(Date.now() + offset * 86400000).toISOString().slice(0, 10);
+  const sprint = '22222222-2222-2222-2222-222222222222';
+  requireOk(await admin.from('projects').insert({ id: project, name: projectName, key: 'PMS', owner_id: 'u-1', status: 'active', start_date: day(-7), target_date: day(30) }));
+  requireOk(await admin.from('project_members').insert({ project_id: project, user_id: 'u-1', member_name: 'Darshan P Pawar', role: 'lead' }));
+  requireOk(await admin.from('sprints').insert({ id: sprint, project_id: project, name: 'Sprint 1', goal: 'Isolated test sprint', status: 'active', start_date: day(-7), end_date: day(7) }));
+  requireOk(await admin.from('tasks').insert({ project_id: project, sprint_id: sprint, title: 'Seeded test task', status: 'todo', priority: 'medium', story_points: 3, assignee_name: 'Darshan P Pawar', reporter_name: 'Darshan P Pawar' }));
   requireOk(await admin.from('projects').insert({ id: foreign, name: 'Other private project', key: 'QA-PRIVATE', owner_id: 'qa-outsider' }));
   const lead = publicClient();
   const outsider = publicClient();
@@ -110,12 +121,27 @@ try {
   page.on('dialog', dialog => dialog.accept());
   const requests = [];
   page.on('request', req => { if (req.url().startsWith(tlsUrl)) requests.push(req.url()); });
+  // After a cloud sign-in the app lists the member's projects; open the team project when asked.
+  const openWorkspace = async () => {
+    const projects = page.getByRole('heading', { name: 'Your projects' });
+    await page.locator('.user-name').or(projects).first().waitFor();
+    if (await projects.count()) {
+      await page.locator('.project-list-item', { hasText: projectName }).click();
+      await page.locator('.user-name').waitFor();
+    }
+  };
   const signIn = async passwordValue => {
     await page.getByRole('heading', { name: 'Sign in' }).waitFor();
     await page.getByLabel('Email').fill('darshan@pes.edu');
     await page.getByRole('textbox', { name: 'Password' }).fill(passwordValue);
     await page.getByRole('button', { name: 'Sign in', exact: true }).click();
-    await page.locator('.user-name').waitFor();
+    await openWorkspace();
+  };
+  // After a reload: sign in again if needed, otherwise reopen the project.
+  const resume = async () => {
+    const signInHeading = page.getByRole('heading', { name: 'Sign in' });
+    await signInHeading.or(page.getByRole('heading', { name: 'Your projects' })).or(page.locator('.user-name')).first().waitFor();
+    if (await signInHeading.count()) await signIn(password); else await openWorkspace();
   };
   await page.goto(process.env.BASE_URL || 'http://localhost:4173/');
   await signIn('PES2UG24CS143');
@@ -153,8 +179,8 @@ try {
     assert(row?.length === 1 && row[0].project_id === project, 'UI-created task not persisted to PostgreSQL');
     await page.evaluate(() => { for (const key of Object.keys(localStorage)) if (key.startsWith('sprintflow_') && !key.includes('session')) localStorage.removeItem(key); });
     await page.reload();
-    // Local profile may need restoring if the project cache reset also removed it.
-    if (await page.getByRole('heading', { name: 'Sign in' }).count()) await signIn(password);
+    // The cache reset also removed the remembered project, so the project may need choosing again.
+    await resume();
     await page.locator('.task-title', { hasText: title }).waitFor();
     await page.screenshot({ path: `${out}/persisted-cloud-task.png` });
     return 'Task created through React UI, independently read from PostgreSQL, then loaded again after clearing application caches.';
@@ -179,6 +205,7 @@ try {
     }
     assert(rows.length === 1, 'Queued offline task did not replay to PostgreSQL');
     await page.reload();
+    await resume();
     await page.locator('.task-title', { hasText: offlineTitle }).waitFor();
     return 'Browser was genuinely offline; task remained visible locally, database had no row until reconnect, then exactly one persisted row survived reload.';
   });
