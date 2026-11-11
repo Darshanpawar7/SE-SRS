@@ -9,4 +9,3 @@ DO $$ BEGIN
   END IF;
 END; $$;
 COMMIT;
-NOTIFY pgrst, 'reload schema';
