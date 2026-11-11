@@ -7,6 +7,7 @@
 **Testing phase:** 2--6 November 2026 | **Measured:** 6 November 2026
 **Related Documents:** `docs/STP_Document_Team11.md` (Section 14), [Code Coverage Report](CODE_COVERAGE_REPORT.md), [Unit Test Report](UNIT_TEST_REPORT.md)
 **PDF version (as submitted, both coverage reports in one file):** [Team11_Code_and_Branch_Coverage_Report.pdf](Team11_Code_and_Branch_Coverage_Report.pdf)
+**Version:** 1.1, 11 November 2026. Adds the pre-submission regression on the final `main` and corrections from a final review; the PDF's revision history lists them.
 
 ---
 
@@ -29,7 +30,7 @@ unit and integration suite as the [Code Coverage Report](CODE_COVERAGE_REPORT.md
 
 | Item | Value |
 | :--- | :--- |
-| Code under test | `main` at commit `f9e0727` |
+| Code under test | `main` at commit `f9e0727`; the coverage tooling (`@vitest/coverage-v8`, the `test:coverage` script and the coverage settings in `vite.config.js`) was added in PR #97 without changing `src/` or the tests |
 | Tool | `@vitest/coverage-v8` 4.1.12. V8 records which outcome of each decision ran, and the counts are mapped back to the source with AST-aware remapping. |
 | Test suite | 35 unit test files, 234 tests |
 | Command | `npm run test:coverage` |
@@ -65,9 +66,10 @@ Across the application, 438 of 778 decision points (56.3%) have every outcome ta
 target for utility modules (STP Section 14.1):
 
 - **Utilities:** 92.9%, so the target is met.
-- **Services:** 79.4%, just under it. The missed outcomes are almost all failure and
-  fallback paths, listed in Section 6. Re-measured on the final `main` (`2b8fdbc`), the
-  services reach 80.9% (Code Coverage Report, Section 8).
+- **Services:** 79.4%, just under it. The missed outcomes are failure and fallback paths,
+  plus code that no unit test runs (`flowHistoryStore.js` and `announceSaved`), listed in
+  Section 6. Re-measured on the final `main`, the services reach 80.9% (`2b8fdbc`,
+  6 November) and 80.8% (`970c656`, 11 November; Code Coverage Report, Section 8).
 - **Components:** these pull the whole-application figure down, as in the Code Coverage
   Report.
 
@@ -85,8 +87,8 @@ target for utility modules (STP Section 14.1):
 
 What the figures show:
 
-- **Default parameters** are almost fully covered: tests rarely omit an argument by
-  accident.
+- **Default parameters** are almost fully covered (71 of 73): most functions are called
+  somewhere without their optional arguments, which is when a default is used.
 - **`if` / `else`** is the best-tested real decision, at 74%.
 - **Ternaries (47%)** are mostly conditional rendering in JSX
   (`isOpen ? <Dialog/> : null`, `error && <p role="alert">`). Their coverage tracks how much
@@ -118,7 +120,8 @@ What the figures show:
 ## 6. Logic Layer: Every Missed Outcome
 
 The last column lists the source lines with at least one outcome that no test takes. Open
-the file in [`coverage-html/`](coverage-html/index.html) to see each one highlighted.
+the file in [`coverage-html/`](coverage-html/index.html) to see each one: yellow when the
+line ran but an outcome did not, red when the code never ran.
 
 | File | Decision points | Outcomes taken | Branch coverage | Lines with a missed outcome |
 | :--- | ---: | ---: | ---: | :--- |
@@ -161,23 +164,25 @@ the file in [`coverage-html/`](coverage-html/index.html) to see each one highlig
 
 | File | Coverage | Missed outcomes, by behaviour |
 | :--- | ---: | :--- |
-| `services/supabaseClient.js` | 86.9% (232/267) | **Sync-queue failure exits** (lines 447, 457, 461, 584): when deleting a sprint or inserting an audit row fails in the cloud, the queue stops and keeps the change for retry; untested. **Older audit rows** (lines 199--227): rows saved by earlier builds without metadata, whose type is inferred from the action text. **Read fallbacks** (lines 510--512, 607, 644): a cloud read failing, returning no data, or overtaken by a newer local change. **Defaults for missing values** (lines 36, 60, 138, 160). |
+| `services/supabaseClient.js` | 86.9% (232/267) | **Sync-queue failure exits** (lines 447, 457, 461): when deleting a sprint or inserting an audit row fails in the cloud, the queue stops and keeps the change for retry; untested. **Successful cloud sprint delete** (line 584): only the case where uploading the sprint's tasks fails was tested, so the delete itself (lines 586--587) never ran. **Older audit rows** (lines 199--227): rows saved by earlier builds without metadata, whose type is inferred from the action text. **Read fallbacks** (lines 512, 607, 609, 644): a cloud read failing or returning no data. **Defaults for missing values** (lines 36, 60, 138, 160). |
 | `utils/estimation.js` | 77.3% (17/22) | The `\|\| 0` fallback on lines 11, 14, 34, 37 and 60, used when a task's story points are missing or not a number. Every test task has a valid estimate, so the fallback never runs. |
-| `context/ProjectContext.jsx` | 59.5% (25/42) | **Guards:** a late load result ignored after a newer one (79); no audit record (93); task or sprint not found (120, 146, 188); project not loaded (235). **Sprint selection:** the first sprint created becomes active (165); starting a sprint selects it (178); deleting the active sprint clears the selection (206); selecting an unknown sprint is ignored (223). |
+| `context/ProjectContext.jsx` | 59.5% (25/42) | **Never run in the unit suite:** the project-load callbacks (79, 81, 83) and a successful project update (235: the not-yet-loaded error ran, but the update itself, from line 236, did not). **Guards:** no audit record (93, 196); task or sprint not found (120, 146, 188); tasks of other sprints left alone when a sprint is deleted (193); selecting an unknown sprint is ignored (223). **Sprint selection:** creating a sprint while another is already active (165); a status change other than starting a sprint (178); deleting the active sprint clears the selection (206). |
 | `services/flowHistoryStore.js` | 0.0% (0/23) | No test imports the module (Code Coverage Report, Section 6.3). |
-| `services/feedbackStore.js` | 20.0% (2/10) | The "Completed" versus "Saved" versus "Created" wording, and the haptics options, in `announceSaved` (lines 11--12). |
+| `services/feedbackStore.js` | 20.0% (2/10) | The `announceSaved` function never runs in the unit suite, so its "Completed", "Saved" and "Created" wording and the haptics options (lines 11--12) are untested. |
 | `utils/taskForm.js` | 80.0% (24/30) | Defaults for a task missing its title, status, priority or estimate (lines 34--38); a new task when no sprint is selected (52); labels that are not a list (14). |
-| `utils/taskExplorer.js` | 91.2% (62/68) | Search across tasks without a description, assignee or labels (9); due-date sorting when both tasks have no date (12); CSV export of a task without a sprint or labels (26). |
-| `utils/auditTrail.js` | 92.1% (58/63) | An empty list change shown as "—" (57); a record without a timestamp (188); one side of the "N hours ago" wording (193). |
+| `utils/taskExplorer.js` | 91.2% (62/68) | Search across a task without labels (9); a due-date sort where the second task has no due date (12); CSV export of a task that belongs to a known sprint, and of a task without labels (26). |
+| `utils/auditTrail.js` | 92.1% (58/63) | A changed value that is a list, joined with commas or shown as "—" when empty (57); a record with neither a timestamp nor a time (188); the singular "1 hour ago" (193). |
 
-Most missed outcomes in the logic layer fall into two groups:
+Most missed outcomes in the logic layer fall into three groups:
 
 - **Defensive fallbacks for malformed or missing data.** The seed data and fixtures are
   always well-formed, so these never run.
 - **Cloud-failure paths.** These need a mocked failure for each request.
+- **Code that no unit test runs,** chiefly `flowHistoryStore.js`, `announceSaved` and the
+  project-load callbacks.
 
-Neither group is exercised by normal use. Both are where defects tend to hide, because
-they run only when something has already gone wrong.
+The first two groups run only when something has already gone wrong, so they are worth
+testing directly.
 
 ---
 
@@ -227,11 +232,11 @@ in this report's figures.
 | Priority | Test to add | Outcomes it closes |
 | :--- | :--- | :--- |
 | 1 | `estimation`: a sprint containing a task with no story points and one with a non-numeric value | 5 outcomes; `estimation.js` to 100% |
-| 2 | `supabaseSync`: mock a failing sprint delete and a failing audit insert while the queue drains; assert the change stays queued for retry | Sync-queue failure exits (lines 447--461, 584) |
+| 2 | `supabaseSync`: mock a failing sprint delete and a failing audit insert while the queue drains, and assert the change stays queued for retry; then delete a sprint whose task upload succeeds | Sync-queue failure exits (lines 447--461) and the successful cloud sprint delete (584) |
 | 3 | `supabaseSync`: load audit rows with no `metadata`, and with `details` that are not JSON | Older-row parsing (lines 199--227) |
-| 4 | `ProjectContext`: delete the active sprint, select a sprint that no longer exists, and resolve two loads out of order | The guard and sprint-selection outcomes in Section 6.1 |
-| 5 | New `flowHistoryStore.test.js`: empty and corrupt storage, one observation per day, cache reuse | 23 outcomes |
-| 6 | Component tests (React Testing Library) for open, closed and error states of `TaskModal`, `SettingsModal` and `SprintManager` | Most of the 47% ternary figure |
+| 4 | `ProjectContext`: create a sprint while another is active, complete a sprint, delete the active sprint, select a sprint that no longer exists, update the project once it has loaded, and resolve two loads out of order | The guard and sprint-selection outcomes in Section 6.1 |
+| 5 | New `flowHistoryStore.test.js`: empty and corrupt storage, one observation per day, and the in-memory cache | 23 outcomes |
+| 6 | Component tests (React Testing Library) for open, closed and error states of `TaskModal`, `SettingsModal` and `SprintManager` | 76 missed outcomes in these three files (19, 30 and 27) |
 | 7 | CI gate: run coverage in CI with branch thresholds of 90% for `src/utils` and 80% for `src/services` | Keeps the logic layer from regressing |
 
 Recommendations 1 to 4 are small, self-contained tests. Together they would raise

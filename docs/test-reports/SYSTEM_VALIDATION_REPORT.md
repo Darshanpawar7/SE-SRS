@@ -7,6 +7,7 @@
 **Testing phase:** 2--6 November 2026 | **Executed:** 6 November 2026
 **Related Documents:** `docs/STP_Document_Team11.md` (Sections 5, 13), `docs/TEST_CASE_SPECIFICATION.md`, `docs/SRS_Document_Team11.md`, `docs/SPRINT1_DEVIATIONS.md`
 **PDF version (as submitted):** [Team11_System_Validation_Report.pdf](Team11_System_Validation_Report.pdf)
+**Version:** 1.1, 11 November 2026. Adds the pre-submission regression on the final `main` and corrections from a final review; the PDF's revision history lists them.
 
 ---
 
@@ -27,7 +28,7 @@ Unit and integration results are in the [Unit Test Report](UNIT_TEST_REPORT.md).
 | Item | Value |
 | :--- | :--- |
 | Build under test | `main` at commit `f9e0727`, built with `npm run build` and served by `vite preview` |
-| Data mode | Zero-configuration (LocalStorage) mode with the seed data in `src/services/mockData.js`. No Supabase credentials were supplied, so no test wrote to a real database. |
+| Data mode | Zero-configuration (localStorage) mode with the seed data in `src/services/mockData.js`. No Supabase credentials were supplied, so no test wrote to a real database. |
 | Browsers | Google Chrome 157.0.8103.38 (primary), Microsoft Edge 156.0.4314.58, Firefox 142.0.1 (Playwright build) |
 | Viewport | 1440 x 900 |
 | Driver | Playwright 1.56.1 |
@@ -66,18 +67,23 @@ the actual result of every expected result.
 | Cases executed in full (pass + fail) | 29 of 33 (87.9%) | 100% |
 | Cases with at least one step executed | 31 of 33 (93.9%) | -- |
 | Pass rate of executed cases | 28 of 29 (96.6%) | 95% or higher |
-| Pass rate after the DEF-04 fix was retested | 29 of 29 (100%) | 95% or higher |
+| Pass rate after the DEF-04 fix was retested (Chrome only) | 29 of 29 (100%) | 95% or higher |
+| Defect density | 2 defects in 2 modules (Kanban board, workload panel) | Less than 2 per module |
+| Defect aging (discovery to resolution) | DEF-04 5 h 13 min, DEF-05 1 h 01 min; average 3 h 07 min | Less than 24 hours |
+| Requirement coverage | 28 of 28 SRS requirements (100%) | 100% |
+| Cases executed in full, pre-submission regression (11 Nov 2026) | 33 of 33 (100%) | 100% |
+| Pass rate, pre-submission regression (11 Nov 2026) | 33 of 33 (100%) | 95% or higher |
 | Open critical or high defects | 0 | 0 |
 
-**Verdict: PASS for the zero-configuration system. Both defects found were fixed and
-retested, and four cases wait on a Supabase test project.**
+**Verdict: PASS. Both defects found were fixed and retested, and the four cases that were
+blocked in the testing phase passed on 11 November 2026 (Section 6.1).**
 
-- Every requirement that can be exercised without a cloud database passes, except one
+- Every case that could run without a cloud database passed in the main run, except one
   usability detail in filtering (DEF-04, Section 5). Its fix in PR #98 passed retest.
 - A wording slip in the workload panel (DEF-05) was fixed in PR #101, and a full
   regression run on the final build passed with no failures (Section 12).
-- The cases that need a live Supabase project are listed in Section 6 and tracked in
-  issue #96.
+- The cases that needed a Supabase project (Section 6) were run on 11 November 2026
+  against a disposable Supabase database and passed, so all 33 cases now pass.
 
 ---
 
@@ -111,16 +117,16 @@ feature is shown alongside it (`docs/SPRINT1_DEVIATIONS.md`, Section 1).
 | 21 | TC-SET-01 | PMS-F-015 | PMS-F-015 | Switch data mode from settings | Blocked | Step 3 passed: malformed URL rejected, offline mode kept. Steps 1–2 need a Supabase test project (Section 6) |
 | 22 | TC-LOG-01 | PMS-F-014 | PMS-F-012 | Record an audit trail for mutations | Pass | Records 4 -> 7: CREATE, UPDATE, DELETE, each with user, task and timestamp |
 | 23 | TC-PERF-01 | PMS-NF-001 | PMS-NF-001 | Drag-and-drop transition under 50 ms | Pass | 10 measured drops after 2 warm-ups: p50 2.3 ms, p95 6.6 ms, max 6.6 ms |
-| 24 | TC-AVAIL-01 | PMS-NF-002 | PMS-NF-002 | Stay usable with the network disabled | Pass | With the network off: every view opens, a task is created, top bar shows Local / Demo Mode |
+| 24 | TC-AVAIL-01 | PMS-NF-002 | PMS-NF-002 | Stay usable with the network disabled | Pass | With the network off: the Overview, Sprints, Work items and Board views open, a task is created, top bar shows Local / Demo Mode |
 | 25 | TC-COMPAT-01 | not in SRS | PMS-NF-003 | Core workflows on Chrome, Edge and Firefox | Pass | Same results and 0 px layout drift; chrome 157.0.8103.38, edge 156.0.4314.58, firefox 142.0.1 |
 | 26 | TC-SEC-01 | PMS-SR-003 | PMS-NF-004 | Encrypted transport to Supabase | Blocked | An http:// project URL is refused. Live HTTPS traffic not inspected: needs Supabase (Section 6) |
 | 27 | TC-LOAD-01 | not in SRS | PMS-NF-005 | Board with 100+ tasks | Pass | Board ready 162 ms after navigation with 106 tasks; drop-to-render p95 8.9 ms over 5 drops |
 | 28 | TC-RECOV-01 | PMS-NF-004 | PMS-NF-006 | No data loss across disconnect and reconnect | Pass | Tasks created offline still present after reconnect and reload (2 of 2 present) |
-| 29 | SEC-XSS | PMS-SR-004 | STP 5.4 | XSS input sanitization | Pass | Script tags and event handlers in title, description and sprint goal never ran; rendered as text |
+| 29 | SEC-XSS | PMS-SR-004 | STP 5.4 | XSS input sanitisation | Pass | Script tags and event handlers in title, description and sprint goal never ran; the tags were removed and only the text kept |
 | 30 | SEC-RLS | PMS-SR-001 | STP 5.4 | Row Level Security on direct API calls | Blocked | Needs a live Supabase project to send cross-project API calls. The policies in database/schema.sql are checked statically by src/tests/databaseSecurity.test.js. |
-| 31 | SEC-TOKEN | not in SRS | STP 5.4 | Session token handling | Pass | Neither the password nor any JWT is kept in browser storage |
+| 31 | SEC-TOKEN | not in SRS | STP 5.4 | Session token handling | Pass | Neither the password nor any JWT is kept in browser storage (expired tokens: SEC-EXPIRED, Section 12.3) |
 | 32 | SEC-KEYS | PMS-SR-002 | STP 5.4 | API key exposure in the client bundle | Pass | No complete JWT or Supabase secret key in the bundle (0 found in 2 files) |
-| 33 | SEC-FUZZ | PMS-SR-004 | STP 5.4 | Input validation fuzzing | Pass | 5,000-character title bounded (120 characters stored), no crash; special characters shown as typed |
+| 33 | SEC-FUZZ | PMS-SR-004 | STP 5.4 | Input validation fuzzing | Pass | Title field: 5,000 characters bounded (120 stored), no crash; special characters shown as typed |
 
 Full expected-versus-actual results for every case are in [Appendix A](#appendix-a----detailed-results).
 
@@ -132,7 +138,7 @@ Defect IDs continue the series in `docs/TEST_EXECUTION_AND_CICD.md` (DEF-01 to D
 
 | ID | Found by | Severity | Summary | Issue | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| DEF-04 | TC-FILT-01, step 2 | Low (usability) | When the board's filters match no task, the five columns show "Drop tasks here" and nothing says that filters are hiding the work or which filters are active. "Reset Filters" is shown and restores the board. | #95, fixed in PR #98 | Fixed; retest passed on 6 Nov 2026 |
+| DEF-04 | TC-FILT-01, step 2 (first seen in trial runs of the script, confirmed in the main run) | Low (usability) | When the board's filters match no task, the five columns show "Drop tasks here" and nothing says that filters are hiding the work or which filters are active. "Reset Filters" is shown and restores the board. | #95, fixed in PR #98 | Fixed; retest passed on 6 Nov 2026 |
 | DEF-05 | Review of TC-WORK-01 evidence | Cosmetic | The Capacity & Workload panel reads "1 tasks" for a member with one task, because `WorkloadList.jsx` always prints the plural. TC-WORK-01 still passes; the totals are correct. | #100, fixed in PR #101 | Fixed; retest passed (Section 12.1) |
 
 ### DEF-04 in detail
@@ -181,7 +187,8 @@ No other defects were found. In particular:
 
 These cases have a precondition of a live Supabase project (STP Section 11 lists this as a
 dependency). They were not run against the team's live database, because the steps write
-rows to it. What could be verified without one is listed; the rest is tracked in issue #96.
+rows to it. What could be verified without one is listed; the rest was tracked in issue #96 and run on
+11 November 2026 on a disposable Supabase database (Section 6.1).
 
 | Case | SRS | Verified now | Still to run on a Supabase test project | Supporting automated evidence |
 | :--- | :--- | :--- | :--- | :--- |
@@ -194,17 +201,20 @@ Before these are run, apply `database/schema.sql` and then
 `database/migrations/20261103_work_signals.sql` to the test project. The migration is
 needed since PR #87; without it every cloud task save is rejected.
 
-### 6.1 Results from the Supabase test project
+### 6.1 Results on a disposable Supabase database (11 November 2026)
 
-*To be completed under issue #96. Record each case as Pass or Fail, with the date and
-what was observed.*
+Run in GitHub Actions run 42973669659 on the final `main` (`970c656`). The workflow started a
+Supabase database and Auth service on the runner with the Supabase CLI, applied
+`database/schema.sql` and the migration above, ran the cases in Chrome against the
+production build, and deleted the database afterwards. It was not the team's hosted
+project, so that project's own certificate and settings were not part of the check.
 
 | Case | Date | Result | Observed |
 | :--- | :--- | :--- | :--- |
-| TC-SUPA-01 | | | |
-| TC-SET-01 (steps 1--2) | | | |
-| TC-SEC-01 | | | |
-| SEC-RLS | | | |
+| TC-SUPA-01 | 11-11-2026 | Pass | A task created through the app was read back directly from PostgreSQL, and loaded again after the app's browser caches were cleared. |
+| TC-SET-01 (steps 1--2) | 11-11-2026 | Pass | A valid https:// configuration was saved, the status indicator changed and a real Supabase Auth sign-in succeeded. A malformed replacement was refused and the working configuration kept. |
+| TC-SEC-01 | 11-11-2026 | Pass | Auth and REST requests went over HTTPS with TLS 1.3, and no password, API key or access token appeared in any recorded request URL. The test used a one-day self-signed certificate on the runner. |
+| SEC-RLS | 11-11-2026 | Pass | With two real accounts, reading rows of a project the account does not belong to returned zero rows, an insert was refused, updates and deletes changed nothing, and the private row stayed unchanged. A read without signing in was refused. |
 
 ---
 
@@ -222,7 +232,7 @@ leaves open. They should be carried into the update of the Test Case Specificati
 | 4 | TC-BURN-01 | "Note the actual burn line" | The actual line is recorded once a day per browser, so a fresh browser has a single point | Read today's value from the chart's "Daily burndown values" table, before and after completing a 5-point task |
 | 5 | TC-EST-02 | "Remove the 5-point task" | -- | Removed by deleting the task |
 | 6 | TC-PERF-01 | Measure with the Performance API | -- | `performance.mark` at the drop event, measured to the DOM update that shows the card in its new column; 10 samples after 2 warm-ups |
-| 7 | TC-AVAIL-01, TC-RECOV-01 | Disconnect the network | -- | Network disabled in the browser context, in zero-configuration mode. The cloud retry queue across a reconnect is covered by `persistenceRecovery` and `recovery` unit tests. |
+| 7 | TC-AVAIL-01, TC-RECOV-01 | Disconnect the network | -- | Network disabled in the browser context, in zero-configuration mode. The cloud retry queue across a reconnect is covered by `persistenceRecovery` unit tests and, on 11-11-2026, by CLOUD-RECOVERY on a real database (Section 12.3). |
 | 8 | TC-COMPAT-01 | Chrome, Firefox and Edge | -- | Desktop Firefox is not installed on the test machine, so Playwright's Firefox 142 build was used |
 | 9 | Section 10 of the specification | Lists 2 automated test files | 35 unit test files (234 tests) plus this system suite | -- |
 | 10 | Section 11 of the specification | -- | SRS PMS-F-002 (project metadata) and PMS-F-007 (labels) have no system case | Supplementary cases TC-PROJ-01 and TC-LABEL-01 were added; both pass |
@@ -247,20 +257,20 @@ leaves open. They should be carried into the update of the Test Case Specificati
 | PMS-F-012 | KPI dashboard | TC-DASH-01 | Pass |
 | PMS-F-013 | Team workload | TC-WORK-01 | Pass |
 | PMS-F-014 | Audit trail | TC-LOG-01 | Pass |
-| PMS-F-015 | Supabase synchronisation | TC-SUPA-01, TC-SET-01 | **Blocked** (Section 6) |
+| PMS-F-015 | Supabase synchronisation | TC-SUPA-01, TC-SET-01 | **Blocked** in the testing phase (Section 6); **Pass** on 11-11-2026 on a disposable Supabase database (Section 6.1) |
 | PMS-F-016 | Offline mode | TC-OFF-01, TC-AVAIL-01 | Pass |
 | PMS-F-017 | Filtering | TC-FILT-01 | **Fail** in the main run, DEF-04 (Low); **Pass** on retest of the fix (PR #98) |
 | PMS-F-018 | CI/CD pipeline | GitHub Actions history (Unit Test Report, Section 8) | Pass |
 | PMS-NF-001 | Performance, under 50 ms | TC-PERF-01 (p95 6.6 ms), TC-LOAD-01 (p95 8.9 ms with 106 tasks) | Pass |
 | PMS-NF-002 | Availability through offline fallback | TC-AVAIL-01 | Pass |
-| PMS-NF-003 | Usability: contrast, Lighthouse score above 90 | No case in the specification; keyboard and screen-reader behaviour covered by `accessibility.test.jsx` | **Not measured** (Section 11) |
+| PMS-NF-003 | Usability: contrast, Lighthouse score above 90 | No case in the specification; keyboard and screen-reader behaviour covered by `accessibility.test.jsx`; Lighthouse accessibility audit of the sign-in page and the board (Section 12.3) | **Not measured** in the testing phase; **Pass** on 11-11-2026: Lighthouse accessibility score 100 on both screens (Section 12.3) |
 | PMS-NF-004 | Reliability: zero data loss across reloads and tab closures | TC-OFF-01, TC-RECOV-01, refresh steps in TC-KAN-02 and TC-TASK-01; TC-SESS-01 (supplementary, simulated Supabase, Section 12.2) | Pass |
 | PMS-NF-005 | Maintainability: zero ESLint warnings, build always passes | `eslint --max-warnings=0`: 0 errors, 0 warnings; `npm run build`: succeeded (143 modules) on the same commit | Pass |
-| PMS-SR-001 | Row Level Security | SEC-RLS | **Blocked** (Section 6) |
+| PMS-SR-001 | Row Level Security | SEC-RLS | **Blocked** in the testing phase (Section 6); **Pass** on 11-11-2026 on a disposable Supabase database (Section 6.1) |
 | PMS-SR-002 | No hardcoded credentials | SEC-KEYS | Pass |
-| PMS-SR-003 | HTTPS / TLS 1.3 | TC-SEC-01 | **Blocked** (Section 6) |
+| PMS-SR-003 | HTTPS / TLS 1.3 | TC-SEC-01 | **Blocked** in the testing phase (Section 6); **Pass** on 11-11-2026 on a disposable Supabase database (Section 6.1) |
 | PMS-SR-004 | XSS input sanitisation | SEC-XSS, SEC-FUZZ | Pass |
-| PMS-SR-005 | Dependency audit in CI | Dependency Security Audit workflow: 10 of 10 runs passed; `npm audit --audit-level=high`: 0 vulnerabilities | Pass |
+| PMS-SR-005 | Dependency audit in CI | Dependency Security Audit workflow: 10 of 10 runs passed; `npm audit --audit-level=high`: no high or critical vulnerabilities | Pass |
 | *(Test Plan only)* | In-app documentation viewer | TC-DOCS-01 | Pass |
 | *(Test Plan only)* | Cross-browser support | TC-COMPAT-01 | Pass |
 | *(Test Plan only)* | 100+ task records | TC-LOAD-01 | Pass |
@@ -304,11 +314,11 @@ results above are unchanged. Further screenshots for individual cases are in
 | STP check | Case | Method | Result |
 | :--- | :--- | :--- | :--- |
 | XSS input sanitisation | SEC-XSS | `<img onerror>`, `<script>` and `<svg onload>` payloads in a task title, task description and sprint goal; a probe variable shows whether any handler ran | Pass: nothing ran; no injected element in the page |
-| Row Level Security | SEC-RLS | Cross-project REST call from a second account | Blocked (Section 6); policies verified statically by `databaseSecurity.test.js` |
-| TLS 1.3 enforcement | TC-SEC-01 | Inspect live traffic | Blocked (Section 6); the client refuses `http://` project URLs |
-| Session token handling | SEC-TOKEN | Scan LocalStorage and SessionStorage after sign-in | Pass: neither the password nor any JWT is stored in zero-configuration mode |
+| Row Level Security | SEC-RLS | Cross-project REST call from a second account | Blocked in the testing phase (Section 6), policies verified statically by `databaseSecurity.test.js`; passed on 11-11-2026 on a disposable Supabase database (Section 6.1) |
+| TLS 1.3 enforcement | TC-SEC-01 | Inspect live traffic | Blocked in the testing phase (Section 6), and the client refuses `http://` project URLs; passed on 11-11-2026 (Section 6.1) |
+| Session token handling | SEC-TOKEN | Scan localStorage and sessionStorage after sign-in | Pass: neither the password nor any JWT is stored in zero-configuration mode. Rejection of expired tokens was not tested in the testing phase; it passed on 11-11-2026 as SEC-EXPIRED (Section 12.3) |
 | API key exposure | SEC-KEYS | Scan the production bundle for complete JWTs and Supabase secret keys | Pass: none in `dist/assets` |
-| Input validation fuzzing | SEC-FUZZ | 5,000-character title; Unicode, quotes, `&`, SQL-like text and emoji | Pass: title bounded to 120 characters with no crash; special characters stored and shown as typed |
+| Input validation fuzzing | SEC-FUZZ | 5,000-character task title; Unicode, quotes, `&`, SQL-like text and emoji (the title was the only field fuzzed) | Pass: title bounded to 120 characters with no crash; special characters stored and shown as typed |
 
 ---
 
@@ -316,24 +326,23 @@ results above are unchanged. Further screenshots for individual cases are in
 
 | Exit criterion | Status | Detail |
 | :--- | :--- | :--- |
-| 100% of planned test cases executed | **Not met** | 23 of the 26 specified cases ran in full; TC-SUPA-01, TC-SET-01 (steps 1--2) and TC-SEC-01 wait on a Supabase test project (#96) |
+| 100% of planned test cases executed | Met on 11-11-2026 | 23 of the 26 specified cases ran in full in the testing phase. TC-SUPA-01, TC-SET-01 (steps 1--2) and TC-SEC-01 needed a Supabase project (#96); they ran on 11-11-2026 on a disposable Supabase database and passed (Section 6.1) |
 | 0 critical or high-severity defects open | Met | Two defects were found, neither critical nor high, and both are fixed and retested: DEF-04 (PR #98) and DEF-05 (PR #101) |
-| All functional requirements verified against acceptance criteria | **Partly met** | 17 of 18 SRS functional requirements pass once the DEF-04 fix is counted; PMS-F-015 is blocked |
-| All non-functional requirements measured and within threshold | **Partly met** | 4 of 5 SRS non-functional requirements measured, all within threshold. PMS-NF-003 (Lighthouse above 90) has no test case and was not measured. |
+| All functional requirements verified against acceptance criteria | Met on 11-11-2026 | 17 of 18 passed in the testing phase once the DEF-04 fix is counted; PMS-F-015 was blocked and passed TC-SUPA-01 and TC-SET-01 on 11-11-2026 (Section 6.1) |
+| All non-functional requirements measured and within threshold | Met on 11-11-2026 | 4 of 5 SRS non-functional requirements were measured in the testing phase, all within threshold. PMS-NF-003 had no test case; on 11-11-2026 Lighthouse gave an accessibility score of 100 on the sign-in page and the board (Section 12.3). The STP lists six because it also counts network recovery (PMS-NF-006 in its numbering), tested by TC-RECOV-01, which passed. |
 | RTM shows complete coverage | Met | Every SRS requirement maps to a test case or objective evidence (Section 8) |
-| Test Summary Report reviewed and approved | Met | Reviewed and merged into `main` with the other reports (PR #97, 6 Nov 2026) |
+| Test Summary Report reviewed and approved | Met on 11-11-2026 | There was no separate Test Summary Report at the end of the testing phase. One was added in PR #107 (`docs/test-reports/TEST_SUMMARY_REPORT.md`), which the Test Architect, Darshan P Pawar, approved and merged on 11-11-2026 |
 
-To close the exit criteria:
-
-1. Run Section 6 on a Supabase test project (#96).
-2. Add a Lighthouse accessibility measurement for PMS-NF-003 to the Test Case
-   Specification.
+The criteria that were open at the end of the testing phase were closed on 11 November
+2026, before submission (Sections 6.1 and 12.3). The Lighthouse measurement is not yet a
+case in the Test Case Specification and should be added when the specification is updated.
 
 ---
 
 ## 12. Regression on the Final Build
 
-After the main run, four pull requests were merged on 6 November 2026: #98 (DEF-04 fix),
+After the main run, five pull requests were merged on 6 November 2026: #97 (the first
+version of these reports and the system test script), #98 (DEF-04 fix),
 #99 (Dhatri's second-machine pre-check), #101 (DEF-05 fix, tooltip warning, CI on Node.js
 24) and #85 (verified cloud sessions, merged after review fixes). Because #85 changes how
 sign-in works, the whole suite was run again on the final `main`.
@@ -343,10 +352,13 @@ sign-in works, the whole suite was run again on the final `main`.
 | Main run (Sections 3 to 11) | `f9e0727` | Chrome; Edge and Firefox for TC-COMPAT-01 | 28 | 1 | 4 |
 | DEF-04 retest (Section 5) | `e8f5905` (PR #98) | Chrome | 29 | 0 | 4 |
 | Final regression, 6 Nov 2026, 23:05 IST | `2b8fdbc` (final `main`) | Chrome; Edge and Firefox for TC-COMPAT-01 | 29 | 0 | 4 |
+| Pre-submission regression, 11 Nov 2026, 12:08 IST | `970c656` (final `main`, GitHub Actions) | Chrome; Edge and Firefox for TC-COMPAT-01 | 29 | 0 | 4 |
+| Cloud checks in the same run, on a disposable Supabase database | `970c656` | Chrome and direct API calls | 7 | 0 | 0 |
 
-The final results match the main run case for case, except that TC-FILT-01 now passes.
-TC-COMPAT-01 again found a 0 px layout difference, and the same four cloud cases stay
-blocked. All 259 unit tests pass on the same commit. Raw results:
+In the final regression of 6 November the results matched the main run case for case,
+except that TC-FILT-01 now passed. TC-COMPAT-01 again found a 0 px layout difference, and
+the same four cloud cases stayed blocked until 11 November (Section 6.1). All 259 unit tests
+passed on the same commit. Raw results:
 [`evidence/final-regression/system-validation-results-2b8fdbc.json`](evidence/final-regression/system-validation-results-2b8fdbc.json).
 
 ### 12.1 DEF-05 retest
@@ -360,10 +372,10 @@ is closed. Screenshot:
 ### 12.2 Supplementary case TC-SESS-01: a network failure must not sign out a member
 
 PR #85 re-checks the cloud session on Supabase auth events, for example when the tab
-regains focus. In review we found that a failed check signed the member out even when only
+regains focus. In review on 3 November (review comment on PR #85) we found that a failed check signed the member out even when only
 the network had failed, which threw away any task being edited (a data-loss risk under
 PMS-NF-004). The fix keeps the member on network errors and signs out only when Supabase
-rejects the session. No Supabase test project is available yet, so the case was run in
+rejects the session. No Supabase test project was available at the time, so the case was run in
 Chrome against a simulated Supabase server (Playwright answered the app's Supabase
 requests; no real database was used).
 
@@ -379,13 +391,40 @@ Script: [`tests/system/cloud-session-check.mjs`](../../tests/system/cloud-sessio
 Screenshots:
 [`evidence/final-regression/TC-SESS-01-after-network-blip.png`](evidence/final-regression/TC-SESS-01-after-network-blip.png),
 [`evidence/final-regression/TC-SESS-01-after-401.png`](evidence/final-regression/TC-SESS-01-after-401.png).
-This case does not replace TC-SUPA-01 on a real Supabase project (#96).
+This case does not replace TC-SUPA-01 on a real Supabase database, which passed on
+11 November 2026 (Section 6.1).
+
+### 12.3 Pre-submission regression, 11 November 2026
+
+Four more pull requests were merged before submission: #103, #104, #105 and #107. #107 also
+automated the cloud cases and an accessibility audit. On 11 November 2026 GitHub Actions run
+42973669659 ran everything on the final `main` (`970c656`), on Ubuntu 24.04 with Chrome
+157.0.8103.50, Edge 157.0.4341.46 and Firefox 142.0.1.
+
+- **Browser suite:** 29 of 33 cases passed and none failed, as in the final regression of
+  6 November. The 4 blocked cases are the ones that need a database. TC-COMPAT-01 passed in
+  all three browsers (9 of 9 runs).
+- **Cloud cases:** all four passed on the disposable Supabase database (Section 6.1), so all
+  33 specified cases now pass. Three further checks ran on the same database and passed
+  (table below).
+- **Accessibility (PMS-NF-003):** Lighthouse 13.6.0 in Chrome, desktop layout at 1440 x 900,
+  scored 100 for accessibility on the sign-in page and on the board, with no failed audits.
+  Only these two screens were audited.
+- **TC-SESS-01:** the four steps of Section 12.2 were repeated against the simulated
+  Supabase server, and all 4 passed.
+
+| Check | What it shows | Result |
+| :--- | :--- | :--- |
+| SEC-EXPIRED | A correctly signed but expired session token is refused by Supabase Auth and by the REST API, and a malformed token is refused too. | Pass |
+| SEC-AUDIT | Writing an audit record in another member's name, or changing or deleting audit history, is refused. | Pass |
+| CLOUD-RECOVERY | A task created while the browser is offline stays visible, reaches PostgreSQL once the connection returns, and is stored exactly once. | Pass |
 
 ---
 
 ## 13. Conclusion
 
-In zero-configuration mode, SprintFlow behaves as specified in Chrome, Edge and Firefox.
+In zero-configuration mode, SprintFlow behaves as specified in Chrome, and the core board
+and task workflows behave the same in Edge and Firefox (TC-COMPAT-01).
 
 - **Workflow:** every specified workflow passes, including create, edit, delete,
   drag-and-drop, advance, estimate, sprint planning, burndown, dashboard, audit trail,
@@ -396,8 +435,10 @@ In zero-configuration mode, SprintFlow behaves as specified in Chrome, Edge and 
 - **Defects:** one low-severity usability defect (DEF-04) and one cosmetic wording defect
   (DEF-05). Both were fixed, retested and merged on 6 November; a full regression run on
   the final build passed with no failures (Section 12).
-- **Outstanding:** the cloud-database cases need a Supabase test project before they can
-  be run.
+- **Cloud cases:** the four cases blocked in the testing phase passed on 11 November 2026
+  on a disposable Supabase database, and Lighthouse scored both audited screens 100 for
+  accessibility, so all 33 cases pass. A check of the team's hosted Supabase project
+  itself was outside this run.
 
 ---
 
@@ -616,7 +657,7 @@ SRS: PMS-F-016 · Test Plan: PMS-F-014 · Browser: chrome
 | Expected result checked | Actual result | Verdict |
 | :--- | :--- | :---: |
 | Both tasks are restored after reopening the tab | 2 of 2 present | Pass |
-| Interface indicates offline (LocalStorage) persistence | Local / Demo Mode | Pass |
+| Interface indicates offline (localStorage) persistence | Local / Demo Mode | Pass |
 
 ### TC-SET-01 — Switch data mode from settings — BLOCKED
 

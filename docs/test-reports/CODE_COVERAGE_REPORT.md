@@ -7,6 +7,7 @@
 **Testing phase:** 2--6 November 2026 | **Measured:** 6 November 2026
 **Related Documents:** `docs/STP_Document_Team11.md` (Section 14.1), [Unit Test Report](UNIT_TEST_REPORT.md), [Branch Coverage Report](BRANCH_COVERAGE_REPORT.md)
 **PDF version (as submitted, both coverage reports in one file):** [Team11_Code_and_Branch_Coverage_Report.pdf](Team11_Code_and_Branch_Coverage_Report.pdf)
+**Version:** 1.1, 11 November 2026. Adds the pre-submission regression on the final `main` and corrections from a final review; the PDF's revision history lists them.
 
 ---
 
@@ -18,7 +19,8 @@ integration suite executes. It reports **statement**, **line** and **function** 
 [Branch Coverage Report](BRANCH_COVERAGE_REPORT.md) and appears here only as a summary
 column.
 
-The measurement covers every JavaScript and JSX file in `src/` (62 files), not only the
+The measurement covers every JavaScript and JSX file in `src/` except the entry point
+`main.jsx` (62 files), not only the
 ones a test imports. A file no test touches therefore counts as 0% instead of disappearing
 from the figures.
 
@@ -28,7 +30,7 @@ from the figures.
 
 | Item | Value |
 | :--- | :--- |
-| Code under test | `main` at commit `f9e0727` |
+| Code under test | `main` at commit `f9e0727`; the coverage tooling (`@vitest/coverage-v8`, the `test:coverage` script and the coverage settings in `vite.config.js`) was added in PR #97 without changing `src/` or the tests |
 | Coverage tool | `@vitest/coverage-v8` 4.1.12: V8's built-in coverage counters, mapped back to the source |
 | Test suite | All 35 unit test files, 234 tests (see the [Unit Test Report](UNIT_TEST_REPORT.md)) |
 | Included | `src/**/*.{js,jsx}` |
@@ -73,8 +75,8 @@ of utility module code exercised by Vitest -- 80% or higher."*
 - The business logic is close to fully covered: estimation, workflow, burndown, audit
   trail, filtering and sprint rules.
 - The lower whole-application figure comes from React view components.
-- The unit suite renders only some of those components. The rest are verified end to end
-  by the system tests (Section 6.2).
+- The unit suite renders only some of those components. Most of the rest are verified end
+  to end by the system tests; two are not yet (Section 6.2).
 
 ---
 
@@ -176,7 +178,7 @@ of utility module code exercised by Vitest -- 80% or higher."*
 
 ## 6. Analysis
 
-### 6.1 Fully covered files
+### 6.1 Files with full line and branch coverage
 
 These 19 files have 100% line and 100% branch coverage:
 
@@ -209,11 +211,11 @@ have no automated check.
 
 | File | Statements | Gap |
 | :--- | ---: | :--- |
-| `services/flowHistoryStore.js` | 17.9% | Added in PR #86. No test imports it. It keeps the daily flow history in LocalStorage behind an in-memory cache, so reading, recording, corrupt-storage handling and the cache are all untested. |
-| `services/feedbackStore.js` | 70.6% | Added in PR #88. Settings storage is tested. `announceSaved`, which builds the "Saved" / "Completed" notice, triggers haptics and sets the auto-dismiss timer, is not, and neither is the subscription. |
-| `context/ProjectContext.jsx` | 79.5% | Guard clauses (a stale load, a missing task or sprint) and deleting the active sprint are untested. |
+| `services/flowHistoryStore.js` | 17.9% | Added in PR #86. No test imports it. It keeps the daily flow history in localStorage behind an in-memory cache, so reading, recording, corrupt-storage handling and the cache are all untested. |
+| `services/feedbackStore.js` | 70.6% | Added in PR #88. Settings storage is tested. The `announceSaved` function, which builds the "Saved" / "Completed" notice, triggers haptics and sets the auto-dismiss timer, is not, and neither is the subscription. |
+| `context/ProjectContext.jsx` | 79.5% | Untested: the project-load callbacks, guard clauses for a missing task, sprint or audit record, creating a sprint while another is active, a status change other than starting a sprint, deleting the active sprint, and every successful project update. |
 | `context/AuthContext.jsx` | 61.5% | Session restore is tested. The context's `signIn` and `signOut` wrappers are not; the unit tests call `authService` directly. Sign-in is exercised by every system test case. |
-| `services/supabaseClient.js` | 93.4% | High overall. The misses are failure exits in the cloud sync queue (see the Branch Coverage Report, Section 6). |
+| `services/supabaseClient.js` | 93.4% | High overall. The misses are cloud-failure exits, older audit rows, read fallbacks and the successful cloud sprint delete (see the Branch Coverage Report, Section 6). |
 
 ---
 
@@ -221,8 +223,8 @@ have no automated check.
 
 | Priority | Action | Expected effect |
 | :--- | :--- | :--- |
-| 1 | Add unit tests for `services/flowHistoryStore.js`: empty and corrupt storage, one observation per day, cache invalidation | The only logic-layer file below 50% |
-| 2 | Add component tests (React Testing Library in jsdom) for `SprintManager`, `TaskExplorer` and `DashboardView` | Moves the three largest untested views into the unit suite |
+| 1 | Add unit tests for `services/flowHistoryStore.js`: empty and corrupt storage, one observation per day, and the in-memory cache | The only file in `src/utils` or `src/services` below 50% of statements |
+| 2 | Add component tests (React Testing Library in jsdom) for `SprintManager`, `TaskExplorer` and `DashboardView` | Brings three untested views, 167 statements, into the unit suite |
 | 3 | Add system cases for the Reports & analytics tab and the Project map to the Test Case Specification | Closes the two screens with no automated check |
 | 4 | Run `npm run test:coverage` in CI with per-folder thresholds (for example 90% lines for `src/utils`, 85% for `src/services`), and keep the timing benchmark in a separate step | Stops coverage of the logic layer from silently dropping |
 
@@ -230,9 +232,10 @@ have no automated check.
 
 ## 8. Re-measurement on the Final `main` Branch
 
-After this measurement, four pull requests were merged on 6 November 2026 (Unit Test
-Report, Section 10). They added one service file (`services/sessionCache.js`), 25 tests
-and some interface code. Coverage was measured again on the final `main` (commit
+After this measurement, five pull requests were merged on 6 November 2026 (Unit Test
+Report, Section 10). They added one service file (`services/sessionCache.js`), 25 tests,
+session-check code in `context/AuthContext.jsx`, some interface code, and the coverage
+tooling itself (PR #97). Coverage was measured again on the final `main` (commit
 `2b8fdbc`) with the same command; Sections 3 to 7 describe the measured commit `f9e0727`.
 
 | Scope | Measure | Measured commit `f9e0727` | Final `main` `2b8fdbc` |
@@ -251,9 +254,17 @@ and some interface code. Coverage was measured again on the final `main` (commit
 - The utility modules did not change and still meet the 80% target.
 - The services now reach 80.9% branch coverage, above 80%; the new session code arrived
   with 21 tests that also exercise failure paths.
-- Whole-application line coverage dropped slightly (70.5% to 69.4%) because the merged pull
-  requests added interface code that the unit suite does not render; the system tests
-  exercise it (System Validation Report, Section 12).
+- Whole-application line coverage dropped slightly (70.5% to 69.4%). Of the 57 new
+  uncovered lines, 48 are session checks that PR #85 added to `context/AuthContext.jsx`,
+  which the unit suite does not run; the decision logic they call is unit-tested in
+  `sessionVerification.test.js`, and TC-SESS-01 exercises the whole flow in the browser
+  (System Validation Report, Section 12.2).
+
+**Final `main`, 11 November 2026.** GitHub Actions run 42973669659 measured the final
+`main` (`970c656`) with the same configuration, leaving out only the timing benchmark:
+utility modules 99.0% of lines (409/413) and 93.3% of branches (572/613), services 80.8%
+of branches (365/452), whole application 69.8% of lines (1208/1731) and 65.2% of branches
+(1147/1758). The STP target is still met.
 
 ---
 
