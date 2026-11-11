@@ -112,7 +112,7 @@ try {
   const signIn = async passwordValue => {
     await page.getByRole('heading', { name: 'Sign in' }).waitFor();
     await page.getByLabel('Email').fill('darshan@pes.edu');
-    await page.getByLabel('Password').fill(passwordValue);
+    await page.getByRole('textbox', { name: 'Password' }).fill(passwordValue);
     await page.getByRole('button', { name: 'Sign in', exact: true }).click();
     await page.locator('.user-name').waitFor();
   };

@@ -56,7 +56,7 @@ const record = (step, ok, detail) => { results.push({ step, ok, detail }); conso
 await page.goto(baseUrl);
 await page.getByRole('heading', { name: 'Sign in' }).waitFor();
 await page.getByLabel('Email').fill(user.email);
-await page.getByLabel('Password').fill('cloud-password');
+await page.getByRole('textbox', { name: 'Password' }).fill('cloud-password');
 await page.getByRole('button', { name: 'Sign in' }).click();
 await page.locator('.user-name').waitFor();
 record('Signed in to the (fake) cloud project', true, (await page.locator('header.app-navbar').innerText()).replace(/\s+/g, ' ').match(/Darshan[^|]{0,40}/)?.[0] ?? 'signed in');

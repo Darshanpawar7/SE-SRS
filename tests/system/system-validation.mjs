@@ -69,7 +69,7 @@ async function openApp(browserName) {
 async function signInAsLead(page) {
   await page.getByRole('heading', { name: 'Sign in' }).waitFor();
   await page.getByLabel('Email').fill(LEAD.email);
-  await page.getByLabel('Password').fill(LEAD.password);
+  await page.getByRole('textbox', { name: 'Password' }).fill(LEAD.password);
   await page.getByRole('button', { name: 'Sign in' }).click();
   await page.locator('.user-name').waitFor();
 }

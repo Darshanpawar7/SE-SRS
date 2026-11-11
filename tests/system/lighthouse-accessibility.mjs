@@ -18,7 +18,7 @@ try {
     if (name === 'Board') {
       await page.goto(baseUrl);
       await page.getByLabel('Email').fill('darshan@pes.edu');
-      await page.getByLabel('Password').fill('PES2UG24CS143');
+      await page.getByRole('textbox', {name: 'Password'}).fill('PES2UG24CS143');
       await page.getByRole('button', {name: 'Sign in', exact: true}).click();
       await page.locator('.kanban-column').first().waitFor();
     }
