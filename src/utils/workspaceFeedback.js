@@ -13,3 +13,9 @@ export function workspaceKey(event) {
  if(event.key==='?')return 'help';
  return null;
 }
+
+export function selectSavedEvent(records, known, actor, now = Date.now()) {
+ if(!actor)return null;
+ return records.filter(record=>!known.has(record.id)&&record.actor===actor&&now-Date.parse(record.timestamp)>=0&&now-Date.parse(record.timestamp)<15000)
+  .sort((a,b)=>Date.parse(b.timestamp)-Date.parse(a.timestamp))[0] || null;
+}

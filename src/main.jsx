@@ -6,6 +6,7 @@ import '@fontsource-variable/inter';
 import './index.css';
 import './styles/recovery.css';
 import App from './App';
+import { WorkspaceAppearance } from './components/workspace/WorkspaceFeedback';
 import ErrorBoundary from './components/workspace/ErrorBoundary';
 import { AuthProvider } from './context/AuthContext';
 import { ProjectProvider } from './context/ProjectContext';
@@ -13,6 +14,7 @@ import { ProjectProvider } from './context/ProjectContext';
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <ErrorBoundary>
+    <WorkspaceAppearance />
     <AuthProvider>
       <ProjectProvider>
         <App />
