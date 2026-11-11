@@ -111,7 +111,7 @@ try {
   page.on('request', req => { if (req.url().startsWith(tlsUrl)) requests.push(req.url()); });
   const signIn = async passwordValue => {
     await page.getByRole('heading', { name: 'Sign in' }).waitFor();
-    await page.getByLabel('Darshan P Pawar').check();
+    await page.getByLabel('Email').fill('darshan@pes.edu');
     await page.getByLabel('Password').fill(passwordValue);
     await page.getByRole('button', { name: 'Sign in', exact: true }).click();
     await page.locator('.user-name').waitFor();

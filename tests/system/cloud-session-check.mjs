@@ -55,7 +55,7 @@ const record = (step, ok, detail) => { results.push({ step, ok, detail }); conso
 
 await page.goto(baseUrl);
 await page.getByRole('heading', { name: 'Sign in' }).waitFor();
-await page.getByLabel('Darshan P Pawar').check();
+await page.getByLabel('Email').fill(user.email);
 await page.getByLabel('Password').fill('cloud-password');
 await page.getByRole('button', { name: 'Sign in' }).click();
 await page.locator('.user-name').waitFor();

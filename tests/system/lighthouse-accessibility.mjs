@@ -17,7 +17,7 @@ try {
   for (const name of ['Sign in', 'Board']) {
     if (name === 'Board') {
       await page.goto(baseUrl);
-      await page.getByLabel('Darshan P Pawar').check();
+      await page.getByLabel('Email').fill('darshan@pes.edu');
       await page.getByLabel('Password').fill('PES2UG24CS143');
       await page.getByRole('button', {name: 'Sign in', exact: true}).click();
       await page.locator('.kanban-column').first().waitFor();
