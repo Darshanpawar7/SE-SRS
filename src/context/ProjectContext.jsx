@@ -165,6 +165,9 @@ export function ProjectProvider({ children }) {
     return unsubscribe;
   }, [project?.id, sessionKind, loadData, refreshProjectMembers]);
 
+  // Reload only when the signed-in person changes, not when a session re-check returns a new user object;
+  // a reload unmounts the workspace and would discard an open task draft (TC-SESS-01).
+  const currentUserId = currentUser?.id ?? null;
   useEffect(() => {
     let current = true;
     if (!authReady) return () => { current = false; };
@@ -185,7 +188,7 @@ export function ProjectProvider({ children }) {
         setLoading(false);
         return;
       }
-      if (!currentUser) {
+      if (!currentUserId) {
         DataService.setActiveProject(null);
         setProject(null);
         setProjects([]);
@@ -239,7 +242,7 @@ export function ProjectProvider({ children }) {
     };
     initialize();
     return () => { current = false; };
-  }, [applyLoadedData, authReady, cloudVerified, currentUser, sessionKind, supabaseConfig.isConfigured]);
+  }, [applyLoadedData, authReady, cloudVerified, currentUserId, sessionKind, supabaseConfig.isConfigured]);
 
   // Appends one audit record; the feed always mirrors the stored, append-only history.
   // Show the stored history, which includes every record even when saves finish out of order.

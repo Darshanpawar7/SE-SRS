@@ -25,10 +25,15 @@ const userCalls = [];
 
 const browser = await chromium.launch({ channel: 'chrome' });
 const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
-await context.addInitScript(([url]) => {
+// One project the member leads, as a real Supabase project would return after sign-in.
+const project = { id: '11111111-1111-1111-1111-111111111111', name: 'SprintFlow test project', key: 'SFT', description: 'Simulated project', status: 'active', start_date: '2026-11-01', target_date: '2026-12-31', created_at: '2026-11-01T00:00:00Z' };
+const member = { member_id: 'member-darshan', project_id: project.id, user_id: 'auth:' + user.id, auth_user_id: user.id, member_name: 'Darshan P Pawar', email: user.email, role: 'lead' };
+const profile = { user_id: member.user_id, auth_user_id: user.id, full_name: member.member_name, email: user.email, role: 'lead' };
+await context.addInitScript(([url, projectId]) => {
   localStorage.setItem('supabase_url', url);
   localStorage.setItem('supabase_key', 'sb_publishable_sftest_key');
-}, [SUPABASE]);
+  localStorage.setItem('sprintflow_selected_project_id', projectId);
+}, [SUPABASE, project.id]);
 await context.route(`${SUPABASE}/auth/v1/**`, route => {
   const url = route.request().url();
   if (url.includes('/token')) {
@@ -43,8 +48,17 @@ await context.route(`${SUPABASE}/auth/v1/**`, route => {
   if (url.includes('/logout')) return route.fulfill({ status: 204, body: '' });
   return route.fulfill({ json: {} });
 });
-await context.route(`${SUPABASE}/rest/v1/**`, route =>
-  route.request().method() === 'GET' ? route.fulfill({ json: [] }) : route.fulfill({ status: 201, json: [] }));
+await context.route(`${SUPABASE}/rest/v1/**`, route => {
+  const request = route.request();
+  const path = new URL(request.url()).pathname;
+  const single = (request.headers().accept ?? '').includes('vnd.pgrst.object');
+  const rows = path.endsWith('/projects') ? [project]
+    : path.endsWith('/profiles') ? [profile]
+      : path.endsWith('/rpc/list_project_members') ? [member]
+        : [];
+  if (path.includes('/rpc/') || request.method() === 'GET') return route.fulfill({ json: single ? (rows[0] ?? null) : rows });
+  return route.fulfill({ status: 201, json: [] });
+});
 
 const page = await context.newPage();
 page.setDefaultTimeout(15000);

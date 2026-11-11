@@ -37,8 +37,9 @@ const run = async (id, title, body) => {
 
 let server, browser;
 try {
-  for (const email of ['darshan@pes.edu', 'qa-outsider@example.test']) requireOk(await admin.auth.admin.createUser({ email, password, email_confirm: true }));
+  // The outsider's profile exists first, so the schema's sign-up trigger links the new account to it.
   requireOk(await admin.from('profiles').insert({ user_id: 'qa-outsider', full_name: 'QA Outsider', email: 'qa-outsider@example.test' }));
+  for (const email of ['darshan@pes.edu', 'qa-outsider@example.test']) requireOk(await admin.auth.admin.createUser({ email, password, email_confirm: true }));
   requireOk(await admin.from('projects').insert({ id: foreign, name: 'Other private project', key: 'QA-PRIVATE', owner_id: 'qa-outsider' }));
   const lead = publicClient();
   const outsider = publicClient();

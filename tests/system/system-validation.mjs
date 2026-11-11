@@ -482,7 +482,7 @@ const caseDash01 = async ({ page, check }) => {
 
 const caseWork01 = async ({ page, check }) => {
   const shown = await kpis(page);
-  const section = shown.text.split('Team 11 Capacity & Workload')[1]?.split('Real-Time Audit Trail')[0] ?? '';
+  const section = shown.text.split(/Team 11 Capacity & Workload|Project workload/)[1]?.split('Real-Time Audit Trail')[0] ?? '';
   const members = [...section.matchAll(/(\d+) tasks? • (\d+) story points assigned/g)].map(match => Number(match[2]));
   check('Tasks are assigned across at least three members', members.filter(points => points > 0).length >= 3, members.join(', '));
   const sum = members.reduce((a, b) => a + b, 0);

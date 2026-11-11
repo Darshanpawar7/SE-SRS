@@ -75,7 +75,7 @@ export const saveSupabaseConfig = (url, key) => {
   const cleanUrl = normalizeSupabaseProjectUrl(url);
   const cleanKey = String(key ?? '').trim();
   if (!isValidSupabaseUrl(cleanUrl)) {
-    throw new Error('Enter a valid Supabase project URL. Use the project root, or its standard /rest/v1 or /auth/v1 URL.');
+    throw new Error('Enter a valid https:// Supabase project URL, for example https://your-project.supabase.co. Use the project root, or its standard /rest/v1 or /auth/v1 URL.');
   }
   if (!isValidSupabaseAnonKey(cleanKey)) {
     throw new Error('Enter a valid Supabase anon public key, not a service-role or secret key.');
