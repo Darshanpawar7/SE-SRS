@@ -103,6 +103,8 @@ export function auditTaskUpdated(before, after, actor, timestamp) {
     entityType: 'task',
     entityId: after.id,
     target: after.title,
+    from: before.status !== after.status ? before.status : null,
+    to: before.status !== after.status ? after.status : null,
     details: changes.map(c => `${c.field}: ${formatValue(c.from)} → ${formatValue(c.to)}`).join('; ')
   });
 }

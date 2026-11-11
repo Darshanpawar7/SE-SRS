@@ -42,12 +42,24 @@ export default function KanbanBoard({ onOpenTaskModal, onNavigateSprints }) {
   const filteredTasks = filterTasks(activeSprintTasks, { filterAssignee, filterPriority, searchQuery });
   const kanbanColumns = getKanbanColumns(filteredTasks);
   const canCreateSprint = canCreateSprints(projectRole);
-
   if (shouldShowBoardEmptyState(sprints)) return <section className="kanban-page board-empty-state" aria-labelledby="board-empty-title">
     <h2 id="board-empty-title">Your board is ready for its first sprint</h2>
     <p>Create a sprint to organize project tasks into a board.</p>
     {canCreateSprint && <button type="button" className="btn btn-primary" onClick={onNavigateSprints}>Create sprint</button>}
   </section>;
+  const activeFilterDescriptions = [];
+  if (filterAssignee !== 'all') {
+    const assignee = assignees.find(member => member.id === filterAssignee);
+    activeFilterDescriptions.push(`Assignee: ${assignee?.name || filterAssignee}`);
+  }
+  if (filterPriority !== 'all') {
+    const priority = TASK_PRIORITIES.find(item => item.id === filterPriority);
+    activeFilterDescriptions.push(`Priority: ${priority?.label || filterPriority}`);
+  }
+  if (searchQuery.trim()) activeFilterDescriptions.push(`Search: “${searchQuery.trim()}”`);
+  const hasActiveFilters = activeFilterDescriptions.length > 0;
+  const noMatchingTasks = hasActiveFilters && filteredTasks.length === 0;
+  const resetFilters = () => resetTaskFilters({ setFilterAssignee, setFilterPriority, setSearchQuery });
 
   // Drag and Drop handlers
   const handleDragStart = (e, taskId) => {
@@ -116,18 +128,23 @@ export default function KanbanBoard({ onOpenTaskModal, onNavigateSprints }) {
           </select>
 
           {/* Quick Clear */}
-          {(filterAssignee !== 'all' || filterPriority !== 'all' || searchQuery.trim()) && (
+          {hasActiveFilters && !noMatchingTasks && (
             <button 
               className="btn btn-text"
-              onClick={() => {
-                resetTaskFilters({ setFilterAssignee, setFilterPriority, setSearchQuery });
-              }}
+              onClick={resetFilters}
             >
               Reset Filters
             </button>
           )}
         </div>
       </div>
+
+      {noMatchingTasks && (
+        <div className="kanban-filter-empty" role="status" aria-live="polite">
+          <p>No tasks match the active filters: {activeFilterDescriptions.join('; ')}.</p>
+          <button type="button" className="btn btn-secondary" onClick={resetFilters}>Reset Filters</button>
+        </div>
+      )}
 
           {boardError && <p role="alert" aria-live="assertive" className="form-error">{boardError}</p>}
 
@@ -149,7 +166,7 @@ export default function KanbanBoard({ onOpenTaskModal, onNavigateSprints }) {
               <div className="column-header" style={{ borderTopColor: col.color }}>
                 <div className="column-title-wrap">
                   <span className="column-dot" style={{ backgroundColor: col.color }}></span>
-                  <h3 className="column-name">{col.label}</h3>
+                  <h2 className="column-name">{col.label}</h2>
                   <span className="column-count">{col.count}</span>
                 </div>
                 <span className="column-points" title="Total Story Points">{colPoints} pts</span>
@@ -174,12 +191,12 @@ export default function KanbanBoard({ onOpenTaskModal, onNavigateSprints }) {
                           className="task-card"
                           role="button"
                           tabIndex={0}
-                          aria-label={`Open task: ${task.title}`}
                           draggable
                           onDragStart={(e) => handleDragStart(e, task.id)}
                           onClick={() => onOpenTaskModal(task)}
                           onKeyDown={(event) => activateCardFromKeyDown(event, () => onOpenTaskModal(task))}
                         >
+                        <span className="sr-only">Open task: </span>
                         <div className="card-top-row">
                           <PriorityBadge priority={task.priority} />
 
@@ -188,7 +205,7 @@ export default function KanbanBoard({ onOpenTaskModal, onNavigateSprints }) {
                           </span>
                         </div>
 
-                        <h4 className="task-title">{task.title}</h4>
+                        <h3 className="task-title">{task.title}</h3>
                         {task.description && (
                           <p className="task-desc">{task.description}</p>
                         )}

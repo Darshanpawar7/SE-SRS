@@ -12,3 +12,7 @@ Work items now has a filter sidebar, saved views and a task preview drawer. Filt
 Up to 12 named views are stored in this browser under cache-owner/account/project keys. Stored data is validated against current filter enums and calendar dates; malformed entries and duplicate identities are ignored. Views are not cloud-shared. Storage failure is reported without falsely claiming a successful save. Names and query text are rendered as React text; CSV formula escaping remains active.
 
 Opening a row previews live task details, due/blocker signals and the six most recent retained audit events. Edit work item opens the existing editor; closing the preview keeps the list filters intact. Native dialog behavior supplies Escape dismissal and focus containment; native focus/screen-reader checks remain manual. Existing optional due/blocker migration is still the only database prerequisite.
+
+## Earlier-schema compatibility
+
+An ordinary edit without planning values can recover from confirmed missing due_date/blocked_reason columns (PGRST204 or PostgreSQL 42703): only then is the upsert retried without unused fields. Permission/network/other failures are not schema compatibility. Nonempty planning values remain queued until migration. Explicit null/empty clears still reach migrated databases. This avoids silently losing clears while allowing ordinary earlier-schema edits to unblock later queued deletes/audit entries.

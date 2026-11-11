@@ -22,7 +22,7 @@ function PasswordField({ id, label, value, onChange, autoComplete }) {
 }
 
 export default function SignInView({ initialView = 'signin' }) {
-  const { signIn, signUp, requestPasswordReset, updatePassword, passwordRecovery } = useAuth();
+  const { signIn, signUp, requestPasswordReset, updatePassword, passwordRecovery, authError } = useAuth();
   const { supabaseConfig } = useProject();
   const [view, setView] = useState(initialView);
   const [fullName, setFullName] = useState('');
@@ -32,7 +32,6 @@ export default function SignInView({ initialView = 'signin' }) {
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [busy, setBusy] = useState(false);
-
   const activeView = passwordRecovery ? 'reset' : view;
 
   const moveTo = next => {
@@ -57,7 +56,6 @@ export default function SignInView({ initialView = 'signin' }) {
         if (password !== confirmation) throw new Error('The passwords do not match.');
         const result = await signUp(cleanName, email, password);
         if (result.needsEmailConfirmation) {
-          setNotice('Account created. Verify your email using the link we sent before signing in.');
           moveTo('signin');
           setNotice('Account created. Verify your email using the link we sent before signing in.');
         }
@@ -78,15 +76,9 @@ export default function SignInView({ initialView = 'signin' }) {
     }
   };
 
-  const heading = {
-    signin: 'Sign in',
-    signup: 'Create account',
-    forgot: 'Reset password',
-    reset: 'Choose a new password'
-  }[activeView];
-
+  const heading = { signin: 'Sign in', signup: 'Create account', forgot: 'Reset password', reset: 'Choose a new password' }[activeView];
   return (
-    <div className="signin-page">
+    <main className="signin-page">
       <form className="signin-card" onSubmit={submit}>
         <div className="brand-logo">
           <div className="logo-badge" aria-hidden="true">
@@ -96,7 +88,6 @@ export default function SignInView({ initialView = 'signin' }) {
           </div>
           <div><h1 className="brand-title">SprintFlow</h1><span className="brand-subtitle">Project workspace</span></div>
         </div>
-
         <h2 className="view-title">{heading}</h2>
         <p className="view-subtitle">
           {activeView === 'signin' ? 'Use your SprintFlow account to continue.'
@@ -104,53 +95,39 @@ export default function SignInView({ initialView = 'signin' }) {
               : activeView === 'forgot' ? 'Enter your account email and we will send reset instructions.'
                 : 'Set a new password for your account.'}
         </p>
-
-        {activeView === 'signup' && (
-          <div className="form-group">
-            <label className="form-label" htmlFor="signup-name">Full name</label>
-            <input id="signup-name" className="form-input" autoComplete="name" maxLength={100}
-              value={fullName} onChange={event => setFullName(event.target.value)} required />
-          </div>
-        )}
-
-        {activeView !== 'reset' && (
-          <div className="form-group">
-            <label className="form-label" htmlFor="auth-email">Email</label>
-            <input id="auth-email" className="form-input" type="email" autoComplete="email"
-              value={email} onChange={event => setEmail(event.target.value)} required />
-          </div>
-        )}
-
-        {(activeView === 'signin' || activeView === 'signup' || activeView === 'reset') && (
-          <PasswordField id={activeView === 'reset' ? 'reset-password' : 'auth-password'}
-            label={activeView === 'reset' ? 'New password' : 'Password'} value={password}
-            autoComplete={activeView === 'signin' ? 'current-password' : 'new-password'}
-            onChange={event => setPassword(event.target.value)} />
-        )}
-        {(activeView === 'signup' || activeView === 'reset') && (
-          <PasswordField id="auth-confirm-password" label="Confirm password" value={confirmation}
-            autoComplete="new-password" onChange={event => setConfirmation(event.target.value)} />
-        )}
-
+        {activeView === 'signup' && <div className="form-group">
+          <label className="form-label" htmlFor="signup-name">Full name</label>
+          <input id="signup-name" className="form-input" autoComplete="name" maxLength={100}
+            value={fullName} onChange={event => setFullName(event.target.value)} required />
+        </div>}
+        {activeView !== 'reset' && <div className="form-group">
+          <label className="form-label" htmlFor="auth-email">Email</label>
+          <input id="auth-email" className="form-input" type="email" autoComplete="email"
+            value={email} onChange={event => setEmail(event.target.value)} required />
+        </div>}
+        {(activeView === 'signin' || activeView === 'signup' || activeView === 'reset') && <PasswordField
+          id={activeView === 'reset' ? 'reset-password' : 'auth-password'}
+          label={activeView === 'reset' ? 'New password' : 'Password'} value={password}
+          autoComplete={activeView === 'signin' ? 'current-password' : 'new-password'}
+          onChange={event => setPassword(event.target.value)} />}
+        {(activeView === 'signup' || activeView === 'reset') && <PasswordField
+          id="auth-confirm-password" label="Confirm password" value={confirmation}
+          autoComplete="new-password" onChange={event => setConfirmation(event.target.value)} />}
         {activeView === 'signup' && <p className="card-subtitle">Password: 8–128 characters, including lowercase, uppercase and a number.</p>}
-        {activeView === 'signin' && !supabaseConfig.isConfigured && (
-          <p className="card-subtitle">Local demo mode is available without a Supabase connection.</p>
-        )}
+        {activeView === 'signin' && !supabaseConfig.isConfigured && <p className="card-subtitle">Local demo mode is available without a Supabase connection.</p>}
+        {authError && <p role="alert" className="form-error">{authError}</p>}
         {error && <p role="alert" className="form-error">{error}</p>}
         {notice && <p role="status" className="auth-notice">{notice}</p>}
-
         <button type="submit" className="btn btn-primary" disabled={busy}>
           {busy ? 'Please wait…' : activeView === 'signin' ? 'Sign in' : activeView === 'signup' ? 'Create account' : activeView === 'forgot' ? 'Send reset link' : 'Update password'}
         </button>
-
         {activeView === 'signin' && <div className="auth-links">
           <button type="button" className="auth-link" onClick={() => moveTo('forgot')}>Forgot password?</button>
           <button type="button" className="auth-link" onClick={() => moveTo('signup')}>Create an account</button>
         </div>}
-        {(activeView === 'forgot' || activeView === 'signup' || activeView === 'reset') && (
-          <button type="button" className="auth-link" onClick={() => moveTo('signin')}>Back to sign in</button>
-        )}
+        {(activeView === 'forgot' || activeView === 'signup' || activeView === 'reset') &&
+          <button type="button" className="auth-link" onClick={() => moveTo('signin')}>Back to sign in</button>}
       </form>
-    </div>
+    </main>
   );
 }

@@ -97,7 +97,14 @@ describe('keyboard and screen-reader task workflow', () => {
       expect(html).toContain(`role="group" aria-label="${label} tasks"`);
     }
     expect(html.match(/class="column-count">\d+</g)).toHaveLength(5);
-    expect(html).toContain('role="button" tabindex="0" aria-label="Open task: Accessible task"');
+    expect(html).toContain('role="button" tabindex="0" draggable="true"');
+    // Let the visible card content supply its name; a title-only override hid badges,
+    // descriptions and assignees from speech input matching.
+    const cardMarkup = html.slice(cardStart, quickActionStart);
+    expect(html.slice(cardStart, html.indexOf('>', cardStart))).not.toContain('aria-label=');
+    expect(cardMarkup).toContain('class="sr-only">Open task: </span>');
+    expect(cardMarkup).toContain('Accessible task');
+    expect(cardMarkup).toContain('Task details');
     expect(html.slice(cardStart, quickActionStart)).not.toContain('<button');
     expect(html).toContain('aria-label="Advance Accessible task to In Progress"');
   });

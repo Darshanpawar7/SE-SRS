@@ -30,7 +30,7 @@ import { useAuth } from './AuthContext';
 const ProjectContext = createContext();
 
 export function ProjectProvider({ children }) {
-  const { currentUser, authReady, sessionKind } = useAuth();
+  const { currentUser, authReady, sessionKind, cloudVerified } = useAuth();
   const [project, setProject] = useState(null);
   const [projects, setProjects] = useState([]);
   const [members, setMembers] = useState([]);
@@ -45,6 +45,14 @@ export function ProjectProvider({ children }) {
   const [filterAssignee, setFilterAssignee] = useState('all');
   const [filterPriority, setFilterPriority] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  // Filters live above the keyed workspace, so clear them when a different member signs in.
+  const [filterOwnerId, setFilterOwnerId] = useState(currentUser?.id ?? null);
+  if (filterOwnerId !== (currentUser?.id ?? null)) {
+    setFilterOwnerId(currentUser?.id ?? null);
+    setFilterAssignee('all');
+    setFilterPriority('all');
+    setSearchQuery('');
+  }
   const [loading, setLoading] = useState(true);
   const [projectError, setProjectError] = useState('');
   const [supabaseConfig, setSupabaseConfig] = useState(getSupabaseConfig());
@@ -77,12 +85,17 @@ export function ProjectProvider({ children }) {
   // Cloud sync errors are surfaced to the UI as they happen.
   useEffect(() => subscribeSyncStatus(setSyncStatus), []);
 
+  // Queued changes may only be sent by the account that owns them: in cloud mode that
+  // means after Supabase has verified the signed-in member.
+  const canSync = !supabaseConfig.isConfigured || cloudVerified;
+
   // Changes saved while Supabase was unreachable are sent as soon as the browser is back online.
   useEffect(() => {
+    if (!canSync) return undefined;
     const sendPendingChanges = () => DataService.flushPending();
     window.addEventListener('online', sendPendingChanges);
     return () => window.removeEventListener('online', sendPendingChanges);
-  }, []);
+  }, [canSync]);
 
   // The service owns I/O; this callback applies a fully loaded snapshot.
   const applyLoadedData = useCallback(({ project: projData, sprints: sprintsData, tasks: tasksData, activities: actData }) => {
@@ -157,6 +170,21 @@ export function ProjectProvider({ children }) {
     if (!authReady) return () => { current = false; };
     const initialize = async () => {
       setProjectError('');
+      if (supabaseConfig.isConfigured && !cloudVerified) {
+        setProject(null);
+        setProjects([]);
+        setMembers([]);
+        setInvitations([]);
+        sprintsRef.current = [];
+        tasksRef.current = [];
+        setSprints([]);
+        setTasks([]);
+        setBurndownHistory({});
+        setActivities([]);
+        setSelectedSprintId(null);
+        setLoading(false);
+        return;
+      }
       if (!currentUser) {
         DataService.setActiveProject(null);
         setProject(null);
@@ -211,11 +239,11 @@ export function ProjectProvider({ children }) {
     };
     initialize();
     return () => { current = false; };
-  }, [applyLoadedData, authReady, currentUser, sessionKind]);
+  }, [applyLoadedData, authReady, cloudVerified, currentUser, sessionKind, supabaseConfig.isConfigured]);
 
   // Appends one audit record; the feed always mirrors the stored, append-only history.
   // Show the stored history, which includes every record even when saves finish out of order.
-  const refreshActivities = async () => setActivities(await DataService.getActivity());
+  const refreshActivities = async () => setActivities(await DataService.getActivity(sessionKind === 'supabase' ? project?.id : null));
 
   const recordAudit = async (record) => {
     if (!record) return;
@@ -371,8 +399,11 @@ export function ProjectProvider({ children }) {
   };
 
   const refreshConfig = () => {
-    setSupabaseConfig(getSupabaseConfig());
-    loadData(sessionKind === 'supabase' ? localStorage.getItem('sprintflow_selected_project_id') : null);
+    const nextConfig = getSupabaseConfig();
+    setSupabaseConfig(nextConfig);
+    setLoading(true);
+    if (!nextConfig.isConfigured) loadData();
+    else if (cloudVerified) loadData(localStorage.getItem('sprintflow_selected_project_id'));
   };
 
   // Only the team lead may reset, and only in local demo mode: with Supabase connected the
@@ -392,7 +423,7 @@ export function ProjectProvider({ children }) {
   };
 
   // Manual retry for changes that are saved locally but not yet in Supabase.
-  const retrySync = () => DataService.flushPending();
+  const retrySync = () => (canSync ? DataService.flushPending() : Promise.resolve(false));
 
   // Re-read on every render; sync status changes trigger the re-render.
   const pendingChanges = getPendingChangeCount();

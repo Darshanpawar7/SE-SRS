@@ -102,6 +102,7 @@ describe('PMS-NF-004 fresh-session recovery', () => {
       return builder;
     };
     const { DataService: service } = await boot(cloud);
+    if (table !== 'projects') service.setActiveProject(INITIAL_PROJECT.id);
     const reading = table === 'tasks' ? service.getTasks() : table === 'projects' ? service.getProject() : service.getSprints();
     await Promise.resolve();
     const value = table === 'projects' ? { ...INITIAL_PROJECT, name: 'Latest project' } : table === 'sprints' ? [{ ...INITIAL_SPRINTS[0], name: 'Latest sprint' }] : [{ ...task, title: 'Latest task' }];

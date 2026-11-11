@@ -1,8 +1,17 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createUserProject, listUserProjects, listProjectMembers, listProjectInvitations, inviteProjectMember, changeProjectMemberRole, removeProjectMember, manageProjectInvitation, resendProjectInvitation, respondToProjectInvitation, subscribeSelectedProjectRealtime } from '../services/projectService';
 import { getAuthSession, normalizeAuthUser, subscribeAuth } from '../services/authService';
 import { DataService, setSupabaseClient } from '../services/supabaseClient';
 import { createFakeSupabase } from './helpers/fakeSupabase';
+
+beforeEach(() => {
+  const storage = new Map();
+  vi.stubGlobal('localStorage', {
+    getItem: key => storage.get(key) ?? null,
+    setItem: (key, value) => storage.set(key, String(value)),
+    removeItem: key => storage.delete(key)
+  });
+});
 
 afterEach(() => {
   setSupabaseClient(undefined);
@@ -22,7 +31,7 @@ describe('Supabase identity and project entry points', () => {
     const unsubscribe = vi.fn();
     let listener;
     setSupabaseClient({ auth: {
-      getSession: async () => ({ data: { session: { user } }, error: null }),
+      getUser: async () => ({ data: { user }, error: null }),
       onAuthStateChange: callback => { listener = callback; return { data: { subscription: { unsubscribe } } }; }
     } });
     await expect(getAuthSession()).resolves.toMatchObject({ isCloud: true, user: { id: user.id, name: 'Person' } });

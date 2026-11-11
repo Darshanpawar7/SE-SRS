@@ -95,7 +95,8 @@ describe('PMS-F-001 team sign-in and profile switching', () => {
   it('authenticates any valid cloud identity through Supabase instead of a team allowlist', async () => {
     const user = { id: 'auth-user-9', email: 'new.person@example.com', user_metadata: { full_name: 'New Person' } };
     const signInWithPassword = vi.fn(async () => ({ data: { user }, error: null }));
-    setSupabaseClient({ auth: { signInWithPassword } });
+    const getUser = vi.fn(async () => ({ data: { user }, error: null }));
+    setSupabaseClient({ auth: { signInWithPassword, getUser } });
 
     expect(await signIn(' New.Person@Example.com ', 'cloud-password')).toMatchObject({
       id: user.id, email: user.email, name: 'New Person', mode: 'supabase'

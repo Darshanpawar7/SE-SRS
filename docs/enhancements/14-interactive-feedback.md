@@ -12,3 +12,7 @@ Source: https://developer.mozilla.org/en-US/docs/Web/API/Navigator/vibrate
 Adds browser-persisted ivory/evergreen and charcoal/teal themes, compact desktop navigation with accessible icon names/tooltips, and stronger panel borders. Quick appearance controls sit beside shortcut help; full controls are in Database Settings. Existing stored preferences migrate with light theme and expanded navigation as defaults. Invalid preference values fall back safely. If storage is unavailable, changes apply for the session with an explicit unsaved-preferences message.
 
 Additional finite animations cover report-card arrival, point-distribution bars, chart selections, heatmap hover, task rows, preview-drawer entry and map-node/edge entry. Buttons retain press/focus feedback. No perpetual decorative animation or new animation dependency is added. Animations remain enabled by default; the workspace motion preference and system reduced-motion setting suppress them. Compact navigation leaves mobile navigation unchanged. Hardware vibration remains opt-in and capability-dependent.
+
+## Review feedback fixes
+
+Personal save feedback selects only new recent audit events belonging to the current actor. Toast icons use theme tokens. Validated stored appearance applies before React paints sign-in, with a persistent appearance component maintaining it across sign-out/profile changes. Disabled storage and malformed preferences retain usable defaults.

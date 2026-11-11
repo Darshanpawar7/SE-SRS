@@ -1,0 +1,1410 @@
+{
+  "startedAt": "2026-11-06T12:07:32.819Z",
+  "finishedAt": "2026-11-06T12:09:16.212Z",
+  "baseUrl": "http://localhost:4318/",
+  "commit": "f9e0727",
+  "browsers": [
+    "chrome",
+    "edge",
+    "firefox"
+  ],
+  "summary": {
+    "total": 33,
+    "passed": 28,
+    "failed": 1,
+    "blocked": 4
+  },
+  "results": [
+    {
+      "id": "TC-SUPA-01",
+      "requirement": "PMS-F-015",
+      "plan": "PMS-F-013",
+      "title": "Persist to Supabase PostgreSQL",
+      "browser": "chrome",
+      "status": "blocked",
+      "checks": [],
+      "notes": [],
+      "blockedReason": "Precondition not met: needs a Supabase test project with database/schema.sql (and the 20261103 migration) applied.",
+      "durationMs": 0
+    },
+    {
+      "id": "SEC-RLS",
+      "requirement": "PMS-SR-001",
+      "plan": "STP 5.4",
+      "title": "Row Level Security on direct API calls",
+      "browser": "chrome",
+      "status": "blocked",
+      "checks": [],
+      "notes": [],
+      "blockedReason": "Needs a live Supabase project to send cross-project API calls. The policies in database/schema.sql are checked statically by src/tests/databaseSecurity.test.js.",
+      "durationMs": 0
+    },
+    {
+      "id": "TC-AUTH-01",
+      "requirement": "PMS-F-001",
+      "plan": "PMS-F-001",
+      "title": "Authenticate and establish session",
+      "browser": "chrome",
+      "status": "pass",
+      "checks": [
+        {
+          "step": "Navigation bar shows the profile name",
+          "ok": true,
+          "actual": "Darshan"
+        },
+        {
+          "step": "Navigation bar shows the role",
+          "ok": true,
+          "actual": "Team Lead"
+        },
+        {
+          "step": "Session persists after refresh (no sign-in view)",
+          "ok": true,
+          "actual": "signed in after reload"
+        }
+      ],
+      "notes": [],
+      "blockedReason": null,
+      "durationMs": 2333
+    },
+    {
+      "id": "TC-PROJ-01",
+      "requirement": "PMS-F-002",
+      "plan": "—",
+      "title": "Show project metadata (supplementary)",
+      "supplementary": true,
+      "browser": "chrome",
+      "status": "pass",
+      "checks": [
+        {
+          "step": "Top bar shows the project key and name",
+          "ok": true,
+          "actual": "SprintFlow PESU SE Team 11 PMS SprintFlow - Project Management System Sprint 1: Architecture & Core Workflow (active) Sp"
+        },
+        {
+          "step": "Top bar shows the active sprint",
+          "ok": true,
+          "actual": "Sprint 1: Architecture & Core Workflow (active)"
+        },
+        {
+          "step": "Dashboard shows the project key, name and date range",
+          "ok": true,
+          "actual": "2026-09-01 → 2026-10-30"
+        }
+      ],
+      "notes": [],
+      "blockedReason": null,
+      "durationMs": 1262
+    },
+    {
+      "id": "TC-TASK-01",
+      "requirement": "PMS-F-006",
+      "plan": "PMS-F-002",
+      "title": "Create a task with complete metadata",
+      "browser": "chrome",
+      "status": "pass",
+      "checks": [
+        {
+          "step": "Card shows the title",
+          "ok": true,
+          "actual": "High 5 SP Implement burndown chart #feature DS Dhatri"
+        },
+        {
+          "step": "Card shows a High priority badge",
+          "ok": true,
+          "actual": "High 5 SP Implement burndown chart #feature DS Dhatri"
+        },
+        {
+          "step": "Card shows a 5-point estimate",
+          "ok": true,
+          "actual": "High 5 SP Implement burndown chart #feature DS Dhatri"
+        },
+        {
+          "step": "Card shows the assignee",
+          "ok": true,
+          "actual": "High 5 SP Implement burndown chart #feature DS Dhatri"
+        },
+        {
+          "step": "With Backlog chosen, the card appears at the top of the Backlog column",
+          "ok": true,
+          "actual": "Implement burndown chart (Backlog)"
+        },
+        {
+          "step": "Cards survive a page refresh",
+          "ok": true,
+          "actual": "both present after reload"
+        }
+      ],
+      "notes": [
+        "With the default Workflow Status the card lands in \"To Do\". SPRINT1_DEVIATIONS.md records that a new task starts in To Do unless another status is chosen; the specification text still says Backlog."
+      ],
+      "blockedReason": null,
+      "durationMs": 2413
+    },
+    {
+      "id": "TC-TASK-02",
+      "requirement": "PMS-F-006",
+      "plan": "PMS-F-016",
+      "title": "Assign Critical priority",
+      "browser": "chrome",
+      "status": "pass",
+      "checks": [
+        {
+          "step": "Card shows a Critical badge",
+          "ok": true,
+          "actual": "Critical"
+        },
+        {
+          "step": "Badge carries a text label, not colour alone",
+          "ok": true,
+          "actual": "Critical"
+        }
+      ],
+      "notes": [],
+      "blockedReason": null,
+      "durationMs": 2281
+    },
+    {
+      "id": "TC-TASK-03",
+      "requirement": "PMS-F-006",
+      "plan": "PMS-F-002",
+      "title": "Reject a task with an empty title",
+      "browser": "chrome",
+      "status": "pass",
+      "checks": [
+        {
+          "step": "Empty title is rejected with a validation message",
+          "ok": true,
+          "actual": "browser validation: \"Please fill out this field.\""
+        },
+        {
+          "step": "Single-space title is rejected with a validation message",
+          "ok": true,
+          "actual": "inline message: \"Enter a task title and choose a valid priority.\""
+        },
+        {
+          "step": "No task is created in either case",
+          "ok": true,
+          "actual": "6 cards before and after"
+        }
+      ],
+      "notes": [],
+      "blockedReason": null,
+      "durationMs": 1680
+    },
+    {
+      "id": "TC-LABEL-01",
+      "requirement": "PMS-F-007",
+      "plan": "—",
+      "title": "Add labels to a task (supplementary)",
+      "supplementary": true,
+      "browser": "chrome",
+      "status": "pass",
+      "checks": [
+        {
+          "step": "Labels show as separate pills, lower-cased and de-duplicated",
+          "ok": true,
+          "actual": "#feature #ui #api"
+        },
+        {
+          "step": "Labels survive a page refresh",
+          "ok": true,
+          "actual": "#feature #ui #api"
+        }
+      ],
+      "notes": [],
+      "blockedReason": null,
+      "durationMs": 1418
+    },
+    {
+      "id": "TC-KAN-01",
+      "requirement": "PMS-F-003",
+      "plan": "PMS-F-003",
+      "title": "Render the five-column board",
+      "browser": "chrome",
+      "status": "pass",
+      "checks": [
+        {
+          "step": "Exactly five columns in lifecycle order",
+          "ok": true,
+          "actual": "Backlog, To Do, In Progress, Code Review, Done"
+        },
+        {
+          "step": "Backlog shows its task count",
+          "ok": true,
+          "actual": "count badge 0, cards 0"
+        },
+        {
+          "step": "To Do shows its task count",
+          "ok": true,
+          "actual": "count badge 1, cards 1"
+        },
+        {
+          "step": "In Progress shows its task count",
+          "ok": true,
+          "actual": "count badge 2, cards 2"
+        },
+        {
+          "step": "Code Review shows its task count",
+          "ok": true,
+          "actual": "count badge 1, cards 1"
+        },
+        {
+          "step": "Done shows its task count",
+          "ok": true,
+          "actual": "count badge 2, cards 2"
+        }
+      ],
+      "notes": [],
+      "blockedReason": null,
+      "durationMs": 833
+    },
+    {
+      "id": "TC-KAN-02",
+      "requirement": "PMS-F-004",
+      "plan": "PMS-F-004",
+      "title": "Transition a task by drag-and-drop",
+      "browser": "chrome",
+      "status": "pass",
+      "checks": [
+        {
+          "step": "Card renders in In Progress on release",
+          "ok": true,
+          "actual": "In Progress"
+        },
+        {
+          "step": "Source column count decreases by one",
+          "ok": true,
+          "actual": "1 -> 0"
+        },
+        {
+          "step": "Target column count increases by one",
+          "ok": true,
+          "actual": "2 -> 3"
+        },
+        {
+          "step": "New state survives a refresh",
+          "ok": true,
+          "actual": "In Progress"
+        }
+      ],
+      "notes": [],
+      "blockedReason": null,
+      "durationMs": 1646
+    },
+    {
+      "id": "TC-KAN-03",
+      "requirement": "PMS-F-005",
+      "plan": "PMS-F-005",
+      "title": "Advance a task by single action",
+      "browser": "chrome",
+      "status": "pass",
+      "checks": [
+        {
+          "step": "Precondition: task is in To Do",
+          "ok": true,
+          "actual": "To Do"
+        },
+        {
+          "step": "Task moves to In Progress",
+          "ok": true,
+          "actual": "In Progress"
+        },
+        {
+          "step": "A task in Done cannot advance further",
+          "ok": true,
+          "actual": "0 enabled advance controls in Done"
+        }
+      ],
+      "notes": [],
+      "blockedReason": null,
+      "durationMs": 1900
+    },
+    {
+      "id": "TC-KAN-04",
+      "requirement": "PMS-F-004",
+      "plan": "PMS-F-004",
+      "title": "Cancel a drag outside any column",
+      "browser": "chrome",
+      "status": "pass",
+      "checks": [
+        {
+          "step": "A drag was actually started",
+          "ok": true,
+          "actual": "1 dragstart, 0 drop events"
+        },
+        {
+          "step": "Card returns to its original column",
+          "ok": true,
+          "actual": "In Progress -> In Progress"
+        },
+        {
+          "step": "Status is unchanged after refresh",
+          "ok": true,
+          "actual": "In Progress"
+        }
+      ],
+      "notes": [],
+      "blockedReason": null,
+      "durationMs": 1174
+    },
+    {
+      "id": "TC-FILT-01",
+      "requirement": "PMS-F-017",
+      "plan": "PMS-F-011",
+      "title": "Filter by priority",
+      "browser": "chrome",
+      "status": "fail",
+      "checks": [
+        {
+          "step": "Only High priority tasks are visible",
+          "ok": true,
+          "actual": "3 visible: high, high, high"
+        },
+        {
+          "step": "No task matches the combined filters",
+          "ok": true,
+          "actual": "0 cards visible"
+        },
+        {
+          "step": "An explicit empty state names the active filters",
+          "ok": false,
+          "actual": "five columns each show \"Drop tasks here\"; no message names the active filters"
+        },
+        {
+          "step": "The empty state offers to clear the filters",
+          "ok": true,
+          "actual": "\"Reset Filters\" button shown"
+        }
+      ],
+      "notes": [],
+      "blockedReason": null,
+      "screenshot": "TC-FILT-01-chrome-failure.png",
+      "durationMs": 1111
+    },
+    {
+      "id": "TC-EST-01",
+      "requirement": "PMS-F-008",
+      "plan": "PMS-F-006",
+      "title": "Assign Fibonacci story points",
+      "browser": "chrome",
+      "status": "pass",
+      "checks": [
+        {
+          "step": "Only the seven Fibonacci values are offered",
+          "ok": true,
+          "actual": "1, 2, 3, 5, 8, 13, 21"
+        },
+        {
+          "step": "No free numeric estimate field exists",
+          "ok": true,
+          "actual": "0 numeric inputs"
+        },
+        {
+          "step": "Estimate 1 persists on the card",
+          "ok": true,
+          "actual": "1 SP"
+        },
+        {
+          "step": "Estimate 2 persists on the card",
+          "ok": true,
+          "actual": "2 SP"
+        },
+        {
+          "step": "Estimate 3 persists on the card",
+          "ok": true,
+          "actual": "3 SP"
+        },
+        {
+          "step": "Estimate 5 persists on the card",
+          "ok": true,
+          "actual": "5 SP"
+        },
+        {
+          "step": "Estimate 8 persists on the card",
+          "ok": true,
+          "actual": "8 SP"
+        },
+        {
+          "step": "Estimate 13 persists on the card",
+          "ok": true,
+          "actual": "13 SP"
+        },
+        {
+          "step": "Estimate 21 persists on the card",
+          "ok": true,
+          "actual": "21 SP"
+        },
+        {
+          "step": "The final estimate is reflected in sprint capacity",
+          "ok": true,
+          "actual": "33 -> 49 (task 5 -> 21)"
+        }
+      ],
+      "notes": [],
+      "blockedReason": null,
+      "durationMs": 7633
+    },
+    {
+      "id": "TC-EST-02",
+      "requirement": "PMS-F-009",
+      "plan": "PMS-F-008",
+      "title": "Calculate sprint capacity",
+      "browser": "chrome",
+      "status": "pass",
+      "checks": [
+        {
+          "step": "Precondition: the new sprint has no tasks",
+          "ok": true,
+          "actual": "0"
+        },
+        {
+          "step": "Capacity reports 16 points for tasks of 3, 5 and 8",
+          "ok": true,
+          "actual": "16"
+        },
+        {
+          "step": "Capacity is recomputed to 11 after removing the 5-point task",
+          "ok": true,
+          "actual": "11"
+        }
+      ],
+      "notes": [],
+      "blockedReason": null,
+      "durationMs": 6420
+    },
+    {
+      "id": "TC-SPR-01",
+      "requirement": "PMS-F-010",
+      "plan": "PMS-F-007",
+      "title": "Create a sprint",
+      "browser": "chrome",
+      "status": "pass",
+      "checks": [
+        {
+          "step": "Sprint appears in the sprint list",
+          "ok": true,
+          "actual": "1"
+        },
+        {
+          "step": "Sprint shows its goal",
+          "ok": true,
+          "actual": "PLANNED 2026-11-06 → 2026-11-19 Sprint 3 View sprint Start Sprint Delete Sprint Sprint Goal: Deliver estimation engine 0 Planned Points 0 Completed 0 Remaining "
+        },
+        {
+          "step": "Sprint shows its two-week date range",
+          "ok": true,
+          "actual": "2026-11-06 → 2026-11-19"
+        },
+        {
+          "step": "Sprint is available as a task assignment target",
+          "ok": true,
+          "actual": "Backlog (No Sprint) | Sprint 1: Architecture & Core Workflow | Sprint 2: Analytics & Release Candidate | Sprint 3"
+        }
+      ],
+      "notes": [],
+      "blockedReason": null,
+      "durationMs": 2403
+    },
+    {
+      "id": "TC-BURN-01",
+      "requirement": "PMS-F-011",
+      "plan": "PMS-F-009",
+      "title": "Update the burndown chart",
+      "browser": "chrome",
+      "status": "pass",
+      "checks": [
+        {
+          "step": "Precondition: today has a recorded actual value",
+          "ok": true,
+          "actual": "20"
+        },
+        {
+          "step": "Task moved to Done",
+          "ok": true,
+          "actual": "Done"
+        },
+        {
+          "step": "Actual line falls by exactly the completed points",
+          "ok": true,
+          "actual": "20 -> 15 (task 5 SP)"
+        },
+        {
+          "step": "Ideal line is unchanged",
+          "ok": true,
+          "actual": "19 ideal values compared"
+        }
+      ],
+      "notes": [
+        "Read from the chart's \"Daily burndown values\" table, which lists the same series the SVG draws."
+      ],
+      "blockedReason": null,
+      "durationMs": 3832
+    },
+    {
+      "id": "TC-DASH-01",
+      "requirement": "PMS-F-012",
+      "plan": "PMS-F-010",
+      "title": "Display KPI metrics",
+      "browser": "chrome",
+      "status": "pass",
+      "checks": [
+        {
+          "step": "Progress, velocity and workload are shown",
+          "ok": true,
+          "actual": "total 33, delivered 13, completion 39%, remaining 20"
+        },
+        {
+          "step": "Total matches the board",
+          "ok": true,
+          "actual": "board 33 pts, dashboard 33"
+        },
+        {
+          "step": "Delivered velocity matches the Done column",
+          "ok": true,
+          "actual": "Done 13 pts, dashboard 13"
+        },
+        {
+          "step": "Progress equals completed points / total points",
+          "ok": true,
+          "actual": "13/33 = 39.4%, shown 39%"
+        }
+      ],
+      "notes": [],
+      "blockedReason": null,
+      "durationMs": 1707
+    },
+    {
+      "id": "TC-WORK-01",
+      "requirement": "PMS-F-013",
+      "plan": "PMS-F-017",
+      "title": "Show workload distribution",
+      "browser": "chrome",
+      "status": "pass",
+      "checks": [
+        {
+          "step": "Tasks are assigned across at least three members",
+          "ok": true,
+          "actual": "10, 8, 5, 10"
+        },
+        {
+          "step": "Member totals sum to the sprint total",
+          "ok": true,
+          "actual": "10 + 8 + 5 + 10 = 33; sprint total 33"
+        }
+      ],
+      "notes": [],
+      "blockedReason": null,
+      "durationMs": 1407
+    },
+    {
+      "id": "TC-DOCS-01",
+      "requirement": "not in SRS",
+      "plan": "PMS-F-018",
+      "title": "Render in-app documentation",
+      "browser": "chrome",
+      "status": "pass",
+      "checks": [
+        {
+          "step": "\"Functional Requirements\" tab renders readable content",
+          "ok": true,
+          "actual": "3172 characters"
+        },
+        {
+          "step": "\"Non-Functional\" tab renders readable content",
+          "ok": true,
+          "actual": "1093 characters"
+        },
+        {
+          "step": "\"Traceability Matrix\" tab renders readable content",
+          "ok": true,
+          "actual": "947 characters"
+        },
+        {
+          "step": "Documentation has a readable heading",
+          "ok": true,
+          "actual": "Software Requirements Specification (SRS) & RTM"
+        }
+      ],
+      "notes": [],
+      "blockedReason": null,
+      "durationMs": 1760
+    },
+    {
+      "id": "TC-OFF-01",
+      "requirement": "PMS-F-016",
+      "plan": "PMS-F-014",
+      "title": "Persist offline without configuration",
+      "browser": "chrome",
+      "status": "pass",
+      "checks": [
+        {
+          "step": "Both tasks are restored after reopening the tab",
+          "ok": true,
+          "actual": "2 of 2 present"
+        },
+        {
+          "step": "Interface indicates offline (LocalStorage) persistence",
+          "ok": true,
+          "actual": "Local / Demo Mode"
+        }
+      ],
+      "notes": [],
+      "blockedReason": null,
+      "durationMs": 2506
+    },
+    {
+      "id": "TC-SET-01",
+      "requirement": "PMS-F-015",
+      "plan": "PMS-F-015",
+      "title": "Switch data mode from settings",
+      "browser": "chrome",
+      "status": "blocked",
+      "checks": [
+        {
+          "step": "Step 3: a malformed URL is rejected with a clear message",
+          "ok": true,
+          "actual": "Enter a valid https:// Supabase project URL, for example https://your-project."
+        },
+        {
+          "step": "Step 3: the previous (offline) configuration is retained",
+          "ok": true,
+          "actual": "Local / Demo Mode"
+        }
+      ],
+      "notes": [],
+      "blockedReason": "Steps 1-2 need valid credentials for a provisioned Supabase test project; only step 3 (negative case) was executed.",
+      "durationMs": 1597
+    },
+    {
+      "id": "TC-LOG-01",
+      "requirement": "PMS-F-014",
+      "plan": "PMS-F-012",
+      "title": "Record an audit trail for mutations",
+      "browser": "chrome",
+      "status": "pass",
+      "checks": [
+        {
+          "step": "Exactly three new audit entries",
+          "ok": true,
+          "actual": "4 -> 7"
+        },
+        {
+          "step": "Entries are CREATE, UPDATE, DELETE in chronological order",
+          "ok": true,
+          "actual": "CREATE, UPDATE, DELETE"
+        },
+        {
+          "step": "Each entry carries a timestamp",
+          "ok": true,
+          "actual": "2026-11-06T12:08:22.068Z, 2026-11-06T12:08:22.563Z, 2026-11-06T12:08:23.106Z"
+        },
+        {
+          "step": "Timestamps are in chronological order",
+          "ok": true,
+          "actual": "non-decreasing"
+        },
+        {
+          "step": "Each entry names the acting user and the task",
+          "ok": true,
+          "actual": "CREATE Darshan P Pawar created task TC-LOG-01 audit probe → To Do || UPDATE Darshan P Pawar updated task TC-LOG-01 audit probe (renamed) || DELETE Darshan P Pawar deleted task TC-LOG-01 audit probe (renamed)"
+        }
+      ],
+      "notes": [],
+      "blockedReason": null,
+      "durationMs": 3288
+    },
+    {
+      "id": "TC-PERF-01",
+      "requirement": "PMS-NF-001",
+      "plan": "PMS-NF-001",
+      "title": "Drag-and-drop transition under 50 ms",
+      "browser": "chrome",
+      "status": "pass",
+      "checks": [
+        {
+          "step": "Drop-to-render p95 under 50 ms",
+          "ok": true,
+          "actual": "6.6 ms"
+        }
+      ],
+      "notes": [
+        "10 measured drops after 2 warm-ups: p50 2.3 ms, p95 6.6 ms, max 6.6 ms."
+      ],
+      "blockedReason": null,
+      "durationMs": 4725
+    },
+    {
+      "id": "TC-AVAIL-01",
+      "requirement": "PMS-NF-002",
+      "plan": "PMS-NF-002",
+      "title": "Stay usable with the network disabled",
+      "browser": "chrome",
+      "status": "pass",
+      "checks": [
+        {
+          "step": "Application stays usable with the network disabled",
+          "ok": true,
+          "actual": "task created and all views opened"
+        },
+        {
+          "step": "Application reports offline (local) mode",
+          "ok": true,
+          "actual": "Local / Demo Mode"
+        }
+      ],
+      "notes": [],
+      "blockedReason": null,
+      "durationMs": 2360
+    },
+    {
+      "id": "TC-SEC-01",
+      "requirement": "PMS-SR-003",
+      "plan": "PMS-NF-004",
+      "title": "Encrypted transport to Supabase",
+      "browser": "chrome",
+      "status": "blocked",
+      "checks": [
+        {
+          "step": "A plain http:// project URL is refused",
+          "ok": true,
+          "actual": "Enter a valid https:// Supabase project URL, for example https://your-project."
+        }
+      ],
+      "notes": [],
+      "blockedReason": "Inspecting live HTTPS traffic needs a connected Supabase project. Client-side enforcement was verified instead.",
+      "durationMs": 1543
+    },
+    {
+      "id": "TC-LOAD-01",
+      "requirement": "not in SRS",
+      "plan": "PMS-NF-005",
+      "title": "Board with 100+ tasks",
+      "browser": "chrome",
+      "status": "pass",
+      "checks": [
+        {
+          "step": "All seeded tasks render on the board",
+          "ok": true,
+          "actual": "106 cards"
+        },
+        {
+          "step": "Every seeded task is accessible as a control",
+          "ok": true,
+          "actual": "100 task controls"
+        },
+        {
+          "step": "Drag-and-drop stays responsive (p95 under 50 ms with 106 tasks)",
+          "ok": true,
+          "actual": "8.9 ms"
+        }
+      ],
+      "notes": [
+        "Board ready 162 ms after navigation with 106 tasks; drop-to-render p95 8.9 ms over 5 drops."
+      ],
+      "blockedReason": null,
+      "durationMs": 3607
+    },
+    {
+      "id": "TC-RECOV-01",
+      "requirement": "PMS-NF-004",
+      "plan": "PMS-NF-006",
+      "title": "No data loss across disconnect and reconnect",
+      "browser": "chrome",
+      "status": "pass",
+      "checks": [
+        {
+          "step": "No task is lost across disconnect and reconnect",
+          "ok": true,
+          "actual": "2 of 2 present"
+        }
+      ],
+      "notes": [
+        "Zero-config mode. The cloud retry queue across a reconnect is covered by unit tests (persistenceRecovery, recovery)."
+      ],
+      "blockedReason": null,
+      "durationMs": 1736
+    },
+    {
+      "id": "SEC-XSS",
+      "requirement": "PMS-SR-004",
+      "plan": "STP 5.4",
+      "title": "XSS input sanitization",
+      "browser": "chrome",
+      "status": "pass",
+      "checks": [
+        {
+          "step": "No injected script or handler executes",
+          "ok": true,
+          "actual": "window.__sfXss never set"
+        },
+        {
+          "step": "Input is rendered as text, not markup",
+          "ok": true,
+          "actual": "0 injected elements in cards"
+        }
+      ],
+      "notes": [],
+      "blockedReason": null,
+      "durationMs": 2342
+    },
+    {
+      "id": "SEC-TOKEN",
+      "requirement": "not in SRS",
+      "plan": "STP 5.4",
+      "title": "Session token handling",
+      "browser": "chrome",
+      "status": "pass",
+      "checks": [
+        {
+          "step": "The password is not kept in browser storage",
+          "ok": true,
+          "actual": "not found"
+        },
+        {
+          "step": "No access token is kept in zero-config mode",
+          "ok": true,
+          "actual": "no JWT in storage"
+        }
+      ],
+      "notes": [
+        "Cloud JWT expiry and rejection need a live Supabase project (see TC-SEC-01)."
+      ],
+      "blockedReason": null,
+      "durationMs": 1261
+    },
+    {
+      "id": "SEC-FUZZ",
+      "requirement": "PMS-SR-004",
+      "plan": "STP 5.4",
+      "title": "Input validation fuzzing",
+      "browser": "chrome",
+      "status": "pass",
+      "checks": [
+        {
+          "step": "An over-long title is bounded, not crashing the app",
+          "ok": true,
+          "actual": "120 characters stored"
+        },
+        {
+          "step": "Special characters are stored and shown as typed",
+          "ok": true,
+          "actual": "Ω ✓ \"quotes\" & ampersand; DROP TABLE tasks; -- 🚀"
+        }
+      ],
+      "notes": [],
+      "blockedReason": null,
+      "durationMs": 1971
+    },
+    {
+      "id": "SEC-KEYS",
+      "requirement": "PMS-SR-002",
+      "plan": "STP 5.4",
+      "title": "API key exposure in the client bundle",
+      "browser": "static",
+      "status": "pass",
+      "checks": [
+        {
+          "step": "No complete JWT (anon or service_role) is embedded in the bundle",
+          "ok": true,
+          "actual": "0 found in 2 files"
+        },
+        {
+          "step": "No Supabase secret key is embedded in the bundle",
+          "ok": true,
+          "actual": "0 found"
+        }
+      ],
+      "notes": [
+        "Static scan of the production bundle in dist/assets."
+      ],
+      "blockedReason": null,
+      "durationMs": 0
+    },
+    {
+      "id": "TC-KAN-01",
+      "requirement": "not in SRS",
+      "plan": "PMS-NF-003",
+      "title": "Five-column board (compatibility run)",
+      "compat": true,
+      "browser": "chrome",
+      "status": "pass",
+      "checks": [
+        {
+          "step": "Exactly five columns in lifecycle order",
+          "ok": true,
+          "actual": "Backlog, To Do, In Progress, Code Review, Done"
+        },
+        {
+          "step": "Backlog shows its task count",
+          "ok": true,
+          "actual": "count badge 0, cards 0"
+        },
+        {
+          "step": "To Do shows its task count",
+          "ok": true,
+          "actual": "count badge 1, cards 1"
+        },
+        {
+          "step": "In Progress shows its task count",
+          "ok": true,
+          "actual": "count badge 2, cards 2"
+        },
+        {
+          "step": "Code Review shows its task count",
+          "ok": true,
+          "actual": "count badge 1, cards 1"
+        },
+        {
+          "step": "Done shows its task count",
+          "ok": true,
+          "actual": "count badge 2, cards 2"
+        }
+      ],
+      "notes": [],
+      "blockedReason": null,
+      "durationMs": 828
+    },
+    {
+      "id": "TC-KAN-02",
+      "requirement": "not in SRS",
+      "plan": "PMS-NF-003",
+      "title": "Drag-and-drop transition (compatibility run)",
+      "compat": true,
+      "browser": "chrome",
+      "status": "pass",
+      "checks": [
+        {
+          "step": "Card renders in In Progress on release",
+          "ok": true,
+          "actual": "In Progress"
+        },
+        {
+          "step": "Source column count decreases by one",
+          "ok": true,
+          "actual": "1 -> 0"
+        },
+        {
+          "step": "Target column count increases by one",
+          "ok": true,
+          "actual": "2 -> 3"
+        },
+        {
+          "step": "New state survives a refresh",
+          "ok": true,
+          "actual": "In Progress"
+        }
+      ],
+      "notes": [],
+      "blockedReason": null,
+      "durationMs": 1563
+    },
+    {
+      "id": "TC-TASK-01",
+      "requirement": "not in SRS",
+      "plan": "PMS-NF-003",
+      "title": "Create a task (compatibility run)",
+      "compat": true,
+      "browser": "chrome",
+      "status": "pass",
+      "checks": [
+        {
+          "step": "Card shows the title",
+          "ok": true,
+          "actual": "High 5 SP Implement burndown chart #feature DS Dhatri"
+        },
+        {
+          "step": "Card shows a High priority badge",
+          "ok": true,
+          "actual": "High 5 SP Implement burndown chart #feature DS Dhatri"
+        },
+        {
+          "step": "Card shows a 5-point estimate",
+          "ok": true,
+          "actual": "High 5 SP Implement burndown chart #feature DS Dhatri"
+        },
+        {
+          "step": "Card shows the assignee",
+          "ok": true,
+          "actual": "High 5 SP Implement burndown chart #feature DS Dhatri"
+        },
+        {
+          "step": "With Backlog chosen, the card appears at the top of the Backlog column",
+          "ok": true,
+          "actual": "Implement burndown chart (Backlog)"
+        },
+        {
+          "step": "Cards survive a page refresh",
+          "ok": true,
+          "actual": "both present after reload"
+        }
+      ],
+      "notes": [
+        "With the default Workflow Status the card lands in \"To Do\". SPRINT1_DEVIATIONS.md records that a new task starts in To Do unless another status is chosen; the specification text still says Backlog."
+      ],
+      "blockedReason": null,
+      "durationMs": 1953
+    },
+    {
+      "id": "TC-KAN-01",
+      "requirement": "not in SRS",
+      "plan": "PMS-NF-003",
+      "title": "Five-column board (compatibility run)",
+      "compat": true,
+      "browser": "edge",
+      "status": "pass",
+      "checks": [
+        {
+          "step": "Exactly five columns in lifecycle order",
+          "ok": true,
+          "actual": "Backlog, To Do, In Progress, Code Review, Done"
+        },
+        {
+          "step": "Backlog shows its task count",
+          "ok": true,
+          "actual": "count badge 0, cards 0"
+        },
+        {
+          "step": "To Do shows its task count",
+          "ok": true,
+          "actual": "count badge 1, cards 1"
+        },
+        {
+          "step": "In Progress shows its task count",
+          "ok": true,
+          "actual": "count badge 2, cards 2"
+        },
+        {
+          "step": "Code Review shows its task count",
+          "ok": true,
+          "actual": "count badge 1, cards 1"
+        },
+        {
+          "step": "Done shows its task count",
+          "ok": true,
+          "actual": "count badge 2, cards 2"
+        }
+      ],
+      "notes": [],
+      "blockedReason": null,
+      "durationMs": 911
+    },
+    {
+      "id": "TC-KAN-02",
+      "requirement": "not in SRS",
+      "plan": "PMS-NF-003",
+      "title": "Drag-and-drop transition (compatibility run)",
+      "compat": true,
+      "browser": "edge",
+      "status": "pass",
+      "checks": [
+        {
+          "step": "Card renders in In Progress on release",
+          "ok": true,
+          "actual": "In Progress"
+        },
+        {
+          "step": "Source column count decreases by one",
+          "ok": true,
+          "actual": "1 -> 0"
+        },
+        {
+          "step": "Target column count increases by one",
+          "ok": true,
+          "actual": "2 -> 3"
+        },
+        {
+          "step": "New state survives a refresh",
+          "ok": true,
+          "actual": "In Progress"
+        }
+      ],
+      "notes": [],
+      "blockedReason": null,
+      "durationMs": 1715
+    },
+    {
+      "id": "TC-TASK-01",
+      "requirement": "not in SRS",
+      "plan": "PMS-NF-003",
+      "title": "Create a task (compatibility run)",
+      "compat": true,
+      "browser": "edge",
+      "status": "pass",
+      "checks": [
+        {
+          "step": "Card shows the title",
+          "ok": true,
+          "actual": "High 5 SP Implement burndown chart #feature DS Dhatri"
+        },
+        {
+          "step": "Card shows a High priority badge",
+          "ok": true,
+          "actual": "High 5 SP Implement burndown chart #feature DS Dhatri"
+        },
+        {
+          "step": "Card shows a 5-point estimate",
+          "ok": true,
+          "actual": "High 5 SP Implement burndown chart #feature DS Dhatri"
+        },
+        {
+          "step": "Card shows the assignee",
+          "ok": true,
+          "actual": "High 5 SP Implement burndown chart #feature DS Dhatri"
+        },
+        {
+          "step": "With Backlog chosen, the card appears at the top of the Backlog column",
+          "ok": true,
+          "actual": "Implement burndown chart (Backlog)"
+        },
+        {
+          "step": "Cards survive a page refresh",
+          "ok": true,
+          "actual": "both present after reload"
+        }
+      ],
+      "notes": [
+        "With the default Workflow Status the card lands in \"To Do\". SPRINT1_DEVIATIONS.md records that a new task starts in To Do unless another status is chosen; the specification text still says Backlog."
+      ],
+      "blockedReason": null,
+      "durationMs": 1865
+    },
+    {
+      "id": "TC-KAN-01",
+      "requirement": "not in SRS",
+      "plan": "PMS-NF-003",
+      "title": "Five-column board (compatibility run)",
+      "compat": true,
+      "browser": "firefox",
+      "status": "pass",
+      "checks": [
+        {
+          "step": "Exactly five columns in lifecycle order",
+          "ok": true,
+          "actual": "Backlog, To Do, In Progress, Code Review, Done"
+        },
+        {
+          "step": "Backlog shows its task count",
+          "ok": true,
+          "actual": "count badge 0, cards 0"
+        },
+        {
+          "step": "To Do shows its task count",
+          "ok": true,
+          "actual": "count badge 1, cards 1"
+        },
+        {
+          "step": "In Progress shows its task count",
+          "ok": true,
+          "actual": "count badge 2, cards 2"
+        },
+        {
+          "step": "Code Review shows its task count",
+          "ok": true,
+          "actual": "count badge 1, cards 1"
+        },
+        {
+          "step": "Done shows its task count",
+          "ok": true,
+          "actual": "count badge 2, cards 2"
+        }
+      ],
+      "notes": [],
+      "blockedReason": null,
+      "durationMs": 3030
+    },
+    {
+      "id": "TC-KAN-02",
+      "requirement": "not in SRS",
+      "plan": "PMS-NF-003",
+      "title": "Drag-and-drop transition (compatibility run)",
+      "compat": true,
+      "browser": "firefox",
+      "status": "pass",
+      "checks": [
+        {
+          "step": "Card renders in In Progress on release",
+          "ok": true,
+          "actual": "In Progress"
+        },
+        {
+          "step": "Source column count decreases by one",
+          "ok": true,
+          "actual": "1 -> 0"
+        },
+        {
+          "step": "Target column count increases by one",
+          "ok": true,
+          "actual": "2 -> 3"
+        },
+        {
+          "step": "New state survives a refresh",
+          "ok": true,
+          "actual": "In Progress"
+        }
+      ],
+      "notes": [],
+      "blockedReason": null,
+      "durationMs": 5057
+    },
+    {
+      "id": "TC-TASK-01",
+      "requirement": "not in SRS",
+      "plan": "PMS-NF-003",
+      "title": "Create a task (compatibility run)",
+      "compat": true,
+      "browser": "firefox",
+      "status": "pass",
+      "checks": [
+        {
+          "step": "Card shows the title",
+          "ok": true,
+          "actual": "High 5 SP Implement burndown chart #feature DS Dhatri"
+        },
+        {
+          "step": "Card shows a High priority badge",
+          "ok": true,
+          "actual": "High 5 SP Implement burndown chart #feature DS Dhatri"
+        },
+        {
+          "step": "Card shows a 5-point estimate",
+          "ok": true,
+          "actual": "High 5 SP Implement burndown chart #feature DS Dhatri"
+        },
+        {
+          "step": "Card shows the assignee",
+          "ok": true,
+          "actual": "High 5 SP Implement burndown chart #feature DS Dhatri"
+        },
+        {
+          "step": "With Backlog chosen, the card appears at the top of the Backlog column",
+          "ok": true,
+          "actual": "Implement burndown chart (Backlog)"
+        },
+        {
+          "step": "Cards survive a page refresh",
+          "ok": true,
+          "actual": "both present after reload"
+        }
+      ],
+      "notes": [
+        "With the default Workflow Status the card lands in \"To Do\". SPRINT1_DEVIATIONS.md records that a new task starts in To Do unless another status is chosen; the specification text still says Backlog."
+      ],
+      "blockedReason": null,
+      "durationMs": 5463
+    },
+    {
+      "id": "TC-COMPAT-01",
+      "requirement": "not in SRS",
+      "plan": "PMS-NF-003",
+      "title": "Core workflows on Chrome, Edge and Firefox",
+      "browser": "chrome+edge+firefox",
+      "status": "pass",
+      "checks": [
+        {
+          "step": "chrome: TC-KAN-01, TC-KAN-02 and TC-TASK-01 pass",
+          "ok": true,
+          "actual": "TC-KAN-01 pass, TC-KAN-02 pass, TC-TASK-01 pass"
+        },
+        {
+          "step": "edge: TC-KAN-01, TC-KAN-02 and TC-TASK-01 pass",
+          "ok": true,
+          "actual": "TC-KAN-01 pass, TC-KAN-02 pass, TC-TASK-01 pass"
+        },
+        {
+          "step": "firefox: TC-KAN-01, TC-KAN-02 and TC-TASK-01 pass",
+          "ok": true,
+          "actual": "TC-KAN-01 pass, TC-KAN-02 pass, TC-TASK-01 pass"
+        },
+        {
+          "step": "edge: column layout matches chrome within 4 px",
+          "ok": true,
+          "actual": "max drift 0 px"
+        },
+        {
+          "step": "firefox: column layout matches chrome within 4 px",
+          "ok": true,
+          "actual": "max drift 0 px"
+        }
+      ],
+      "layouts": {
+        "chrome": [
+          {
+            "x": 264,
+            "width": 218
+          },
+          {
+            "x": 496,
+            "width": 218
+          },
+          {
+            "x": 727,
+            "width": 218
+          },
+          {
+            "x": 959,
+            "width": 218
+          },
+          {
+            "x": 1190,
+            "width": 218
+          }
+        ],
+        "edge": [
+          {
+            "x": 264,
+            "width": 218
+          },
+          {
+            "x": 496,
+            "width": 218
+          },
+          {
+            "x": 727,
+            "width": 218
+          },
+          {
+            "x": 959,
+            "width": 218
+          },
+          {
+            "x": 1190,
+            "width": 218
+          }
+        ],
+        "firefox": [
+          {
+            "x": 264,
+            "width": 218
+          },
+          {
+            "x": 496,
+            "width": 218
+          },
+          {
+            "x": 727,
+            "width": 218
+          },
+          {
+            "x": 959,
+            "width": 218
+          },
+          {
+            "x": 1190,
+            "width": 218
+          }
+        ]
+      },
+      "versions": {
+        "chrome": "157.0.8103.38",
+        "edge": "156.0.4314.58",
+        "firefox": "142.0.1"
+      },
+      "notes": [
+        "Browser versions: chrome 157.0.8103.38, edge 156.0.4314.58, firefox 142.0.1."
+      ],
+      "blockedReason": null,
+      "durationMs": 0
+    }
+  ]
+}

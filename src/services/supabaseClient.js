@@ -82,11 +82,13 @@ export const saveSupabaseConfig = (url, key) => {
   }
   localStorage.setItem('supabase_url', cleanUrl);
   localStorage.setItem('supabase_key', cleanKey);
+  if (typeof window !== 'undefined') window.dispatchEvent(new Event('sprintflow:connection-change'));
 };
 
 export const clearSupabaseConfig = () => {
   localStorage.removeItem('supabase_url');
   localStorage.removeItem('supabase_key');
+  if (typeof window !== 'undefined') window.dispatchEvent(new Event('sprintflow:connection-change'));
 };
 
 let supabaseInstance = null;
@@ -153,7 +155,7 @@ async function runCloud(label, request) {
     const message = `${label} failed to sync with Supabase: ${err?.message || err}. Your changes are kept in this browser.`;
     console.warn(message);
     setSyncStatus('error', message);
-    return { ok: false, data: null };
+    return { ok: false, data: null, error: err };
   } finally {
     clearTimeout(timer);
   }
@@ -168,6 +170,18 @@ const pickColumns = (record, columns) =>
   Object.fromEntries(columns.filter(column => record[column] !== undefined).map(column => [column, record[column]]));
 
 export const toTaskRow = task => pickColumns(task, TASK_COLUMNS);
+
+const missingPlanningColumn = error => ['PGRST204', '42703'].includes(error?.code)
+  && /due_date|blocked_reason/.test(error.message || '');
+const hasPlanningValue = task => Boolean(task.due_date || task.blocked_reason?.trim());
+async function saveTaskRows(supabase, tasks) {
+  const rows = tasks.map(toTaskRow);
+  const result = await runCloud('Saving tasks', () => supabase.from('tasks').upsert(rows));
+  // Keep explicit clears on migrated databases; retry only a confirmed old schema.
+  if (result.ok || !missingPlanningColumn(result.error) || tasks.some(hasPlanningValue)) return result.ok;
+  const compatible = rows.map(({ due_date: _due, blocked_reason: _blocker, ...row }) => row);
+  return (await runCloud('Saving tasks on the earlier schema', () => supabase.from('tasks').upsert(compatible))).ok;
+}
 export const toSprintRow = sprint => pickColumns(sprint, SPRINT_COLUMNS);
 export const toProjectRow = project => pickColumns(project, PROJECT_COLUMNS);
 export const toActivityRow = (record, projectId) => ({
@@ -530,19 +544,19 @@ export const DataService = {
     const snapshot = localStorage.getItem(STORAGE_KEYS.SPRINTS);
     const supabase = getSupabase();
     if (!supabase || hasPendingChanges('sprints')) return local;
+    const targetProjectId = projectId ?? localStorage.getItem(SELECTED_PROJECT_KEY);
+    if (!targetProjectId) return local;
     const { ok, data } = await runCloud('Loading sprints', () => {
-      let query = supabase.from('sprints').select('*').order('start_date', { ascending: true });
-      if (projectId) query = query.eq('project_id', projectId);
-      return query;
+      return supabase.from('sprints').select('*').eq('project_id', targetProjectId).order('start_date', { ascending: true });
     });
-    if (!ok && projectId) {
+    if (!ok && targetProjectId) {
       writeLocal(STORAGE_KEYS.SPRINTS, []);
       return [];
     }
     if (hasPendingChanges('sprints')
       || localStorage.getItem(STORAGE_KEYS.SPRINTS) !== snapshot) return readLocal(STORAGE_KEYS.SPRINTS, INITIAL_SPRINTS);
     if (!ok) return local;
-    if (!data?.length && projectId) {
+    if (!data?.length && targetProjectId) {
       writeLocal(STORAGE_KEYS.SPRINTS, []);
       return [];
     }
@@ -559,19 +573,19 @@ export const DataService = {
     const snapshot = localStorage.getItem(STORAGE_KEYS.TASKS);
     const supabase = getSupabase();
     if (!supabase || hasPendingChanges('tasks')) return local;
+    const targetProjectId = projectId ?? localStorage.getItem(SELECTED_PROJECT_KEY);
+    if (!targetProjectId) return local;
     const { ok, data } = await runCloud('Loading tasks', () => {
-      let query = supabase.from('tasks').select('*').order('created_at', { ascending: false });
-      if (projectId) query = query.eq('project_id', projectId);
-      return query;
+      return supabase.from('tasks').select('*').eq('project_id', targetProjectId).order('created_at', { ascending: false });
     });
-    if (!ok && projectId) {
+    if (!ok && targetProjectId) {
       writeLocal(STORAGE_KEYS.TASKS, []);
       return [];
     }
     if (hasPendingChanges('tasks')
       || localStorage.getItem(STORAGE_KEYS.TASKS) !== snapshot) return readLocalTasks();
     if (!ok) return local;
-    if (!data?.length && projectId) {
+    if (!data?.length && targetProjectId) {
       writeLocal(STORAGE_KEYS.TASKS, []);
       return [];
     }
@@ -598,7 +612,7 @@ export const DataService = {
     if (!supabase) return true;
     const version = markTablePending('tasks');
     const ok = tasks.length === 0
-      || (await runCloud('Saving tasks', () => supabase.from('tasks').upsert(tasks.map(toTaskRow)))).ok;
+      || await saveTaskRows(supabase, tasks);
     if (ok) confirmTableSent('tasks', version);
     return ok;
   },
