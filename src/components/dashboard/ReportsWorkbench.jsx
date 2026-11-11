@@ -17,13 +17,13 @@ function StatusDonut({ report, choose, selection }) {
     return <circle key={s.id} cx="80" cy="80" r="52" fill="none" stroke={s.color} strokeWidth="16" strokeDasharray={`${segment} ${length-segment}`} strokeDashoffset={-start} transform="rotate(-90 80 80)"><title>{s.label}: {s.count}</title></circle>;
   })}<text x="80" y="80" textAnchor="middle" dominantBaseline="middle">{total}</text><text x="80" y="100" textAnchor="middle" className="donut-caption">work items</text></svg><div className="report-legend">{report.statuses.map(s => <button key={s.id} onClick={() => choose('status',s.id,s.label)} aria-pressed={selection?.kind==='status'&&selection.id===s.id}><i style={{background:s.color}}/><span>{s.label}</span><b>{s.count}</b></button>)}</div></div></article>;
 }
-export default function ReportsWorkbench({ tasks, activities, project, sprint, onOpenTask }) {
+export default function ReportsWorkbench({ tasks, activities, project, sprint, onOpenTask, members }) {
   const [dates, setDates] = useState(() => rollingRange());
   const [selection, setSelection] = useState(null);
   const range = reportRange(dates.from, dates.to);
-  const report = buildSprintReport(tasks, activities, range);
+  const report = buildSprintReport(tasks, activities, range, new Date(), members);
   const choose = (kind,id,label) => setSelection(old => old?.kind===kind&&old.id===id ? null : {kind,id,label});
-  const visible = report ? reportTasks(tasks,report,selection) : [];
+  const visible = report ? reportTasks(tasks,report,selection,members) : [];
   const download = () => {
     const url = URL.createObjectURL(new Blob([dailyReportCsv(report)],{type:'text/csv;charset=utf-8'}));
     const anchor = document.createElement('a');anchor.href=url;anchor.download=`SprintFlow-completions-${range.from}-${range.to}.csv`;anchor.click();setTimeout(()=>URL.revokeObjectURL(url),1000);

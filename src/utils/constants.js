@@ -1,6 +1,6 @@
-// Team 11 Constants & Agile Enums
-// Each member signs in with their email (the same accounts as database/schema.sql).
-// accessRole decides permissions: only the lead may change project-wide settings.
+// Demo workspace constants & Agile enums
+// Sample local-only accounts. Supabase mode reads membership from project_members.
+// accessRole is consulted only by the local demo permission fallback.
 export const TEAM_MEMBERS = [
   {
     id: 'u-1',

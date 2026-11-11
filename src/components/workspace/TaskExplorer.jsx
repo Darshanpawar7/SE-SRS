@@ -12,6 +12,7 @@ import {workSignals} from '../../utils/workSignals';
 import SignalIcon from './SignalIcon';
 import TaskPreviewDrawer from './TaskPreviewDrawer';
 import { EMPTY_WORK_FILTERS, savedViewsKey, parseSavedViews, putSavedView } from '../../utils/savedWorkViews';
+import { toAssigneeOptions } from '../../utils/projectDashboard';
 export default function TaskExplorer({ onOpenTask }) {
   const { project } = useProject();
   const { currentUser } = useAuth();
@@ -19,8 +20,8 @@ export default function TaskExplorer({ onOpenTask }) {
   return <ExplorerWorkspace key={key} storageKey={key} onOpenTask={onOpenTask} />;
 }
 function ExplorerWorkspace({ onOpenTask, storageKey }) {
-  const { tasks, sprints, activeSprintId, project, activities } = useProject();
-  const { currentUser } = useAuth();
+  const { tasks, sprints, activeSprintId, project, activities, members } = useProject();
+  const { currentUser, sessionKind } = useAuth();
   const drawer = useRef(null);
   const [previewId, setPreviewId] = useState(null);
   const [saved, setSaved] = useState(() => { try { return parseSavedViews(localStorage.getItem(storageKey)); } catch { return []; } });
@@ -39,9 +40,10 @@ function ExplorerWorkspace({ onOpenTask, storageKey }) {
   const update = (key, value) => setFilters(old => ({...old,[key]:value}));
   const invalidDueRange = filters.dueFrom && filters.dueTo && filters.dueFrom > filters.dueTo;
   const inScope = scope === 'project' ? tasks : scope === 'backlog' ? tasks.filter(task => !task.sprint_id) : selectSprintTasks(tasks, activeSprintId);
-  const members = TEAM_MEMBERS.map(member => member.id);
+  const memberOptions = sessionKind === 'supabase' ? toAssigneeOptions(members) : TEAM_MEMBERS;
+  const memberIds = memberOptions.map(member => member.id);
   const eligible = inScope.filter(task=>attention==='all'||workSignals(task)[attention]);
-  const visible = exploreTasks(applyWorkView(eligible, view, currentUser?.id, members), filters);
+  const visible = exploreTasks(applyWorkView(eligible, view, currentUser?.id, memberIds), filters);
   const points = visible.reduce((sum,task) => sum + Number(task.story_points || 0),0);
   const download = () => {
     const url = URL.createObjectURL(new Blob([tasksToCsv(visible,sprints)],{type:'text/csv;charset=utf-8'}));
@@ -52,7 +54,7 @@ function ExplorerWorkspace({ onOpenTask, storageKey }) {
   return <section className="explorer-page" aria-labelledby="explorer-title">
     <div className="view-header"><div><h2 className="view-title" id="explorer-title">Work items</h2><p className="view-subtitle">Search, filter and export the work in the selected scope.</p></div><button className="btn btn-primary" disabled={!visible.length} onClick={download}><SignalIcon name="export" size={15}/> Export visible rows</button></div>
     <div className="work-attention" aria-label="Attention filters">{[['all','All attention'],['blocked','Blocked'],['overdue','Overdue'],['dueToday','Due today']].map(([id,label])=><button key={id} aria-pressed={attention===id} onClick={()=>setAttention(id)}>{label}{id!=='all'&&` (${inScope.filter(task=>workSignals(task)[id]).length})`}</button>)}</div>
-    <div className="table-tools" aria-label="Quick work views">{WORK_VIEWS.map(item => <button key={item.id} aria-pressed={view === item.id} onClick={()=>setView(item.id)}><SignalIcon name={item.icon} size={14}/>{item.label}<span>{applyWorkView(inScope,item.id,currentUser?.id,members).length}</span></button>)}</div>
+    <div className="table-tools" aria-label="Quick work views">{WORK_VIEWS.map(item => <button key={item.id} aria-pressed={view === item.id} onClick={()=>setView(item.id)}><SignalIcon name={item.icon} size={14}/>{item.label}<span>{applyWorkView(inScope,item.id,currentUser?.id,memberIds).length}</span></button>)}</div>
     <div className="explorer-layout"><aside className="explorer-filter-sidebar" aria-label="Work item filters">
     <div className="saved-work-views"><h3>Saved views</h3><p>Private to this browser, account and project.</p>{saved.map(item=><div key={item.id}><button className="saved-view-open" onClick={()=>{setScope(item.scope);setView(item.view);setAttention(item.attention);setFilters(item.filters);setMessage(`Loaded ${item.name}`);}}>{item.name}</button><button aria-label={`Delete saved view ${item.name}`} onClick={()=>{if(persistViews(saved.filter(v=>v.id!==item.id)))setMessage('Saved view removed.');}}>×</button></div>)}<form onSubmit={e=>{e.preventDefault();try{const next=putSavedView(saved,viewName,{scope,view,attention,filters},crypto.randomUUID());if(persistViews(next)){setViewName('');setMessage('View saved in this browser.');}}catch(error){setMessage(error.message);}}}><label>View name<input className="form-input" maxLength={50} value={viewName} onChange={e=>setViewName(e.target.value)} placeholder="e.g. My high-priority work"/></label><button className="btn btn-secondary btn-sm" disabled={!viewName.trim()}>Save current view</button></form><p role="status">{message}</p></div>
     <div className="explorer-filters">
@@ -60,7 +62,7 @@ function ExplorerWorkspace({ onOpenTask, storageKey }) {
       <label>Scope<select className="form-select" value={scope} onChange={e=>setScope(e.target.value)}><option value="sprint">Selected sprint</option><option value="project">Entire project</option><option value="backlog">Unscheduled backlog</option></select></label>
       <label>Status<select className="form-select" value={filters.status} onChange={e=>update('status',e.target.value)}><option value="all">All statuses</option>{TASK_STATUSES.map(s=><option key={s.id} value={s.id}>{s.label}</option>)}</select></label>
       <label>Priority<select className="form-select" value={filters.priority} onChange={e=>update('priority',e.target.value)}><option value="all">All priorities</option>{TASK_PRIORITIES.map(p=><option key={p.id} value={p.id}>{p.label}</option>)}</select></label>
-      <label>Assignee<select className="form-select" value={filters.assignee} onChange={e=>update('assignee',e.target.value)}><option value="all">Everyone</option><option value="unassigned">Unassigned</option>{TEAM_MEMBERS.map(m=><option key={m.id} value={m.id}>{m.name}</option>)}</select></label>
+      <label>Assignee<select className="form-select" value={filters.assignee} onChange={e=>update('assignee',e.target.value)}><option value="all">Everyone</option><option value="unassigned">Unassigned</option>{memberOptions.map(m=><option key={m.id} value={m.id}>{m.name}</option>)}</select></label>
       <label>Order<select className="form-select" value={filters.sort} onChange={e=>update('sort',e.target.value)}><option value="priority">Priority</option><option value="points">Points ↓</option><option value="title">Title A–Z</option><option value="due">Due date ↑</option><option value="oldest">Oldest first</option><option value="updated">Recently updated</option></select></label>
       <label>Due from (UTC)<input type="date" className="form-input" value={filters.dueFrom} onChange={e=>update('dueFrom',e.target.value)}/></label>
       <label>Due to (UTC)<input type="date" className="form-input" value={filters.dueTo} onChange={e=>update('dueTo',e.target.value)}/></label>

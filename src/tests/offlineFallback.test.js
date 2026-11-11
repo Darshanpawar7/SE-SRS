@@ -119,7 +119,7 @@ describe('PMS-F-016 offline CRUD fallback', () => {
   it('keeps a change locally and queues it when the cloud save fails', async () => {
     const cloud = seededCloud();
     setSupabaseClient(cloud);
-    await DataService.loadAll();
+    await DataService.loadAll(INITIAL_PROJECT.id);
 
     cloud.failWith = 'Failed to fetch';
     await DataService.saveTasks([makeTask(1, { title: 'Renamed offline' })]);
@@ -132,16 +132,16 @@ describe('PMS-F-016 offline CRUD fallback', () => {
   it('shows the local change after a reload while the cloud is still unreachable, then syncs it', async () => {
     const cloud = seededCloud();
     setSupabaseClient(cloud);
-    await DataService.loadAll();
+    await DataService.loadAll(INITIAL_PROJECT.id);
     cloud.failWith = 'Failed to fetch';
     await DataService.saveTasks([makeTask(1, { status: 'review' })]);
 
     // Reload while still offline: the queued local copy wins over the older cloud row.
-    expect((await DataService.loadAll()).tasks[0].status).toBe('review');
+    expect((await DataService.loadAll(INITIAL_PROJECT.id)).tasks[0].status).toBe('review');
 
     // Back online: the reload shows the local change and sends it in the background.
     cloud.failWith = null;
-    const { tasks } = await DataService.loadAll();
+    const { tasks } = await DataService.loadAll(INITIAL_PROJECT.id);
     await DataService.flushPending();
     expect(tasks[0].status).toBe('review');
     expect(cloud.db.tasks[0].status).toBe('review');
@@ -151,7 +151,7 @@ describe('PMS-F-016 offline CRUD fallback', () => {
   it('TC-RECOV-01: tasks created while disconnected are not lost after reconnecting', async () => {
     const cloud = seededCloud();
     setSupabaseClient(cloud);
-    await DataService.loadAll();
+    await DataService.loadAll(INITIAL_PROJECT.id);
 
     cloud.failWith = 'Failed to fetch';
     await DataService.saveTasks([makeTask(3), makeTask(2), makeTask(1)]);
@@ -166,14 +166,14 @@ describe('PMS-F-016 offline CRUD fallback', () => {
   it('sends an offline delete later, so the deleted task does not come back', async () => {
     const cloud = seededCloud([makeTask(1), makeTask(2)]);
     setSupabaseClient(cloud);
-    await DataService.loadAll();
+    await DataService.loadAll(INITIAL_PROJECT.id);
 
     cloud.failWith = 'Failed to fetch';
     await DataService.deleteTask(makeTask(2).id, [makeTask(1)]);
-    expect((await DataService.loadAll()).tasks.map(task => task.id)).toEqual([makeTask(1).id]);
+    expect((await DataService.loadAll(INITIAL_PROJECT.id)).tasks.map(task => task.id)).toEqual([makeTask(1).id]);
 
     cloud.failWith = null;
-    expect((await DataService.loadAll()).tasks.map(task => task.id)).toEqual([makeTask(1).id]);
+    expect((await DataService.loadAll(INITIAL_PROJECT.id)).tasks.map(task => task.id)).toEqual([makeTask(1).id]);
     await DataService.flushPending();
     expect(cloud.db.tasks.map(task => task.id)).toEqual([makeTask(1).id]);
   });
@@ -213,12 +213,12 @@ describe('PMS-F-016 offline CRUD fallback', () => {
     vi.useFakeTimers();
     const cloud = seededCloud();
     setSupabaseClient(cloud);
-    await DataService.loadAll();
+    await DataService.loadAll(INITIAL_PROJECT.id);
     cloud.hangWrites = true;
 
     const save = DataService.saveTasks([makeTask(1, { title: 'Renamed during a slow save' })]); // gets no answer
 
-    const { tasks } = await DataService.loadAll();
+    const { tasks } = await DataService.loadAll(INITIAL_PROJECT.id);
     expect(tasks[0].title).toBe('Renamed during a slow save');
     expect(cloud.db.tasks[0].title).toBe('Task 1');
 
@@ -235,11 +235,11 @@ describe('PMS-F-016 offline CRUD fallback', () => {
   it('loads the local copy, not the older cloud row, when writes fail but reads still work', async () => {
     const cloud = seededCloud();
     setSupabaseClient(cloud);
-    await DataService.loadAll();
+    await DataService.loadAll(INITIAL_PROJECT.id);
     cloud.failWritesWith = 'new row violates row-level security policy';
 
     await DataService.saveTasks([makeTask(1, { status: 'done' })]);
-    const { tasks } = await DataService.loadAll();
+    const { tasks } = await DataService.loadAll(INITIAL_PROJECT.id);
 
     expect(tasks[0].status).toBe('done');
     expect(getPendingChangeCount()).toBe(1);
@@ -248,7 +248,7 @@ describe('PMS-F-016 offline CRUD fallback', () => {
   it('does not let an older save that finishes late clear a newer failed one', async () => {
     const cloud = seededCloud();
     setSupabaseClient(cloud);
-    await DataService.loadAll();
+    await DataService.loadAll(INITIAL_PROJECT.id);
     cloud.holdWrites = true;
 
     const first = DataService.saveTasks([makeTask(1, { title: 'v1' })]);
@@ -261,7 +261,7 @@ describe('PMS-F-016 offline CRUD fallback', () => {
 
     expect(getPendingChangeCount()).toBe(1);
     cloud.holdWrites = false;
-    expect((await DataService.loadAll()).tasks[0].title).toBe('v2');
+    expect((await DataService.loadAll(INITIAL_PROJECT.id)).tasks[0].title).toBe('v2');
     await DataService.flushPending();
     expect(cloud.db.tasks[0].title).toBe('v2');
   });

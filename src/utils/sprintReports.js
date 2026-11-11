@@ -20,7 +20,7 @@ export function rollingRange(days = 28, now = new Date()) {
   return { from: flowDate(Date.parse(flowDate(now)) - (days - 1) * DAY), to: flowDate(now) };
 }
 export const reportPoints = task => Number.isFinite(Number(task.story_points)) ? Math.max(0, Number(task.story_points)) : 0;
-export function buildSprintReport(tasks, activities, range, now = new Date()) {
+export function buildSprintReport(tasks, activities, range, now = new Date(), members = TEAM_MEMBERS) {
   if (range.error) return null;
   const history = flowMetrics(tasks, activities, range.end, range.days);
   const states = [...TASK_STATUSES];
@@ -31,8 +31,8 @@ export function buildSprintReport(tasks, activities, range, now = new Date()) {
     const items = tasks.filter(t => p.id === 'unknown' ? !priorityIds.includes(t.priority) : t.priority === p.id);
     return { ...p, count: items.length, states: statuses.map(s => ({ ...s, count: items.filter(t => s.id === 'unknown' ? !TASK_STATUSES.some(v => v.id === t.status) : t.status === s.id).length })) };
   });
-  const memberIds = TEAM_MEMBERS.map(m => m.id);
-  const owners = [...TEAM_MEMBERS, { id: 'unassigned', name: 'Unassigned / unknown', color: '#737b85' }].map(m => {
+  const memberIds = members.map(m => m.user_id || m.id);
+  const owners = [...members.map(m => ({ ...m, id: m.user_id || m.id, name: m.member_name || m.name })), { id: 'unassigned', name: 'Unassigned / unknown', color: '#737b85' }].map(m => {
     const items = tasks.filter(t => m.id === 'unassigned' ? !memberIds.includes(t.assignee_id) : t.assignee_id === m.id);
     return { ...m, count: items.length, points: items.reduce((n, t) => n + reportPoints(t), 0), openPoints: items.filter(t => t.status !== 'done').reduce((n, t) => n + reportPoints(t), 0) };
   });
@@ -42,13 +42,13 @@ export function buildSprintReport(tasks, activities, range, now = new Date()) {
     // Open age always describes now, independently of the historical date picker.
     ages: flowMetrics(tasks, [], now).ages };
 }
-export function reportTasks(tasks, report, selection) {
+export function reportTasks(tasks, report, selection, members = TEAM_MEMBERS) {
   if (!selection) return tasks;
   if (selection.kind === 'date') {
     const ids = new Set(report.completions.filter(c => flowDate(c.timestamp) === selection.id).map(c => c.taskId));
     return tasks.filter(t => ids.has(t.id));
   }
-  if (selection.kind === 'owner') return tasks.filter(t => selection.id === 'unassigned' ? !TEAM_MEMBERS.some(m => m.id === t.assignee_id) : t.assignee_id === selection.id);
+  if (selection.kind === 'owner') return tasks.filter(t => selection.id === 'unassigned' ? !members.some(m => (m.user_id || m.id) === t.assignee_id) : t.assignee_id === selection.id);
   const enums = selection.kind === 'status' ? TASK_STATUSES : TASK_PRIORITIES;
   return tasks.filter(t => selection.id === 'unknown' ? !enums.some(v => v.id === t[selection.kind]) : t[selection.kind] === selection.id);
 }

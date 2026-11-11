@@ -2,17 +2,16 @@ import { TEAM_MEMBERS } from '../utils/constants';
 import { activateSessionCache } from './sessionCache';
 import { getSupabaseConfig, getSupabase } from './supabaseClient';
 
-// Team sign-in (PMS-F-001). With Supabase configured, Supabase Auth checks the
-// password. In local demo mode each member signs in with their USN as the password.
-// Either way only the four Team 11 accounts can sign in.
 const SESSION_KEY = 'sprintflow_session';
-// Profile chosen by the earlier "simulate a teammate" switcher; no longer trusted.
 const LEGACY_PROFILE_KEY = 'sprintflow_user';
 
-// Short role names for the navbar; the full team role is shown in the profile menu.
 export const ACCESS_ROLE_LABELS = Object.freeze({
   lead: 'Team Lead',
-  developer: 'Team Member'
+  scrum_master: 'Scrum Master',
+  developer: 'Developer',
+  viewer: 'Viewer',
+  contributor: 'Developer',
+  owner: 'Team Lead'
 });
 
 export const PERMISSIONS = Object.freeze({
@@ -20,11 +19,32 @@ export const PERMISSIONS = Object.freeze({
   RESET_DEMO_DATA: 'data:reset'
 });
 
-// Only the team lead may change project details or replace the demo board.
 const ROLE_PERMISSIONS = {
   lead: [PERMISSIONS.EDIT_PROJECT, PERMISSIONS.RESET_DEMO_DATA],
-  developer: []
+  owner: [PERMISSIONS.EDIT_PROJECT, PERMISSIONS.RESET_DEMO_DATA],
+  developer: [],
+  scrum_master: [],
+  viewer: [],
+  contributor: []
 };
+
+const initialsFor = (name = '') => String(name).trim().split(/\s+/).slice(0, 2).map(part => part[0] || '').join('').toUpperCase() || 'U';
+
+export function normalizeAuthUser(user) {
+  if (!user?.id || !user.email) return null;
+  const name = user.user_metadata?.full_name?.trim() || user.email.split('@')[0];
+  return {
+    id: user.id,
+    authUserId: user.id,
+    email: user.email,
+    name,
+    initials: initialsFor(name),
+    color: '#1f6b4c',
+    role: 'Project member',
+    accessRole: 'developer',
+    mode: 'supabase'
+  };
+}
 
 export function can(member, permission) {
   return Boolean(member && ROLE_PERMISSIONS[member.accessRole]?.includes(permission));
@@ -36,43 +56,97 @@ export function findTeamMember(email) {
 }
 
 export async function signIn(email, password) {
-  const member = findTeamMember(email);
-  if (!member) throw new Error('Only Team 11 accounts can sign in to SprintFlow.');
+  const cleanEmail = String(email ?? '').trim().toLowerCase();
+  if (!cleanEmail) throw new Error('Enter your email address.');
   if (!String(password ?? '').trim()) throw new Error('Enter your password.');
 
-  let mode = 'demo';
   const supabase = getSupabase();
   if (supabase) {
-    const { error } = await supabase.auth.signInWithPassword({ email: member.email, password });
-    if (error) throw new Error(`Sign-in failed: ${error.message}`);
+    const { data, error } = await supabase.auth.signInWithPassword({ email: cleanEmail, password });
+    if (error) throw new Error(error.message || 'Sign-in failed.');
+    const user = normalizeAuthUser(data?.user ?? data?.session?.user);
+    if (!user) throw new Error('Supabase did not return a signed-in user.');
     const verified = await verifyCloudSession();
-    if (!verified || verified.id !== member.id) {
-      await supabase.auth.signOut();
-      throw new Error('The verified Supabase account does not match the selected team profile.');
+    if (!verified || verified.id !== user.id) {
+      try { await supabase.auth.signOut(); } catch (signOutError) {
+        console.warn('Could not clear an unverified Supabase session:', signOutError);
+      }
+      throw new Error('The verified Supabase account could not be confirmed.');
     }
     activateSessionCache(verified.cloudCacheScope, verified.email);
-    mode = 'supabase';
-  } else if (String(password).trim().toUpperCase() !== member.usn) {
-    throw new Error('Incorrect email or password.');
+    localStorage.removeItem(SESSION_KEY);
+    localStorage.removeItem(LEGACY_PROFILE_KEY);
+    return verified;
   }
 
-  if (mode === 'demo') activateSessionCache('demo');
-  const session = { memberId: member.id, email: member.email, mode, signedInAt: new Date().toISOString() };
-  localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+  // Local demo authentication remains available without cloud credentials.
+  const member = findTeamMember(cleanEmail);
+  if (!member) throw new Error('This account is not available in local demo mode.');
+  if (String(password).trim().toUpperCase() !== member.usn) throw new Error('Incorrect email or password.');
+  activateSessionCache('demo');
+  localStorage.setItem(SESSION_KEY, JSON.stringify({ memberId: member.id, email: member.email, mode: 'demo' }));
   localStorage.removeItem(LEGACY_PROFILE_KEY);
   return member;
 }
 
-// Returns the signed-in team member, or null. A stored session that does not match
-// a team member (edited, corrupt or stale) is discarded, so it cannot grant access.
+export async function signUp(fullName, email, password) {
+  const supabase = getSupabase();
+  if (!supabase) throw new Error('Connect a Supabase project before creating an account.');
+  const { data, error } = await supabase.auth.signUp({
+    email: String(email).trim().toLowerCase(),
+    password,
+    options: { data: { full_name: String(fullName).trim() } }
+  });
+  if (error) throw new Error(error.message || 'Account creation failed.');
+  const needsEmailConfirmation = !data?.session;
+  const user = needsEmailConfirmation ? normalizeAuthUser(data?.user) : await verifyCloudSession();
+  if (data?.session && !user) throw new Error('The new Supabase session could not be verified.');
+  if (user?.cloudCacheScope) activateSessionCache(user.cloudCacheScope, user.email);
+  return { user, needsEmailConfirmation };
+}
+
+export async function requestPasswordReset(email) {
+  const supabase = getSupabase();
+  if (!supabase) throw new Error('Connect a Supabase project before resetting a password.');
+  const redirectTo = `${window.location.origin}${window.location.pathname}`;
+  const { error } = await supabase.auth.resetPasswordForEmail(String(email).trim().toLowerCase(), { redirectTo });
+  if (error) throw new Error(error.message || 'Password reset could not be requested.');
+}
+
+export async function updatePassword(password) {
+  const supabase = getSupabase();
+  if (!supabase) throw new Error('A Supabase recovery session is required to update your password.');
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) throw new Error(error.message || 'Password update failed.');
+}
+
+export async function getAuthSession() {
+  const supabase = getSupabase();
+  if (!supabase) return { user: restoreSession(), isCloud: false };
+  return { user: await verifyCloudSession(), isCloud: true };
+}
+
+export function subscribeAuth(callback) {
+  const supabase = getSupabase();
+  if (!supabase?.auth?.onAuthStateChange) return () => {};
+  const { data } = supabase.auth.onAuthStateChange((event, session) => {
+    callback({ event, user: normalizeAuthUser(session?.user) });
+  });
+  return () => data?.subscription?.unsubscribe?.();
+}
+
 export function restoreSession() {
+  if (getSupabase()) {
+    localStorage.removeItem(SESSION_KEY);
+    return null;
+  }
   try {
     const session = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
-    const member = session && TEAM_MEMBERS.find(m => m.id === session.memberId && m.email === session.email);
-    if (member && !getSupabase() && (!session.mode || session.mode === 'demo')) return member;
-    if (member) return null;
+    const member = session && session.mode === 'demo'
+      && TEAM_MEMBERS.find(person => person.id === session.memberId && person.email === session.email);
+    if (member) return member;
   } catch (err) {
-    console.warn('Discarding unreadable session:', err);
+    console.warn('Discarding unreadable local demo session:', err);
   }
   localStorage.removeItem(SESSION_KEY);
   return null;
@@ -83,7 +157,8 @@ export async function signOut() {
   const supabase = getSupabase();
   if (!supabase) return;
   try {
-    await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
   } catch (err) {
     console.warn('Supabase sign-out failed; the local session was still ended:', err);
   }
@@ -150,7 +225,7 @@ export async function verifyCloudSession() {
     const { data, error } = result;
     if (isSessionMissing(error)) return null;
     if (error) throw new SessionCheckError(error.message || 'Session verification failed.', { transient: isTransientAuthError(error) });
-    const member = findTeamMember(data?.user?.email);
-    return member ? { ...member, cloudCacheScope: `${endpoint}:${data.user.id || data.user.email}` } : null;
+    const user = normalizeAuthUser(data?.user);
+    return user ? { ...user, cloudCacheScope: `${endpoint}:${user.id || user.email}` } : null;
   } finally { clearTimeout(timer); }
 }

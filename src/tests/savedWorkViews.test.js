@@ -7,8 +7,9 @@ it('separates saved views by endpoint/account, member and project without key co
 });
 it('recovers corrupt saved data and validates persisted filters against current enums',()=>{
   expect(parseSavedViews('bad')).toEqual([]);expect(parseSavedViews('{}')).toEqual([]);
-  const normalized=normalizeWorkView({scope:'secret',attention:'invalid',filters:{status:'invented',assignee:'foreign',sort:'runSql',dueFrom:'2026-02-30'}});
+  const normalized=normalizeWorkView({scope:'secret',attention:'invalid',filters:{status:'invented',assignee:'<bad>',sort:'runSql',dueFrom:'2026-02-30'}});
   expect(normalized.scope).toBe('sprint');expect(normalized.filters.status).toBe('all');expect(normalized.filters.sort).toBe('priority');expect(normalized.filters.assignee).toBe('all');expect(normalized.filters.dueFrom).toBe('');
+  expect(normalizeWorkView({filters:{assignee:'project-member-uuid'}}).filters.assignee).toBe('project-member-uuid');
 });
 it('bounds saved view count and text and handles duplicate stored identities',()=>{
   const rows=putSavedView([],' My work ',{scope:'backlog',filters:{query:'database'}},'view-1');

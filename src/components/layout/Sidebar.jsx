@@ -1,6 +1,13 @@
 import React from 'react';
+import { useProject } from '../../context/ProjectContext';
+import { useAuth } from '../../context/AuthContext';
+import { TEAM_MEMBERS } from '../../utils/constants';
+import { PROJECT_ROLE_LABELS } from '../../utils/projectDashboard';
 
 export default function Sidebar({ activeTab, setActiveTab, onOpenSettings }) {
+  const { project, members } = useProject();
+  const { sessionKind } = useAuth();
+  const shownMembers = sessionKind === 'supabase' ? members : TEAM_MEMBERS;
   const navItems = [
     {
       id: 'explorer',
@@ -30,6 +37,7 @@ export default function Sidebar({ activeTab, setActiveTab, onOpenSettings }) {
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
       )
     },
+    { id: 'members', label: 'Members', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg> },
     { id: 'map', label: 'Project map', icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="8" y="2" width="8" height="5" rx="1"/><path d="M12 7v5M5 16v-4h14v4"/><rect x="2" y="16" width="6" height="5" rx="1"/><rect x="16" y="16" width="6" height="5" rx="1"/></svg> },
     {
       id: 'docs',
@@ -67,15 +75,19 @@ export default function Sidebar({ activeTab, setActiveTab, onOpenSettings }) {
           <span className="nav-label">Connections</span>
         </button>
 
-        <div className="team-credit-card">
-          <div className="team-badge-row">
-            <span className="badge-chip">Team 11</span>
-            <span className="badge-tag">Section 5C</span>
-          </div>
-          <div className="team-names">
-            <p>Darshan • Dhatri</p>
-            <p>Chandan • Eshwar</p>
-          </div>
+        <div className="team-credit-card" aria-label={sessionKind === 'supabase' ? 'Selected project members' : 'Demo team'}>
+          {sessionKind === 'supabase' ? <>
+            <div className="team-badge-row"><span className="badge-chip">{project?.key || 'Project'}</span></div>
+            <strong>{project?.name || 'Project'}</strong>
+            <div className="team-names">{shownMembers.length ? shownMembers.map(member => {
+              const name = member.member_name || member.name;
+              const initials = String(name || '?').trim().split(/\s+/).slice(0, 2).map(part => part[0]).join('').toUpperCase();
+              return <p key={member.user_id || member.id}><span className="member-avatar">{initials}</span> {name} · {PROJECT_ROLE_LABELS[member.role] || member.role}</p>;
+            }) : <p>No project members loaded.</p>}</div>
+          </> : <>
+            <div className="team-badge-row"><span className="badge-chip">Demo team</span><span className="badge-tag">Local data</span></div>
+            <div className="team-names">{shownMembers.map(member => <p key={member.id}>{member.name} · {member.role}</p>)}</div>
+          </>}
         </div>
       </div>
     </aside>

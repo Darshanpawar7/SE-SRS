@@ -33,7 +33,7 @@ const ONLY = process.env.ONLY ? process.env.ONLY.split(',').map(id => id.trim())
 const PRIMARY = BROWSERS[0];
 
 // Demo profile shipped with the seed data (src/utils/constants.js).
-const LEAD = { name: 'Darshan P Pawar', password: 'PES2UG24CS143', firstName: 'Darshan', role: 'Team Lead' };
+const LEAD = { name: 'Darshan P Pawar', email: 'darshan@pes.edu', password: 'PES2UG24CS143', firstName: 'Darshan', role: 'Team Lead' };
 const COLUMNS = ['Backlog', 'To Do', 'In Progress', 'Code Review', 'Done'];
 const FIBONACCI = ['1', '2', '3', '5', '8', '13', '21'];
 const PERF_BUDGET_MS = 50;
@@ -68,8 +68,8 @@ async function openApp(browserName) {
 
 async function signInAsLead(page) {
   await page.getByRole('heading', { name: 'Sign in' }).waitFor();
-  await page.getByLabel(LEAD.name).check();
-  await page.getByLabel('Password').fill(LEAD.password);
+  await page.getByLabel('Email').fill(LEAD.email);
+  await page.getByRole('textbox', { name: 'Password' }).fill(LEAD.password);
   await page.getByRole('button', { name: 'Sign in' }).click();
   await page.locator('.user-name').waitFor();
 }
@@ -482,7 +482,7 @@ const caseDash01 = async ({ page, check }) => {
 
 const caseWork01 = async ({ page, check }) => {
   const shown = await kpis(page);
-  const section = shown.text.split('Team 11 Capacity & Workload')[1]?.split('Real-Time Audit Trail')[0] ?? '';
+  const section = shown.text.split(/Team 11 Capacity & Workload|Project workload/)[1]?.split('Real-Time Audit Trail')[0] ?? '';
   const members = [...section.matchAll(/(\d+) tasks? • (\d+) story points assigned/g)].map(match => Number(match[2]));
   check('Tasks are assigned across at least three members', members.filter(points => points > 0).length >= 3, members.join(', '));
   const sum = members.reduce((a, b) => a + b, 0);

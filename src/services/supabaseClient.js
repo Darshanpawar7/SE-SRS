@@ -6,15 +6,28 @@ import { isAuditRecord } from '../utils/auditTrail';
 import { createClient } from '@supabase/supabase-js';
 import { INITIAL_PROJECT, INITIAL_SPRINTS, INITIAL_TASKS, INITIAL_ACTIVITY } from './mockData';
 
-// A usable Supabase project URL: https, a host name, and no embedded credentials.
-export const isValidSupabaseUrl = (value) => {
+// Normalize the project root. Some dashboard instructions provide the Data API
+// endpoint ending in /rest/v1; supabase-js needs the project root and adds API
+// paths itself. Accept the standard API suffixes but never arbitrary paths.
+export const normalizeSupabaseProjectUrl = (value) => {
   try {
     const url = new URL(String(value).trim());
-    return url.protocol === 'https:' && Boolean(url.hostname) && !url.username && !url.password;
+    const path = url.pathname.replace(/\/+$/, '') || '/';
+    const validPath = path === '/' || path === '/rest/v1' || path === '/auth/v1';
+    if (url.protocol === 'https:'
+      && Boolean(url.hostname)
+      && !url.username
+      && !url.password
+      && validPath
+      && !url.search
+      && !url.hash) return url.origin;
+    return null;
   } catch {
-    return false;
+    return null;
   }
 };
+
+export const isValidSupabaseUrl = value => Boolean(normalizeSupabaseProjectUrl(value));
 
 const hasServiceRoleJwtPayload = (key) => {
   const parts = key.split('.');
@@ -46,21 +59,23 @@ export const getSupabaseConfig = () => {
   const envUrl = import.meta.env.VITE_SUPABASE_URL || '';
   const envKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
-  const localUrl = localStorage.getItem('supabase_url') || envUrl;
+  const configuredUrl = localStorage.getItem('supabase_url') || envUrl;
   const localKey = localStorage.getItem('supabase_key') || envKey;
+  const localUrl = normalizeSupabaseProjectUrl(configuredUrl) || configuredUrl;
+  const normalizedEnvUrl = normalizeSupabaseProjectUrl(envUrl);
 
   const isConfigured = Boolean(isValidSupabaseAnonKey(localKey) && isValidSupabaseUrl(localUrl));
-  const isBuiltIn = Boolean(isValidSupabaseAnonKey(envKey) && isValidSupabaseUrl(envUrl));
+  const isBuiltIn = Boolean(isValidSupabaseAnonKey(envKey) && normalizedEnvUrl);
   return { url: localUrl, key: localKey, isConfigured, isBuiltIn };
 };
 
 // Unusable credentials are rejected before anything is saved, so a typo never
 // replaces a working configuration (TC-SET-01).
 export const saveSupabaseConfig = (url, key) => {
-  const cleanUrl = String(url ?? '').trim().replace(/\/+$/, '');
+  const cleanUrl = normalizeSupabaseProjectUrl(url);
   const cleanKey = String(key ?? '').trim();
   if (!isValidSupabaseUrl(cleanUrl)) {
-    throw new Error('Enter a valid https:// Supabase project URL, for example https://your-project.supabase.co.');
+    throw new Error('Enter a valid https:// Supabase project URL, for example https://your-project.supabase.co. Use the project root, or its standard /rest/v1 or /auth/v1 URL.');
   }
   if (!isValidSupabaseAnonKey(cleanKey)) {
     throw new Error('Enter a valid Supabase anon public key, not a service-role or secret key.');
@@ -182,14 +197,20 @@ export const toActivityRow = (record, projectId) => ({
   created_at: record.timestamp
 });
 
-// Storage keys for offline persistence
+// Keep each signed-in cloud project's offline snapshot separate. The local demo
+// continues using its original unscoped keys.
+const SELECTED_PROJECT_KEY = 'sprintflow_selected_project_id';
+const scopedKey = key => {
+  const projectId = localStorage.getItem(SELECTED_PROJECT_KEY);
+  return projectId ? `${key}:${projectId}` : key;
+};
 const STORAGE_KEYS = {
-  PROJECT: 'sprintflow_project',
-  SPRINTS: 'sprintflow_sprints',
-  TASKS: 'sprintflow_tasks',
-  ACTIVITY: 'sprintflow_activity',
-  SELECTED_SPRINT: 'sprintflow_selected_sprint',
-  BURNDOWN: 'sprintflow_burndown_history'
+  get PROJECT() { return scopedKey('sprintflow_project'); },
+  get SPRINTS() { return scopedKey('sprintflow_sprints'); },
+  get TASKS() { return scopedKey('sprintflow_tasks'); },
+  get ACTIVITY() { return scopedKey('sprintflow_activity'); },
+  get SELECTED_SPRINT() { return scopedKey('sprintflow_selected_sprint'); },
+  get BURNDOWN() { return scopedKey('sprintflow_burndown_history'); }
 };
 
 const readLocal = (key, fallback) => {
@@ -288,14 +309,14 @@ const readLocalTasks = () => {
 // reload during a slow request (or an older request finishing after a newer one failed)
 // can never replace the local copy with older cloud data. Deletes and audit records are
 // queued the same way. While a table is marked, loading uses the local copy.
-const PENDING_KEY = 'sprintflow_pending_sync';
+const pendingKey = () => scopedKey('sprintflow_pending_sync');
 let flushInFlight = null;
 
 const readPending = () => {
   recoverLocalSave();
   const empty = { seq: 0, tables: {}, deletedTaskIds: [], deletedSprintIds: [], activity: [] };
   try {
-    const saved = JSON.parse(localStorage.getItem(PENDING_KEY) || '{}');
+    const saved = JSON.parse(localStorage.getItem(pendingKey()) || '{}');
     return {
       ...empty,
       ...saved,
@@ -309,7 +330,7 @@ const readPending = () => {
   }
 };
 
-const updatePending = (change) => localStorage.setItem(PENDING_KEY, JSON.stringify(change(readPending())));
+const updatePending = (change) => localStorage.setItem(pendingKey(), JSON.stringify(change(readPending())));
 
 // Marks a table as sent-but-unconfirmed and returns the version of this send.
 const markTablePending = (table) => {
@@ -389,7 +410,7 @@ const persistChange = (key, value, table, record, deletedTaskId = null) => {
   if (getSupabase()) {
     const pending = readPending();
     const version = pending.seq + 1;
-    values[PENDING_KEY] = {
+    values[pendingKey()] = {
       ...pending, seq: version,
       tables: table ? { ...pending.tables, [table]: version } : pending.tables,
       deletedTaskIds: deletedTaskId ? [...new Set([...pending.deletedTaskIds, deletedTaskId])] : pending.deletedTaskIds,
@@ -401,6 +422,12 @@ const persistChange = (key, value, table, record, deletedTaskId = null) => {
 
 // Unified Data Service: operates on Supabase when connected, else localStorage
 export const DataService = {
+  setActiveProject(projectId) {
+    if (projectId) localStorage.setItem(SELECTED_PROJECT_KEY, projectId);
+    else localStorage.removeItem(SELECTED_PROJECT_KEY);
+    emptyCloudTables.clear();
+  },
+
   getSelectedSprint() {
     recoverLocalSave();
     return localStorage.getItem(STORAGE_KEYS.SELECTED_SPRINT);
@@ -423,15 +450,19 @@ export const DataService = {
   // connection must not block loading); tables with such changes load from the local copy.
   // On first connection to an empty Supabase project, this browser's data is published in
   // foreign-key order: project, then sprints, then tasks.
-  async loadAll() {
+  async loadAll(projectId = null) {
+    // Supabase mode is opt-in per selected project. Never publish or display the
+    // local demo fixture as cloud data before a real project is selected.
+    if (getSupabase() && !projectId) return { project: null, sprints: [], tasks: [], activities: [] };
     this.flushPending().catch(err => console.warn('Sending unsynced changes failed:', err));
-    const project = await this.getProject();
+    const project = await this.getProject(projectId);
+    if (projectId && !project) return { project: null, sprints: [], tasks: [], activities: [] };
     const [sprints, tasks, activities] = await Promise.all([
-      this.getSprints(),
-      this.getTasks(),
-      this.getActivity()
+      this.getSprints(projectId),
+      this.getTasks(projectId),
+      this.getActivity(projectId)
     ]);
-    if (emptyCloudTables.size > 0) await this.publishAll({ project, sprints, tasks });
+    if (!projectId && emptyCloudTables.size > 0) await this.publishAll({ project, sprints, tasks });
     return { project, sprints, tasks, activities };
   },
 
@@ -478,10 +509,22 @@ export const DataService = {
     return true;
   },
 
-  async getProject() {
+  async getProject(projectId = null) {
     const local = readLocal(STORAGE_KEYS.PROJECT, INITIAL_PROJECT);
     const snapshot = localStorage.getItem(STORAGE_KEYS.PROJECT);
     const supabase = getSupabase();
+    if (supabase && projectId) {
+      const { ok, data } = await runCloud('Loading the project', () =>
+        supabase.from('projects').select('*').eq('id', projectId).limit(1));
+      if (!ok) {
+        if (local?.id === projectId) return local;
+        throw new Error('The selected project could not be loaded from Supabase.');
+      }
+      if (!data?.length) return null;
+      const project = data[0];
+      writeLocal(STORAGE_KEYS.PROJECT, project);
+      return project;
+    }
     if (!supabase || hasPendingChanges('projects')) return local;
     const { ok, data } = await runCloud('Loading the project', () => supabase.from('projects').select('*').limit(1));
     if (hasPendingChanges('projects')
@@ -496,16 +539,27 @@ export const DataService = {
     return project;
   },
 
-  async getSprints() {
+  async getSprints(projectId = null) {
     const local = readLocal(STORAGE_KEYS.SPRINTS, INITIAL_SPRINTS);
     const snapshot = localStorage.getItem(STORAGE_KEYS.SPRINTS);
     const supabase = getSupabase();
     if (!supabase || hasPendingChanges('sprints')) return local;
-    const { ok, data } = await runCloud('Loading sprints', () =>
-      supabase.from('sprints').select('*').eq('project_id', readLocal(STORAGE_KEYS.PROJECT, INITIAL_PROJECT).id).order('start_date', { ascending: true }));
+    const targetProjectId = projectId ?? localStorage.getItem(SELECTED_PROJECT_KEY);
+    if (!targetProjectId) return local;
+    const { ok, data } = await runCloud('Loading sprints', () => {
+      return supabase.from('sprints').select('*').eq('project_id', targetProjectId).order('start_date', { ascending: true });
+    });
+    if (!ok && targetProjectId) {
+      writeLocal(STORAGE_KEYS.SPRINTS, []);
+      return [];
+    }
     if (hasPendingChanges('sprints')
       || localStorage.getItem(STORAGE_KEYS.SPRINTS) !== snapshot) return readLocal(STORAGE_KEYS.SPRINTS, INITIAL_SPRINTS);
     if (!ok) return local;
+    if (!data?.length && targetProjectId) {
+      writeLocal(STORAGE_KEYS.SPRINTS, []);
+      return [];
+    }
     if (!data?.length) {
       emptyCloudTables.add('sprints');
       return local;
@@ -514,16 +568,27 @@ export const DataService = {
     return data;
   },
 
-  async getTasks() {
+  async getTasks(projectId = null) {
     const local = readLocalTasks();
     const snapshot = localStorage.getItem(STORAGE_KEYS.TASKS);
     const supabase = getSupabase();
     if (!supabase || hasPendingChanges('tasks')) return local;
-    const { ok, data } = await runCloud('Loading tasks', () =>
-      supabase.from('tasks').select('*').eq('project_id', readLocal(STORAGE_KEYS.PROJECT, INITIAL_PROJECT).id).order('created_at', { ascending: false }));
+    const targetProjectId = projectId ?? localStorage.getItem(SELECTED_PROJECT_KEY);
+    if (!targetProjectId) return local;
+    const { ok, data } = await runCloud('Loading tasks', () => {
+      return supabase.from('tasks').select('*').eq('project_id', targetProjectId).order('created_at', { ascending: false });
+    });
+    if (!ok && targetProjectId) {
+      writeLocal(STORAGE_KEYS.TASKS, []);
+      return [];
+    }
     if (hasPendingChanges('tasks')
       || localStorage.getItem(STORAGE_KEYS.TASKS) !== snapshot) return readLocalTasks();
     if (!ok) return local;
+    if (!data?.length && targetProjectId) {
+      writeLocal(STORAGE_KEYS.TASKS, []);
+      return [];
+    }
     if (!data?.length) {
       emptyCloudTables.add('tasks');
       return local;
@@ -585,7 +650,7 @@ export const DataService = {
     if (supabase) {
       const pending = readPending();
       const version = pending.seq + 1;
-      values[PENDING_KEY] = {
+      values[pendingKey()] = {
         ...pending, seq: version,
         tables: { ...pending.tables, tasks: version },
         deletedSprintIds: [...new Set([...pending.deletedSprintIds, sprintId])],
@@ -634,26 +699,32 @@ export const DataService = {
     const supabase = getSupabase();
     if (!supabase) return true;
     const version = markTablePending('projects');
-    const ok = !project
-      || (await runCloud('Saving the project', () => supabase.from('projects').upsert(toProjectRow(project)))).ok;
+    const ok = !project || (await runCloud('Saving the project', () => supabase.rpc('update_project_details', {
+      target_project_id: project.id,
+      project_name: project.name,
+      project_key: project.key,
+      project_description: project.description || null,
+      project_start_date: project.start_date || null,
+      project_target_date: project.target_date || null
+    }))).ok;
     if (ok) confirmTableSent('projects', version);
     return ok;
   },
 
-  async getActivity() {
+  async getActivity(projectId = null) {
     const supabase = getSupabase();
     if (!supabase) return readActivity();
 
     readActivity([]);
-    const projectId = readLocal(STORAGE_KEYS.PROJECT, INITIAL_PROJECT).id;
+    const activeProjectId = projectId ?? readLocal(STORAGE_KEYS.PROJECT, INITIAL_PROJECT).id;
     const { ok, data } = await runCloud('Loading the audit trail', () =>
       supabase.from('activity_logs')
         .select('*')
-        .eq('project_id', projectId)
+        .eq('project_id', activeProjectId)
         .order('created_at', { ascending: false }));
     // Reads may finish after a newer local mutation; merge with the latest saved feed.
     const latest = readActivity([]);
-    if (!ok) return latest.length ? latest : readActivity();
+    if (!ok) return latest.length ? latest : (projectId ? readActivity([]) : readActivity());
 
     const records = (data ?? []).map(fromActivityRow);
     const byId = new Map(latest.map(record => [record.id, record]));

@@ -3,12 +3,15 @@ import { useProject } from '../../context/ProjectContext';
 import { useAuth } from '../../context/AuthContext';
 import { PERMISSIONS } from '../../services/authService';
 import { sanitizeUserText } from '../../utils/userText';
+import { validateProjectDateRange } from '../../utils/projectDates';
 
 // Mounted only while open, so it always starts from the saved project values.
 export default function ProjectSettingsModal({ onClose }) {
-  const { project, updateProject } = useProject();
-  const { currentUser, can } = useAuth();
-  const canEdit = can(PERMISSIONS.EDIT_PROJECT);
+  const { project, updateProject, projectRole } = useProject();
+  const { currentUser, can, sessionKind } = useAuth();
+  const canEdit = sessionKind === 'supabase'
+    ? projectRole === 'lead' || projectRole === 'owner'
+    : can(PERMISSIONS.EDIT_PROJECT);
 
   const [values, setValues] = useState(() => ({
     key: project?.key ?? '',
@@ -19,6 +22,7 @@ export default function ProjectSettingsModal({ onClose }) {
   }));
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+  const dateValidation = validateProjectDateRange(values.start_date, values.target_date);
 
   const setField = (field, options = {}) => (e) => {
     const value = options.maxLength
@@ -111,10 +115,14 @@ export default function ProjectSettingsModal({ onClose }) {
                 className="form-input"
                 value={values.target_date}
                 onChange={setField('target_date')}
+                min={values.start_date || undefined}
                 readOnly={!canEdit}
+                aria-invalid={!dateValidation.valid}
+                aria-describedby={!dateValidation.valid ? 'project-date-error' : undefined}
               />
             </div>
           </div>
+          {!dateValidation.valid && <p id="project-date-error" className="form-error" role="alert">{dateValidation.error}</p>}
 
           <div className="modal-footer">
             <div className="footer-right">
@@ -122,7 +130,7 @@ export default function ProjectSettingsModal({ onClose }) {
                 {canEdit ? 'Cancel' : 'Close'}
               </button>
               {canEdit && (
-                <button type="submit" className="btn btn-primary" disabled={saving}>
+                <button type="submit" className="btn btn-primary" disabled={saving || !dateValidation.valid}>
                   {saving ? 'Saving...' : 'Save Project'}
                 </button>
               )}

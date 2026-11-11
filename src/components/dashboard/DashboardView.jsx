@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useProject } from '../../context/ProjectContext';
 import { TEAM_MEMBERS, TASK_STATUSES } from '../../utils/constants';
+import { buildProjectDashboard, toAssigneeOptions, PROJECT_ROLE_LABELS } from '../../utils/projectDashboard';
 
 import { generateRecordedBurndown } from '../../utils/burndown';
 import { describeProject } from '../../utils/projectMetadata';
@@ -11,13 +12,20 @@ import AuditTrail from './AuditTrail';
 import FlowAnalytics from './FlowAnalytics';
 import DeliverySignals from './DeliverySignals';
 import ReportsWorkbench from './ReportsWorkbench';
+import { useAuth } from '../../context/AuthContext';
+import { canCreateSprints } from '../../utils/projectAccess';
 
-export default function DashboardView({ onNavigateKanban, onOpenTask = () => {} }) {
+export default function DashboardView({ onNavigateKanban, onNavigateSprints, onOpenNewTask = () => {}, onOpenTask = () => {} }) {
   const [panel, setPanel] = useState('overview');
-  const { project, activeSprintTasks, sprintMetrics, activities, sprints, activeSprintId, burndownHistory } = useProject();
+  const { sessionKind } = useAuth();
+  const { project, members, projectRole, tasks, activeSprintTasks, sprintMetrics, activities, sprints, activeSprintId, burndownHistory } = useProject();
   const activeSprint = sprints.find(s => s.id === activeSprintId);
   const projectSummary = describeProject(project);
   const burndown = generateRecordedBurndown(activeSprint, burndownHistory[activeSprintId]);
+  const dashboard = buildProjectDashboard(project, members, sprints, tasks);
+  const projectMembers = sessionKind === 'supabase' ? toAssigneeOptions(members) : TEAM_MEMBERS;
+  const workloadMembers = projectMembers;
+  const canCreateSprint = canCreateSprints(projectRole);
 
   return (
     <div className="dashboard-page">
@@ -42,11 +50,28 @@ export default function DashboardView({ onNavigateKanban, onOpenTask = () => {} 
         <button aria-pressed={panel === 'overview'} onClick={() => setPanel('overview')}>Overview</button>
         <button aria-pressed={panel === 'reports'} onClick={() => setPanel('reports')}>Reports & analytics</button>
       </div>
-      {panel === 'reports' ? <ReportsWorkbench key={activeSprintId || 'empty'} project={project} tasks={activeSprintTasks} activities={activities} sprint={activeSprint} onOpenTask={onOpenTask} /> : <>
+      {panel === 'reports' ? <ReportsWorkbench key={activeSprintId || 'empty'} project={project} tasks={activeSprintTasks} activities={activities} sprint={activeSprint} members={projectMembers} onOpenTask={onOpenTask} /> : <>
+      <section className="card project-overview-card" aria-labelledby="project-overview-title">
+        <div className="card-header"><div><p className="eyebrow">{dashboard.key}</p><h3 id="project-overview-title">{dashboard.name}</h3><p className="card-subtitle">{dashboard.description || 'No project description yet.'}</p></div></div>
+        <div className="project-overview-facts">
+          <p><strong>Dates:</strong> {dashboard.startDate || 'Not set'} — {dashboard.endDate || 'Not set'}</p>
+          <p><strong>Days remaining:</strong> {dashboard.daysRemaining === null ? 'Not set' : dashboard.daysRemaining}</p>
+          <p><strong>Lead:</strong> {dashboard.lead?.member_name || 'No lead listed'}</p>
+          <p><strong>Members:</strong> {dashboard.memberCount}</p>
+          <p><strong>Sprints:</strong> {dashboard.sprintCount}</p>
+        </div>
+        {dashboard.endDate && <div className="mini-progress-track" role="progressbar" aria-label="Project schedule elapsed" aria-valuemin={0} aria-valuemax={100} aria-valuenow={dashboard.progress}><div className="mini-progress-fill" style={{ width: `${dashboard.progress}%` }} /></div>}
+        <div className="project-overview-facts"><p><strong>Story points:</strong> {dashboard.storyPoints} total</p><p><strong>Completed:</strong> {dashboard.completedPoints}</p><p><strong>Remaining:</strong> {dashboard.remainingPoints}</p>
+          {TASK_STATUSES.map(status => <p key={status.id}><strong>{status.label}:</strong> {dashboard.statusCounts[status.id]}</p>)}
+        </div>
+        <div className="member-role-summary">{members.map(member => <span key={member.member_id}>{member.member_name} · {PROJECT_ROLE_LABELS[member.role] || member.role}</span>)}</div>
+        {!dashboard.hasSprints && canCreateSprint && <div className="empty-guidance"><p>No sprints yet.</p><button className="btn btn-primary" onClick={onNavigateSprints}>Create your first sprint</button></div>}
+        {!dashboard.hasTasks && <div className="empty-guidance"><p>No tasks yet.</p><button className="btn btn-secondary" onClick={onOpenNewTask}>Create your first task</button></div>}
+      </section>
       {/* KPI Stats Cards */}
       <KpiCards metrics={sprintMetrics} />
 
-      <DeliverySignals tasks={activeSprintTasks} sprint={activeSprint} onOpenTask={onOpenTask} />
+      <DeliverySignals tasks={activeSprintTasks} sprint={activeSprint} onOpenTask={onOpenTask} members={projectMembers} />
 
       <FlowAnalytics project={project} sprint={activeSprint} tasks={activeSprintTasks} activities={activities} onOpenTask={onOpenTask} />
 
@@ -65,7 +90,9 @@ export default function DashboardView({ onNavigateKanban, onOpenTask = () => {} 
             </div>
           </div>
 
-          <BurndownChart data={burndown} />
+          {activeSprint && activeSprintTasks.length > 0 && burndown?.length > 0
+            ? <BurndownChart data={burndown} />
+            : <p className="empty-guidance">Burndown appears when an active sprint has recorded task data.</p>}
         </div>
 
         {/* Workflow Status Distribution */}
@@ -100,15 +127,15 @@ export default function DashboardView({ onNavigateKanban, onOpenTask = () => {} 
 
       {/* Bottom Row: Workload by Teammate & Audit Feed */}
       <div className="grid-2-col">
-        {/* Team 11 Workload Allocation */}
+        {/* Selected project workload allocation */}
         <div className="card">
           <div className="card-header">
             <div>
-              <h3 className="card-title">Team 11 Capacity & Workload</h3>
+              <h3 className="card-title">Project workload</h3>
               <p className="card-subtitle">Story points assigned vs completed per student</p>
             </div>
           </div>
-          <WorkloadList tasks={activeSprintTasks} members={TEAM_MEMBERS} />
+          <WorkloadList tasks={activeSprintTasks} members={workloadMembers} />
         </div>
 
         {/* Real-time Activity Log (Audit Trail) */}

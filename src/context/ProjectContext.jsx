@@ -22,14 +22,19 @@ import {
 } from '../utils/auditTrail';
 import { validateSprint, transitionSprint, resolveSelectedSprint } from '../utils/sprintLifecycle';
 import { can, PERMISSIONS } from '../services/authService';
-
+import { listUserProjects, createUserProject, listProjectInvitations, listProjectMembers, manageProjectInvitation, resendProjectInvitation, inviteProjectMember, changeProjectMemberRole, removeProjectMember, respondToProjectInvitation, subscribeSelectedProjectRealtime } from '../services/projectService';
+import { projectRoleForUser } from '../utils/projectDashboard';
+import { getSupabase } from '../services/supabaseClient';
 import { useAuth } from './AuthContext';
 
 const ProjectContext = createContext();
 
 export function ProjectProvider({ children }) {
-  const { cloudVerified, currentUser } = useAuth();
+  const { currentUser, authReady, sessionKind, cloudVerified } = useAuth();
   const [project, setProject] = useState(null);
+  const [projects, setProjects] = useState([]);
+  const [members, setMembers] = useState([]);
+  const [invitations, setInvitations] = useState([]);
   const [sprints, setSprints] = useState([]);
   const sprintsRef = useRef([]);
   const [tasks, setTasks] = useState([]);
@@ -49,8 +54,33 @@ export function ProjectProvider({ children }) {
     setSearchQuery('');
   }
   const [loading, setLoading] = useState(true);
+  const [projectError, setProjectError] = useState('');
   const [supabaseConfig, setSupabaseConfig] = useState(getSupabaseConfig());
   const [syncStatus, setSyncStatus] = useState(getSyncStatus());
+  const projectRole = sessionKind === 'supabase'
+    ? projectRoleForUser(members, currentUser)
+    : currentUser?.accessRole ?? null;
+  const currentMember = sessionKind === 'supabase'
+    ? members.find(member => String(member.email ?? '').toLowerCase() === String(currentUser?.email ?? '').toLowerCase()) ?? null
+    : members.find(member => member.id === currentUser?.id) ?? null;
+  const canProject = permission => {
+    if (permission === PERMISSIONS.EDIT_PROJECT || permission === PERMISSIONS.RESET_DEMO_DATA) return ['lead', 'owner'].includes(projectRole);
+    return false;
+  };
+
+  const refreshProjectMembers = useCallback(async (projectId = project?.id) => {
+    if (!projectId || sessionKind !== 'supabase') { setMembers([]); return []; }
+    const listed = await listProjectMembers(projectId);
+    setMembers(listed);
+    return listed;
+  }, [project?.id, sessionKind]);
+
+  const refreshInvitations = useCallback(async (projectId = project?.id) => {
+    if (sessionKind !== 'supabase') { setInvitations([]); return []; }
+    const listed = await listProjectInvitations(projectId ?? null);
+    setInvitations(listed);
+    return listed;
+  }, [project?.id, sessionKind]);
 
   // Cloud sync errors are surfaced to the UI as they happen.
   useEffect(() => subscribeSyncStatus(setSyncStatus), []);
@@ -79,35 +109,144 @@ export function ProjectProvider({ children }) {
     setSelectedSprintId(resolveSelectedSprint(sprintsData, DataService.getSelectedSprint()));
   }, []);
 
-  const loadData = async () => {
+  const loadData = useCallback(async (projectId = null) => {
+    setLoading(true);
     try {
-      applyLoadedData(await DataService.loadAll());
+      applyLoadedData(await DataService.loadAll(projectId));
     } catch (err) {
       console.error('Failed to load project data:', err);
+      setProjectError(err.message || 'Project data could not be loaded.');
     } finally {
       setLoading(false);
     }
+  }, [applyLoadedData]);
+
+  const selectProject = async projectId => {
+    if (sessionKind === 'supabase') {
+      setMembers([]);
+      setInvitations([]);
+      DataService.setActiveProject(projectId);
+      await loadData(projectId);
+      await Promise.all([refreshProjectMembers(projectId), refreshInvitations(projectId)]);
+      return;
+    }
+    DataService.setActiveProject(null);
+    await loadData();
+  };
+
+  const refreshProjects = async () => {
+    if (sessionKind === 'supabase') {
+      const listed = await listUserProjects();
+      setProjects(listed);
+      return listed;
+    }
+    const local = await DataService.getProject();
+    const listed = local ? [local] : [];
+    setProjects(listed);
+    return listed;
+  };
+
+  const createProject = async values => {
+    setProjectError('');
+    const created = await createUserProject(values, projects);
+    const listed = await refreshProjects();
+    if (!listed.some(item => item.id === created.id)) setProjects([created, ...listed]);
+    await selectProject(created.id);
+    return created;
   };
 
   useEffect(() => {
-    let current = true;
-    if (supabaseConfig.isConfigured && !cloudVerified) {
-      Promise.resolve().then(() => { if (current) { setProject(null); setTasks([]); tasksRef.current = []; setSprints([]); sprintsRef.current = []; setActivities([]); setLoading(false); } });
-      return () => { current = false; };
-    }
-    DataService.loadAll().then(data => {
-      if (current) applyLoadedData(data);
-    }).catch(err => {
-      if (current) console.error('Failed to load project data:', err);
-    }).finally(() => {
-      if (current) setLoading(false);
+    if (!project?.id || sessionKind !== 'supabase') return undefined;
+    const supabase = getSupabase();
+    const unsubscribe = subscribeSelectedProjectRealtime(supabase, project.id, table => {
+      loadData(project.id).catch(error => setProjectError(error.message));
+      if (table === 'project_members') refreshProjectMembers(project.id).catch(error => setProjectError(error.message));
     });
+    return unsubscribe;
+  }, [project?.id, sessionKind, loadData, refreshProjectMembers]);
+
+  // Reload only when the signed-in person changes, not when a session re-check returns a new user object;
+  // a reload unmounts the workspace and would discard an open task draft (TC-SESS-01).
+  const currentUserId = currentUser?.id ?? null;
+  useEffect(() => {
+    let current = true;
+    if (!authReady) return () => { current = false; };
+    const initialize = async () => {
+      setProjectError('');
+      if (supabaseConfig.isConfigured && !cloudVerified) {
+        setProject(null);
+        setProjects([]);
+        setMembers([]);
+        setInvitations([]);
+        sprintsRef.current = [];
+        tasksRef.current = [];
+        setSprints([]);
+        setTasks([]);
+        setBurndownHistory({});
+        setActivities([]);
+        setSelectedSprintId(null);
+        setLoading(false);
+        return;
+      }
+      if (!currentUserId) {
+        DataService.setActiveProject(null);
+        setProject(null);
+        setProjects([]);
+        setMembers([]);
+        setInvitations([]);
+        sprintsRef.current = [];
+        tasksRef.current = [];
+        setSprints([]);
+        setTasks([]);
+        setBurndownHistory({});
+        setActivities([]);
+        setSelectedSprintId(null);
+        setLoading(false);
+        return;
+      }
+      setLoading(true);
+      try {
+        if (sessionKind === 'supabase') {
+          setMembers([]);
+          setInvitations([]);
+          const listed = await listUserProjects();
+          if (!current) return;
+          setProjects(listed);
+          setInvitations(await listProjectInvitations(null));
+          const rememberedId = localStorage.getItem('sprintflow_selected_project_id');
+          const remembered = listed.find(item => item.id === rememberedId);
+          if (remembered) {
+            DataService.setActiveProject(remembered.id);
+            applyLoadedData(await DataService.loadAll(remembered.id));
+            setMembers(await listProjectMembers(remembered.id));
+            setInvitations(await listProjectInvitations(remembered.id));
+          } else {
+            DataService.setActiveProject(null);
+            setProject(null);
+            setSprints([]);
+            setTasks([]);
+            setActivities([]);
+          }
+        } else {
+          DataService.setActiveProject(null);
+          const data = await DataService.loadAll();
+          if (!current) return;
+          applyLoadedData(data);
+          setProjects(data.project ? [data.project] : []);
+        }
+      } catch (err) {
+        if (current) setProjectError(err.message || 'Your projects could not be loaded.');
+      } finally {
+        if (current) setLoading(false);
+      }
+    };
+    initialize();
     return () => { current = false; };
-  }, [applyLoadedData, cloudVerified, currentUser?.id, supabaseConfig.isConfigured]);
+  }, [applyLoadedData, authReady, cloudVerified, currentUserId, sessionKind, supabaseConfig.isConfigured]);
 
   // Appends one audit record; the feed always mirrors the stored, append-only history.
   // Show the stored history, which includes every record even when saves finish out of order.
-  const refreshActivities = async () => setActivities(await DataService.getActivity());
+  const refreshActivities = async () => setActivities(await DataService.getActivity(sessionKind === 'supabase' ? project?.id : null));
 
   const recordAudit = async (record) => {
     if (!record) return;
@@ -249,7 +388,7 @@ export function ProjectProvider({ children }) {
   // name, date range), shown in every project view, and saved together with their
   // audit record before anything is sent to Supabase.
   const updateProject = async (values, member) => {
-    if (!can(member, PERMISSIONS.EDIT_PROJECT)) {
+    if (!(sessionKind === 'supabase' ? canProject(PERMISSIONS.EDIT_PROJECT) : can(member, PERMISSIONS.EDIT_PROJECT))) {
       throw new Error('Only the team lead can edit project details.');
     }
     if (!project) throw new Error('The project is still loading. Try again in a moment.');
@@ -263,16 +402,18 @@ export function ProjectProvider({ children }) {
   };
 
   const refreshConfig = () => {
-    setSupabaseConfig(getSupabaseConfig());
+    const nextConfig = getSupabaseConfig();
+    setSupabaseConfig(nextConfig);
     setLoading(true);
-    if (!getSupabaseConfig().isConfigured || cloudVerified) loadData();
+    if (!nextConfig.isConfigured) loadData();
+    else if (cloudVerified) loadData(localStorage.getItem('sprintflow_selected_project_id'));
   };
 
   // Only the team lead may reset, and only in local demo mode: with Supabase connected the
   // shared cloud data would be loaded again at once, so the reset would change nothing but
   // still be recorded. The board is reset, but the audit trail is kept and records who reset it.
   const resetData = async (member) => {
-    if (!can(member, PERMISSIONS.RESET_DEMO_DATA)) {
+    if (!(sessionKind === 'supabase' ? canProject(PERMISSIONS.RESET_DEMO_DATA) : can(member, PERMISSIONS.RESET_DEMO_DATA))) {
       throw new Error('Only the team lead can reset the demo data.');
     }
     if (getSupabaseConfig().isConfigured) {
@@ -297,6 +438,47 @@ export function ProjectProvider({ children }) {
   return (
     <ProjectContext.Provider value={{
       project,
+      projects,
+      members,
+      projectRole,
+      currentMember,
+      canProject,
+      invitations,
+      refreshProjectMembers,
+      refreshInvitations,
+      inviteProjectMember: async (email, role) => {
+        const result = await inviteProjectMember(project?.id, email, role);
+        await refreshInvitations(project?.id);
+        return result;
+      },
+      changeProjectMemberRole: async (memberId, role) => {
+        await changeProjectMemberRole(project?.id, memberId, role);
+        return refreshProjectMembers(project?.id);
+      },
+      removeProjectMember: async memberId => {
+        await removeProjectMember(project?.id, memberId);
+        return refreshProjectMembers(project?.id);
+      },
+      manageProjectInvitation: async (invitationId, action) => {
+        const result = await manageProjectInvitation(invitationId, action);
+        if (action === 'resend') {
+          const invitation = invitations.find(item => item.invitation_id === invitationId);
+          if (invitation && project?.id) {
+            await resendProjectInvitation(project.id, invitation);
+          }
+        }
+        await refreshInvitations(project?.id);
+        return result;
+      },
+      respondToProjectInvitation: async (invitationId, accept) => {
+        await respondToProjectInvitation(invitationId, accept);
+        await Promise.all([refreshInvitations(null), refreshProjects()]);
+        return refreshProjectMembers(project?.id);
+      },
+      projectError,
+      selectProject,
+      refreshProjects,
+      createProject,
       updateProject,
       sprints,
       tasks,

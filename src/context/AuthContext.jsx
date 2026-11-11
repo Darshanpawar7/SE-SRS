@@ -1,114 +1,195 @@
-import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { activateSessionCache } from '../services/sessionCache';
 import { getSupabase } from '../services/supabaseClient';
 import { TEAM_MEMBERS } from '../utils/constants';
-import { can, restoreSession, sessionCheckFailure, verifyCloudSession, signIn as signInWithPassword, signOut as endSession } from '../services/authService';
+import {
+  can,
+  requestPasswordReset,
+  restoreSession,
+  sessionCheckFailure,
+  signIn as signInWithPassword,
+  signOut as endSession,
+  signUp as createAccount,
+  updatePassword as saveNewPassword,
+  verifyCloudSession
+} from '../services/authService';
 
-const AuthContext = createContext();
-// How long to wait before re-checking a session that could not be confirmed.
+const AuthContext = createContext(null);
 const SESSION_RETRY_MS = 30000;
 
 export function AuthProvider({ children }) {
-  // The session survives reloads; without one the app shows the sign-in view.
-  const [currentUser, setCurrentUser] = useState(() => restoreSession());
-
+  const [initialCloudSession] = useState(() => Boolean(getSupabase()));
+  const [currentUser, setCurrentUser] = useState(() => initialCloudSession ? null : restoreSession());
+  const [authReady, setAuthReady] = useState(() => !initialCloudSession);
   const [cloudVerified, setCloudVerified] = useState(false);
   const [authError, setAuthError] = useState('');
+  const [passwordRecovery, setPasswordRecovery] = useState(false);
+  const [sessionKind, setSessionKind] = useState(() => initialCloudSession ? 'none' : (restoreSession() ? 'demo' : 'none'));
   const generation = useRef(0);
-  // True while a Supabase-verified member is using the app. A network blip must not
-  // unmount their workspace (and any task draft that is open).
   const hasVerifiedUser = useRef(false);
+
   useEffect(() => {
     let stopped = false;
     let subscription;
     let timer;
     let retryTimer;
+
     const verify = async () => {
       const version = ++generation.current;
       clearTimeout(retryTimer);
       try {
-        const member = await verifyCloudSession();
-        if (!stopped && version === generation.current) {
-          if (member) activateSessionCache(member.cloudCacheScope, member.email);
-          hasVerifiedUser.current = Boolean(member);
-          setCurrentUser(member); setCloudVerified(Boolean(member)); setAuthError('');
-        }
-      } catch (err) {
+        const user = await verifyCloudSession();
         if (stopped || version !== generation.current) return;
-        const outcome = sessionCheckFailure(err, hasVerifiedUser.current);
+        if (user) activateSessionCache(user.cloudCacheScope, user.email);
+        hasVerifiedUser.current = Boolean(user);
+        setCurrentUser(user);
+        setCloudVerified(Boolean(user));
+        setSessionKind(user ? 'supabase' : 'none');
+        setAuthError('');
+        setAuthReady(true);
+      } catch (error) {
+        if (stopped || version !== generation.current) return;
+        const outcome = sessionCheckFailure(error, hasVerifiedUser.current);
         if (!outcome.keepUser) {
           hasVerifiedUser.current = false;
-          setCurrentUser(null); setCloudVerified(false);
+          setCurrentUser(null);
+          setCloudVerified(false);
+          setSessionKind('none');
         }
         setAuthError(outcome.message);
-        // Check again later; the 'online' listener below also retries sooner.
+        setAuthReady(true);
         if (outcome.retry) retryTimer = setTimeout(verify, SESSION_RETRY_MS);
       }
     };
+
     const retryWhenOnline = () => {
       if (!getSupabase()) return;
       clearTimeout(timer);
       timer = setTimeout(verify, 0);
     };
+
     const connect = () => {
       subscription?.unsubscribe();
       clearTimeout(retryTimer);
       hasVerifiedUser.current = false;
       const client = getSupabase();
-      if (!client) { activateSessionCache('demo'); generation.current++; setCloudVerified(false); setCurrentUser(restoreSession()); return; }
-      generation.current++; setCurrentUser(null); setCloudVerified(false);
+      if (!client) {
+        generation.current++;
+        activateSessionCache('demo');
+        const demoUser = restoreSession();
+        setCurrentUser(demoUser);
+        setSessionKind(demoUser ? 'demo' : 'none');
+        setCloudVerified(false);
+        setAuthError('');
+        setAuthReady(true);
+        return;
+      }
+
+      generation.current++;
+      setCurrentUser(null);
+      setSessionKind('none');
+      setCloudVerified(false);
+      setAuthReady(false);
       verify();
       subscription = client.auth.onAuthStateChange?.((event) => {
-        // Never await an Auth call inside Supabase's synchronous auth callback.
+        // Supabase auth callbacks are synchronous; defer all follow-up Auth calls.
         clearTimeout(timer);
         if (event === 'SIGNED_OUT') {
           clearTimeout(retryTimer);
+          generation.current++;
           hasVerifiedUser.current = false;
-          generation.current++; setCurrentUser(null); setCloudVerified(false);
-        } else { timer = setTimeout(verify, 0); }
+          setCurrentUser(null);
+          setSessionKind('none');
+          setCloudVerified(false);
+          setPasswordRecovery(false);
+          setAuthReady(true);
+        } else {
+          if (event === 'PASSWORD_RECOVERY') setPasswordRecovery(true);
+          timer = setTimeout(verify, 0);
+        }
       })?.data?.subscription;
     };
-    // Async callbacks update state; initial render remains side-effect free.
+
     timer = setTimeout(connect, 0);
     window.addEventListener('sprintflow:connection-change', connect);
     window.addEventListener('online', retryWhenOnline);
     return () => {
-      stopped = true; clearTimeout(timer); clearTimeout(retryTimer); subscription?.unsubscribe();
+      stopped = true;
+      clearTimeout(timer);
+      clearTimeout(retryTimer);
+      subscription?.unsubscribe();
       window.removeEventListener('sprintflow:connection-change', connect);
       window.removeEventListener('online', retryWhenOnline);
     };
   }, []);
 
   const signIn = async (email, password) => {
-    const member = await signInWithPassword(email, password);
+    setAuthError('');
+    const user = await signInWithPassword(email, password);
     generation.current++;
-    hasVerifiedUser.current = Boolean(getSupabase());
-    setCloudVerified(Boolean(getSupabase())); setAuthError('');
-    setCurrentUser(member);
-    return member;
+    hasVerifiedUser.current = user.mode === 'supabase';
+    setCurrentUser(user);
+    setSessionKind(user.mode === 'supabase' ? 'supabase' : 'demo');
+    setCloudVerified(user.mode === 'supabase');
+    setPasswordRecovery(false);
+    setAuthReady(true);
+    return user;
   };
 
-  // Switching profile means signing out and signing in as another team member.
+  const signUp = async (name, email, password) => {
+    setAuthError('');
+    const result = await createAccount(name, email, password);
+    if (result.user && !result.needsEmailConfirmation) {
+      generation.current++;
+      const verified = Boolean(result.user.cloudCacheScope);
+      hasVerifiedUser.current = verified;
+      setCurrentUser(result.user);
+      setSessionKind('supabase');
+      setCloudVerified(verified);
+      setAuthReady(true);
+    }
+    return result;
+  };
+
+  const requestReset = async email => {
+    setAuthError('');
+    return requestPasswordReset(email);
+  };
+
+  const updatePassword = async password => {
+    setAuthError('');
+    await saveNewPassword(password);
+    setPasswordRecovery(false);
+  };
+
   const signOut = async () => {
     generation.current++;
     hasVerifiedUser.current = false;
-    setCurrentUser(null); setCloudVerified(false);
+    setCurrentUser(null);
+    setSessionKind('none');
+    setCloudVerified(false);
+    setAuthReady(true);
+    setPasswordRecovery(false);
     await endSession();
   };
 
-  return (
-    <AuthContext.Provider value={{
-      currentUser,
-      cloudVerified,
-      authError,
-      teamMembers: TEAM_MEMBERS,
-      signIn,
-      signOut,
-      can: (permission) => can(currentUser, permission)
-    }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  const value = useMemo(() => ({
+    currentUser,
+    authReady,
+    cloudVerified,
+    authError,
+    passwordRecovery,
+    sessionKind,
+    teamMembers: TEAM_MEMBERS,
+    signIn,
+    signUp,
+    requestPasswordReset: requestReset,
+    updatePassword,
+    signOut,
+    can: permission => can(currentUser, permission)
+  }), [currentUser, authReady, cloudVerified, authError, passwordRecovery, sessionKind]);
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export const useAuth = () => useContext(AuthContext);

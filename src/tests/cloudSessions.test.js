@@ -8,12 +8,15 @@ beforeEach(()=>{data=new Map();vi.stubGlobal('localStorage',{getItem:k=>data.get
 afterEach(()=>{setSupabaseClient(undefined);vi.unstubAllGlobals();});
 it('does not trust an edited browser marker for a configured cloud identity',async()=>{
  data.set('sprintflow_session',JSON.stringify({memberId:'u-1',email:'darshan@pes.edu',mode:'supabase'}));
- setSupabaseClient({auth:{getUser:async()=>({data:{user:{email:'eshwar@pes.edu'}},error:null})}});
- expect(restoreSession()).toBe(null);expect((await verifyCloudSession()).id).toBe('u-4');
+ setSupabaseClient({auth:{getUser:async()=>({data:{user:{id:'auth-eshwar',email:'eshwar@pes.edu'}},error:null})}});
+ expect(restoreSession()).toBe(null);expect((await verifyCloudSession()).id).toBe('auth-eshwar');
 });
-it('rejects a selected profile that differs from the verified account',async()=>{
- const signOut=vi.fn(async()=>({}));setSupabaseClient({auth:{signOut,signInWithPassword:async()=>({error:null}),getUser:async()=>({data:{user:{email:'eshwar@pes.edu'}},error:null})}});
- await expect(signIn('darshan@pes.edu','supabase-password')).rejects.toThrow('does not match');expect(signOut).toHaveBeenCalled();
+it('accepts a verified cloud identity independently of the local demo team list',async()=>{
+ const user={id:'auth-new',email:'new.person@example.com',user_metadata:{full_name:'New Person'}};
+ const signOut=vi.fn(async()=>({}));
+ setSupabaseClient({auth:{signOut,signInWithPassword:async()=>({data:{user},error:null}),getUser:async()=>({data:{user},error:null})}});
+ await expect(signIn(user.email,'supabase-password')).resolves.toMatchObject({id:user.id,email:user.email,mode:'supabase'});
+ expect(signOut).not.toHaveBeenCalled();
 });
 it('fails closed on verification error without erasing saved work',async()=>{
  data.set('sprintflow_tasks','[{"id":"saved"}]');setSupabaseClient({auth:{getUser:async()=>({data:{user:null},error:new Error('expired')})}});
@@ -21,6 +24,7 @@ it('fails closed on verification error without erasing saved work',async()=>{
 });
 it('restricts cloud sprint and task reads to the selected project even for multi-project members',async()=>{
  const cloud=createFakeSupabase({tasks:[{id:'a',project_id:INITIAL_PROJECT.id,story_points:3},{id:'b',project_id:'other',story_points:3}],sprints:[{id:'s',project_id:INITIAL_PROJECT.id},{id:'x',project_id:'other'}]});setSupabaseClient(cloud);
+ DataService.setActiveProject(INITIAL_PROJECT.id);
  expect((await DataService.getTasks()).map(t=>t.id)).toEqual(['a']);expect((await DataService.getSprints()).map(t=>t.id)).toEqual(['s']);
 });
 it('isolates cached project data and pending uploads between verified identities and restores prior work',async()=>{

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useProject } from '../../context/ProjectContext';
 import { useAuth } from '../../context/AuthContext';
 import { TASK_PRIORITIES, TASK_STATUSES, TEAM_MEMBERS } from '../../utils/constants';
+import { toAssigneeOptions } from '../../utils/projectDashboard';
 import { getKanbanColumns } from '../../utils/kanban';
 import { getTaskAfterStatusDrop } from '../../utils/taskUpdates';
 import { sanitizeUserText } from '../../utils/userText';
@@ -12,8 +13,9 @@ import LabelPills from './LabelPills';
 import { PriorityBadge } from '../workspace/TaskSignals';
 import WorkSignals from '../workspace/WorkSignals';
 import SignalIcon from '../workspace/SignalIcon';
+import { canCreateSprints, shouldShowBoardEmptyState } from '../../utils/projectAccess';
 
-export default function KanbanBoard({ onOpenTaskModal }) {
+export default function KanbanBoard({ onOpenTaskModal, onNavigateSprints }) {
   const { 
     activeSprintTasks, 
     updateTask, 
@@ -22,9 +24,13 @@ export default function KanbanBoard({ onOpenTaskModal }) {
     filterPriority, 
     setFilterPriority, 
     searchQuery, 
-    setSearchQuery 
+    setSearchQuery,
+    members,
+    projectRole,
+    sprints
   } = useProject();
-  const { currentUser } = useAuth();
+  const { currentUser, sessionKind } = useAuth();
+  const assignees = sessionKind === 'supabase' ? toAssigneeOptions(members) : TEAM_MEMBERS;
   const [draggedTaskId, setDraggedTaskId] = useState(null);
   const [boardError, setBoardError] = useState('');
 
@@ -35,9 +41,15 @@ export default function KanbanBoard({ onOpenTaskModal }) {
 
   const filteredTasks = filterTasks(activeSprintTasks, { filterAssignee, filterPriority, searchQuery });
   const kanbanColumns = getKanbanColumns(filteredTasks);
+  const canCreateSprint = canCreateSprints(projectRole);
+  if (shouldShowBoardEmptyState(sprints)) return <section className="kanban-page board-empty-state" aria-labelledby="board-empty-title">
+    <h2 id="board-empty-title">Your board is ready for its first sprint</h2>
+    <p>Create a sprint to organize project tasks into a board.</p>
+    {canCreateSprint && <button type="button" className="btn btn-primary" onClick={onNavigateSprints}>Create sprint</button>}
+  </section>;
   const activeFilterDescriptions = [];
   if (filterAssignee !== 'all') {
-    const assignee = TEAM_MEMBERS.find(member => member.id === filterAssignee);
+    const assignee = assignees.find(member => member.id === filterAssignee);
     activeFilterDescriptions.push(`Assignee: ${assignee?.name || filterAssignee}`);
   }
   if (filterPriority !== 'all') {
@@ -97,7 +109,7 @@ export default function KanbanBoard({ onOpenTaskModal }) {
             className="filter-select"
           >
             <option value="all">All Assignees</option>
-            {TEAM_MEMBERS.map(m => (
+            {assignees.map(m => (
               <option key={m.id} value={m.id}>{m.name} ({m.usn})</option>
             ))}
           </select>
@@ -169,7 +181,7 @@ export default function KanbanBoard({ onOpenTaskModal }) {
                 ) : (
                   colTasks.map(task => {
 
-                    const assignee = TEAM_MEMBERS.find(m => m.id === task.assignee_id);
+                    const assignee = assignees.find(m => m.id === task.assignee_id);
                     const nextStatus = getNextTaskStatus(task.status);
                     const nextStatusLabel = TASK_STATUSES.find(status => status.id === nextStatus)?.label;
 
@@ -244,3 +256,4 @@ export default function KanbanBoard({ onOpenTaskModal }) {
     </div>
   );
 }
+

@@ -6,7 +6,7 @@ import { describeProject } from '../../utils/projectMetadata';
 
 export default function Navbar({ onOpenSettings, onOpenNewTask, onOpenProjectSettings }) {
   const { currentUser, signOut } = useAuth();
-  const { project, supabaseConfig, syncStatus, pendingChanges, sprints, activeSprintId, setActiveSprintId } = useProject();
+  const { project, projectRole, supabaseConfig, syncStatus, pendingChanges, sprints, activeSprintId, setActiveSprintId } = useProject();
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const syncFailed = supabaseConfig.isConfigured && syncStatus.state === 'error';
   // A later successful read must not hide changes that are still waiting to sync.
@@ -34,7 +34,7 @@ export default function Navbar({ onOpenSettings, onOpenNewTask, onOpenProjectSet
           </div>
           <div>
             <h1 className="brand-title">SprintFlow</h1>
-            <span className="brand-subtitle">PESU SE Team 11</span>
+            <span className="brand-subtitle">Project workspace</span>
           </div>
         </div>
 
@@ -95,8 +95,8 @@ export default function Navbar({ onOpenSettings, onOpenNewTask, onOpenProjectSet
             </div>
             <div className="user-meta">
               <span className="user-name">{currentUser.name.split(' ')[0]}</span>
-              <span className="user-role-tag" title={currentUser.role}>
-                {ACCESS_ROLE_LABELS[currentUser.accessRole]}
+              <span className="user-role-tag" title={projectRole ? `Role in ${project?.name}: ${ACCESS_ROLE_LABELS[projectRole]}` : 'No selected project role'}>
+                {ACCESS_ROLE_LABELS[projectRole] || (currentUser.mode === 'demo' ? ACCESS_ROLE_LABELS[currentUser.accessRole] : 'No project role')}
               </span>
             </div>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"/></svg>
@@ -106,7 +106,7 @@ export default function Navbar({ onOpenSettings, onOpenNewTask, onOpenProjectSet
             <div className="dropdown-menu">
               <div className="dropdown-header">
                 <strong>Signed in as {currentUser.name}</strong>
-                <p>{currentUser.usn} • {currentUser.role}</p>
+                <p>{currentUser.email} · {ACCESS_ROLE_LABELS[projectRole] || "No project role"}</p>
               </div>
               <button
                 className="dropdown-item"

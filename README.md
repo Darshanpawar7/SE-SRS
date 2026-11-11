@@ -222,9 +222,9 @@ npm install
 # Launch development server
 npm run dev
 ```
-Navigate to `http://localhost:5173` in a web browser. The system initializes immediately with pre-configured seed data.
+Navigate to `http://localhost:5173` in a web browser. Local demo mode starts with sample tasks and sprints.
 
-**Signing in:** choose a Team 11 profile on the sign-in screen. In the default demo mode (no Supabase credentials) the password is that member's USN, for example `PES2UG24CS143` for Darshan P Pawar. When Supabase is configured, members sign in with their Supabase Auth accounts; if those accounts are not set up yet, choose **Use local demo mode instead** on the sign-in screen. Only the team lead can edit project details or reset the demo data (in local demo mode).
+**Signing in:** local demo mode uses the sample profiles and their USN passwords. Supabase mode uses Supabase Auth accounts and derives each user's role from membership in the selected project. The demo roster is not used for Supabase assignees, workload, or member views.
 
 ### Automated Testing
 ```bash
@@ -252,8 +252,18 @@ The application is architected to operate out-of-the-box in **Offline / Local Mo
 
 To connect a live Supabase PostgreSQL instance:
 1. Create a project at [supabase.com](https://supabase.com).
-2. Execute the DDL script located at `database/schema.sql` in the Supabase SQL Editor.
-3. In the SprintFlow interface, open the **Database Settings** modal and input the Project URL and Anon Public Key.
+2. For a fresh database, run `database/schema.sql` once in the Supabase SQL Editor. It creates tables and functions without seeding the Team 11 demo roster. For an existing database, run the additive migrations in order: `20261103_work_signals.sql`, `20261106_auth_projects_rls.sql`, `20261106_create_project_dates.sql`, then `20261107_project_dashboard_members.sql`.
+3. The final migration adds invitation RPCs, a safe `NOT VALID` date constraint, project detail updates, and adds tasks, sprints, and project_members to `supabase_realtime` if absent. It ends with `NOTIFY pgrst, 'reload schema'`.
+4. In the SprintFlow interface, open the **Database Settings** modal and input the Project URL and anon public key.
+5. Existing installations that previously ran the old `schema.sql` keep those rows; the migrations do not delete them. Review the old sample project memberships manually if they are visible in your Supabase project.
+
+Project creation inserts one membership for the authenticated creator as lead. Invites are stored as pending and always return the same generic result; invitees accept or decline after signing in with the matching verified email. Project Members and project-level analytics are scoped to the selected project. Realtime subscriptions also filter by that project's ID, while Supabase RLS remains the access control.
+
+### Invitation email delivery
+
+The Members page invokes `supabase/functions/invite-member`. Deploy it to the same Supabase project and add the app URL to Supabase Auth's allowed redirect URLs. Set the Edge Function secrets with `supabase secrets set APP_URL=https://your-app.example.com RESEND_API_KEY=<your-resend-key> INVITE_FROM_EMAIL="SprintFlow <invites@your-verified-domain>"`, then run `supabase functions deploy invite-member`. The function validates the caller JWT and lead role, saves the in-app invitation, and attempts `auth.admin.inviteUserByEmail` using a server-only key read with `Deno.env.get`. If Auth cannot send the email (including an already registered account), it sends the project invitation notice through Resend. Supabase provides the publishable/secret key maps to Edge Functions; no privileged key belongs in the frontend or repository. If function invocation fails, SprintFlow falls back to the database RPC so the in-app invitation remains available.
+
+The built-in Supabase email provider is limited to two Auth emails per hour and only sends to authorized organization addresses. Configure custom SMTP in Supabase Auth for signup confirmation and reliable Auth delivery. Resend's API fallback sends a project notification for existing accounts and Auth invite delivery errors. Both paths retain the same generic invitation result. See [Supabase Auth rate limits](https://supabase.com/docs/guides/auth/rate-limits), [custom SMTP](https://supabase.com/docs/guides/auth/auth-smtp), and [Edge Function deployment](https://supabase.com/docs/guides/functions/deploy).
 
 ---
 

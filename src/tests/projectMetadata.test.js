@@ -14,7 +14,8 @@ import { createFakeSupabase } from './helpers/fakeSupabase';
 const valid = { key: 'pms', name: '  SprintFlow Team 11  ', description: 'A project description', start_date: '2026-10-19', target_date: '2026-10-30' };
 
 const renderDialogAs = (memberId, email) => {
-  localStorage.setItem('sprintflow_session', JSON.stringify({ memberId, email }));
+  // Local demo sessions are explicitly marked; cloud identities come from Supabase Auth.
+  localStorage.setItem('sprintflow_session', JSON.stringify({ memberId, email, mode: 'demo' }));
   return renderToStaticMarkup(
     React.createElement(AuthProvider, null,
       React.createElement(ProjectProvider, null,
@@ -41,11 +42,14 @@ describe('PMS-F-002 project metadata', () => {
       removeItem: key => data.delete(key),
     });
     vi.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.stubEnv('VITE_SUPABASE_URL', '');
+    vi.stubEnv('VITE_SUPABASE_ANON_KEY', '');
   });
 
   afterEach(() => {
     setSupabaseClient(undefined);
     vi.useRealTimers();
+    vi.unstubAllEnvs();
     vi.restoreAllMocks();
   });
 
@@ -70,7 +74,7 @@ describe('PMS-F-002 project metadata', () => {
     [{ name: 'x'.repeat(81) }, 'Project name'],
     [{ start_date: '2026-02-30' }, 'valid start and end dates'],
     [{ target_date: '30/10/2026' }, 'valid start and end dates'],
-    [{ start_date: '2026-11-01' }, 'on or after the start date'],
+    [{ start_date: '2026-11-01' }, 'Target date cannot be before the start date'],
   ])('rejects invalid details %j', (change, message) => {
     expect(() => validateProjectMetadata({ ...valid, ...change })).toThrow(message);
   });

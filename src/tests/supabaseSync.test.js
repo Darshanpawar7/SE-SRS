@@ -66,7 +66,7 @@ describe('PMS-F-015 Supabase synchronisation', () => {
     });
     setSupabaseClient(cloud);
 
-    const { project, sprints, tasks } = await DataService.loadAll();
+    const { project, sprints, tasks } = await DataService.loadAll(INITIAL_PROJECT.id);
 
     expect(tasks).toEqual([cloudTask]);
     expect(sprints.map(sprint => sprint.id)).toEqual(INITIAL_SPRINTS.map(sprint => sprint.id));
@@ -75,15 +75,16 @@ describe('PMS-F-015 Supabase synchronisation', () => {
     expect(getSyncStatus().state).toBe('synced');
   });
 
-  it('publishes local data in foreign-key order on first connection to an empty project', async () => {
+  it('does not publish the local demo fixture to Supabase without a selected project', async () => {
+    DataService.setActiveProject(null);
     const cloud = createFakeSupabase();
     setSupabaseClient(cloud);
 
     await DataService.loadAll();
 
-    expect(cloud.calls.filter(call => call.kind === 'upsert').map(call => call.table))
-      .toEqual(['projects', 'sprints', 'tasks']);
-    expect(cloud.db.tasks).toHaveLength(INITIAL_TASKS.length);
+    expect(cloud.calls.filter(call => call.kind === 'upsert')).toEqual([]);
+    expect(cloud.db.projects).toHaveLength(0);
+    expect(cloud.db.tasks).toHaveLength(0);
   });
 
   it('maps rows onto columns that really exist in database/schema.sql', () => {
@@ -95,7 +96,7 @@ describe('PMS-F-015 Supabase synchronisation', () => {
   });
 
   it('upserts only those columns, dropping client-only fields', async () => {
-    const cloud = createFakeSupabase();
+    const cloud = createFakeSupabase({ projects: [toProjectRow(INITIAL_PROJECT)] });
     setSupabaseClient(cloud);
 
     await DataService.saveTasks([{ ...cloudTask, ui_only_flag: true }]);
@@ -235,12 +236,14 @@ describe('PMS-F-015 Supabase synchronisation', () => {
     expect(getSyncStatus()).toMatchObject({ state: 'error' });
   });
 
-  it('TC-SET-01: rejects a malformed URL and keeps the previous configuration', () => {
-    saveSupabaseConfig('https://team11.supabase.co/', 'anon-key');
+  it('TC-SET-01: normalizes standard API suffixes and rejects malformed URLs without replacing configuration', () => {
+    saveSupabaseConfig('https://team11.supabase.co/rest/v1/', 'anon-key');
     expect(getSupabaseConfig()).toMatchObject({ url: 'https://team11.supabase.co', isConfigured: true });
 
-    expect(() => saveSupabaseConfig('not a url', 'other-key')).toThrow('valid https://');
-    expect(() => saveSupabaseConfig('http://team11.supabase.co', 'other-key')).toThrow('valid https://');
+    expect(() => saveSupabaseConfig('not a url', 'other-key')).toThrow('Supabase project URL');
+    expect(() => saveSupabaseConfig('http://team11.supabase.co', 'other-key')).toThrow('Supabase project URL');
+    expect(() => saveSupabaseConfig('https://team11.supabase.co/custom/path', 'other-key')).toThrow('Supabase project URL');
+    expect(getSupabaseConfig()).toMatchObject({ url: 'https://team11.supabase.co', key: 'anon-key', isConfigured: true });
     expect(() => saveSupabaseConfig('https://team11.supabase.co', '   ')).toThrow('anon public key');
 
     expect(getSupabaseConfig()).toMatchObject({ url: 'https://team11.supabase.co', key: 'anon-key', isConfigured: true });

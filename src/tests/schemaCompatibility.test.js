@@ -38,6 +38,6 @@ it('continues to clear previously set fields on a migrated database',async()=>{
 });
 async function authenticate(client) {
  const user={id:'test-user',email:'darshan@pes.edu'};
- client.auth={signInWithPassword:async()=>({error:null}),getUser:async()=>({data:{user},error:null}),getSession:async()=>({data:{session:{user}},error:null})};
+ client.auth={signInWithPassword:async()=>({data:{user},error:null}),getUser:async()=>({data:{user},error:null}),getSession:async()=>({data:{session:{user}},error:null})};
  setSupabaseClient(client);await signIn(user.email,'test password');
 }

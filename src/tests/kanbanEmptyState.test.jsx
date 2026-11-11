@@ -29,6 +29,7 @@ function renderBoard({
 } = {}) {
   useProject.mockReturnValue({
     activeSprintTasks: tasks,
+    sprints: [{ id: 'active-sprint', status: 'active' }],
     updateTask: vi.fn().mockResolvedValue(undefined),
     filterAssignee,
     setFilterAssignee: vi.fn(),

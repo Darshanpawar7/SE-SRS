@@ -67,14 +67,14 @@ describe('PMS-NF-004 fresh-session recovery', () => {
   });
 
   it('keeps all configured-mode entities through failed uploads, restart and retry', async () => {
-    const cloud = createFakeSupabase();
+    const cloud = createFakeSupabase({ projects: [{ ...INITIAL_PROJECT }] });
     cloud.failWith = 'offline';
     let api = await boot(cloud);
     await api.DataService.saveProject(INITIAL_PROJECT);
     await api.DataService.saveSprints(INITIAL_SPRINTS);
     await api.DataService.saveTasks([task], auditTaskCreated(task, 'Eshwar'));
     api = await boot(cloud);
-    const offline = await api.DataService.loadAll();
+    const offline = await api.DataService.loadAll(INITIAL_PROJECT.id);
     expect(offline.tasks).toEqual([task]);
     expect(offline.project.id).toBe(INITIAL_PROJECT.id);
     expect(offline.sprints).toEqual(INITIAL_SPRINTS);
@@ -102,6 +102,7 @@ describe('PMS-NF-004 fresh-session recovery', () => {
       return builder;
     };
     const { DataService: service } = await boot(cloud);
+    if (table !== 'projects') service.setActiveProject(INITIAL_PROJECT.id);
     const reading = table === 'tasks' ? service.getTasks() : table === 'projects' ? service.getProject() : service.getSprints();
     await Promise.resolve();
     const value = table === 'projects' ? { ...INITIAL_PROJECT, name: 'Latest project' } : table === 'sprints' ? [{ ...INITIAL_SPRINTS[0], name: 'Latest sprint' }] : [{ ...task, title: 'Latest task' }];

@@ -3,9 +3,10 @@ import { useProject } from '../../context/ProjectContext';
 import { useAuth } from '../../context/AuthContext';
 import { calculateSprintMetrics, selectSprintTasks } from '../../utils/estimation';
 import { TASK_STATUSES } from '../../utils/constants';
+import { canCreateSprints } from '../../utils/projectAccess';
 
 export default function SprintManager() {
-  const { sprints, tasks, addSprint, updateSprintStatus, deleteSprint, activeSprintId, setActiveSprintId } = useProject();
+  const { sprints, tasks, addSprint, updateSprintStatus, deleteSprint, activeSprintId, setActiveSprintId, projectRole } = useProject();
   const { currentUser } = useAuth();
 
   const [showNewSprintModal, setShowNewSprintModal] = useState(false);
@@ -15,6 +16,7 @@ export default function SprintManager() {
   const [endDate, setEndDate] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const canManageSprints = canCreateSprints(projectRole);
 
   const handleCreateSprint = async (e) => {
     e.preventDefault();
@@ -74,10 +76,10 @@ export default function SprintManager() {
           <h2 className="view-title">Sprint Management & Agile Planning</h2>
           <p className="view-subtitle">Plan iterations, track velocity, and monitor burndown milestones</p>
         </div>
-        <button className="btn btn-primary" onClick={() => { setError(''); setShowNewSprintModal(true); }}>
+        {canManageSprints && <button className="btn btn-primary" onClick={() => { setError(''); setShowNewSprintModal(true); }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           <span>Create Sprint</span>
-        </button>
+        </button>}
       </div>
 
       {error && !showNewSprintModal && <p role="alert">{error}</p>}
@@ -103,7 +105,7 @@ export default function SprintManager() {
                   <button className="btn btn-sm btn-secondary" disabled={busy} onClick={() => setActiveSprintId(sprint.id)} aria-pressed={activeSprintId === sprint.id}>
                     {activeSprintId === sprint.id ? 'Selected sprint' : 'View sprint'}
                   </button>
-                  {sprint.status === 'planned' && (
+                  {canManageSprints && sprint.status === 'planned' && (
                     <button 
                       className="btn btn-sm btn-primary"
                       disabled={busy}
@@ -112,7 +114,7 @@ export default function SprintManager() {
                       Start Sprint
                     </button>
                   )}
-                  {sprint.status === 'active' && (
+                  {canManageSprints && sprint.status === 'active' && (
                     <button 
                       className="btn btn-sm btn-secondary"
                       disabled={busy}
@@ -121,13 +123,13 @@ export default function SprintManager() {
                       Complete Sprint
                     </button>
                   )}
-                  <button
+                  {canManageSprints && <button
                     className="btn btn-sm btn-danger"
                     disabled={busy}
                     onClick={() => handleDeleteSprint(sprint)}
                   >
                     Delete Sprint
-                  </button>
+                  </button>}
                 </div>
               </div>
 

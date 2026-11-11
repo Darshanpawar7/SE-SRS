@@ -1,13 +1,8 @@
 // Project metadata rules (PMS-F-002): a unique key, a name and a valid date range.
 import { sanitizeUserText } from './userText';
+import { isValidCalendarDate, validateProjectDateRange } from './projectDates';
 const KEY_PATTERN = /^[A-Z][A-Z0-9]{1,9}$/;
-const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
-
-const isCalendarDate = (value) => {
-  if (!DATE_PATTERN.test(value ?? '')) return false;
-  const date = new Date(`${value}T00:00:00.000Z`);
-  return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value;
-};
+const isCalendarDate = isValidCalendarDate;
 
 // Returns the cleaned values or throws an Error whose message can be shown as-is.
 // `otherProjects` must not include the project being edited.
@@ -29,9 +24,8 @@ export function validateProjectMetadata(values, otherProjects = []) {
   if (!isCalendarDate(startDate) || !isCalendarDate(targetDate)) {
     throw new Error('Choose valid start and end dates.');
   }
-  if (targetDate < startDate) {
-    throw new Error('End date must be on or after the start date.');
-  }
+  const dateRange = validateProjectDateRange(startDate, targetDate);
+  if (!dateRange.valid) throw new Error(dateRange.error);
   return { key, name, description, start_date: startDate, target_date: targetDate };
 }
 

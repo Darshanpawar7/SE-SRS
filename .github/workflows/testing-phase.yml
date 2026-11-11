@@ -88,12 +88,20 @@ jobs:
           version: 2.84.2
       - name: Start disposable database and Auth
         run: |
-          supabase init
+          test -f supabase/config.toml
           sed -i 's/^project_id = .*/project_id = "sprintflow-test"/' supabase/config.toml
-          supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor
-          docker exec -i supabase_db_sprintflow-test psql -U postgres -v ON_ERROR_STOP=1 < database/schema.sql
-          docker exec -i supabase_db_sprintflow-test psql -U postgres -v ON_ERROR_STOP=1 < database/migrations/20261103_work_signals.sql
-          supabase status -o json > .supabase-test.json
+          if ! supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor > /tmp/sf-supabase-start.log 2>&1; then
+            echo "The disposable Supabase stack did not start."
+            exit 1
+          fi
+          SUPABASE_DB_CONTAINER="$(docker ps --filter "name=supabase_db" --format '{{.Names}}' | head -n 1)"
+          if [ -z "$SUPABASE_DB_CONTAINER" ]; then
+            echo "The disposable Supabase database container was not found."
+            exit 1
+          fi
+          docker exec -i "$SUPABASE_DB_CONTAINER" psql -U postgres -v ON_ERROR_STOP=1 < database/schema.sql
+          docker exec -i "$SUPABASE_DB_CONTAINER" psql -U postgres -v ON_ERROR_STOP=1 < database/migrations/20261103_work_signals.sql
+          supabase status -o json > .supabase-test.json 2>/tmp/sf-supabase-status.log
           openssl req -x509 -newkey rsa:2048 -nodes -keyout /tmp/sf-test.key -out /tmp/sf-test.crt -days 1 -subj '/CN=127.0.0.1' -addext 'subjectAltName=IP:127.0.0.1' > /dev/null 2>&1
       - run: npx playwright install --with-deps chrome
       - run: npm run build

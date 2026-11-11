@@ -37,6 +37,7 @@ function makeTasks() {
 function configureBoard(tasks) {
   useProject.mockReturnValue({
     activeSprintTasks: tasks,
+    sprints: [{ id: 'sprint-benchmark', status: 'active' }],
     updateTask: vi.fn().mockResolvedValue(undefined),
     filterAssignee: 'all',
     setFilterAssignee: vi.fn(),
