@@ -11,7 +11,10 @@ The [latest four reports](latest/README.md) contain the fresh Sprint 1/2 automat
 These are the test reports for deliverable Part 3, item 2 ("Testing"). Testing was carried
 out according to the Software Test Plan (`docs/STP_Document_Team11.md`) and the Test Case
 Specification (`docs/TEST_CASE_SPECIFICATION.md`) against `main` at commit `f9e0727`, on
-6 November 2026.
+6 November 2026. A pre-submission regression on the final `main` (`970c656`) followed on
+11 November 2026 in GitHub Actions run 42973669659. Commit IDs changed on 11 November 2026, when
+some commit messages in the history were edited: `f9e0727` is now `2398c89` and `2b8fdbc` is now
+`21f3681`; the code is the same.
 
 ---
 
@@ -19,12 +22,12 @@ Specification (`docs/TEST_CASE_SPECIFICATION.md`) against `main` at commit `f9e0
 
 | # | Report | Owner (STP §9 role) | Issue | Result |
 | ---: | :--- | :--- | :---: | :--- |
-| i | [Unit Test Report](UNIT_TEST_REPORT.md) | Gurubelli Yekambar Eshwar Rao -- QA Lead | #91 | **234 of 234** tests pass in 35 files; **259 of 259** on the final `main` |
-| ii | [System Validation Report](SYSTEM_VALIDATION_REPORT.md) | Dhatri Shivaprasad -- Test Engineer (Frontend) | #92 | 33 cases: **28 pass, 1 fail** (low severity; fixed in PR #98 and retested), **4 blocked** (need a Supabase test project); Chrome, Edge and Firefox. Final regression on `main`: 29 pass, 0 fail, 4 blocked |
-| iii | [Code Coverage Report](CODE_COVERAGE_REPORT.md) | Chandan Kumar K -- Test Engineer (Backend) | #93 | Utility modules **99.3%** of lines (STP target: 80%); whole app 70.5% of lines |
-| iv | [Branch Coverage Report](BRANCH_COVERAGE_REPORT.md) | Darshan P Pawar -- Test Architect | #94 | Utility modules **92.9%**, logic layer 87.9%, whole app 64.1% of branch outcomes |
+| i | [Unit Test Report](UNIT_TEST_REPORT.md) | Gurubelli Yekambar Eshwar Rao -- QA Lead | #91 | **234 of 234** tests pass in 35 files; **272 of 272** on the final `main` (11 Nov) |
+| ii | [System Validation Report](SYSTEM_VALIDATION_REPORT.md) | Dhatri Shivaprasad -- Test Engineer (Frontend) | #92 | 33 cases: **28 pass, 1 fail** (low severity; fixed in PR #98 and retested), **4 blocked** in the testing phase; **33 of 33** pass in the pre-submission regression of 11 Nov (the 4 cloud cases on a disposable Supabase database) |
+| iii | [Code Coverage Report](CODE_COVERAGE_REPORT.md) | Chandan Kumar K -- Test Engineer (Backend) | #93 | Utility modules **99.3%** of lines (STP target: 80%); whole app 70.5% of lines; final `main`: 99.0% and 69.8% |
+| iv | [Branch Coverage Report](BRANCH_COVERAGE_REPORT.md) | Darshan P Pawar -- Test Architect | #94 | Utility modules **92.9%**, logic layer 87.9%, whole app 64.1% of branch outcomes; final `main`: 93.3% and 65.2% |
 
-## PDF versions (as submitted)
+## PDF versions (as submitted: version 1.1, 11 November 2026)
 
 | Report | File |
 | :--- | :--- |

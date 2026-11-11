@@ -7,6 +7,7 @@
 **Testing phase:** 2--6 November 2026 | **Executed:** 6 November 2026
 **Related Documents:** `docs/STP_Document_Team11.md` (Sections 5, 13, 14), `docs/TEST_CASE_SPECIFICATION.md`, `docs/test-reports/CODE_COVERAGE_REPORT.md`
 **PDF version (as submitted):** [Team11_Unit_Test_Report.pdf](Team11_Unit_Test_Report.pdf)
+**Version:** 1.1, 11 November 2026. Adds the pre-submission regression on the final `main` and corrections from a final review; the PDF's revision history lists them.
 
 ---
 
@@ -68,7 +69,7 @@ file's own `import` statements.
 | ---: | :--- | :--- | ---: | ---: | ---: | ---: |
 | 1 | `accessibility.test.jsx` | `utils/accessibility`, `components/kanban/KanbanBoard`, `components/kanban/TaskModal`, `context/ProjectContext`, `context/AuthContext`, `utils/constants` | 6 | 6 | 0 | 30 ms |
 | 2 | `auditTrail.test.js` | `utils/auditTrail`, `services/supabaseClient`, `services/mockData`, `components/dashboard/AuditTrail`, `context/AuthContext`, `context/ProjectContext` | 17 | 17 | 0 | 178 ms |
-| 3 | `auth.test.js` | `services/authService`, `services/supabaseClient`, `utils/constants`, `context/AuthContext`, `context/ProjectContext`, `components/auth/SignInView` | 10 | 10 | 0 | 55 ms |
+| 3 | `auth.test.js` | `services/authService`, `services/supabaseClient`, `utils/constants`, `context/AuthContext`, `context/ProjectContext`, `components/auth/SignInView`, `App` | 10 | 10 | 0 | 55 ms |
 | 4 | `burndown.test.js` | `utils/burndown`, `services/supabaseClient`, `components/dashboard/BurndownChart` | 8 | 8 | 0 | 45 ms |
 | 5 | `commands.test.js` | `utils/commands` | 3 | 3 | 0 | 3 ms |
 | 6 | `configSecurity.test.js` | `services/supabaseClient` | 3 | 3 | 0 | 5 ms |
@@ -80,7 +81,7 @@ file's own `import` statements.
 | 12 | `kpiDashboard.test.js` | `utils/estimation`, `utils/taskUpdates`, `utils/kpis`, `components/dashboard/KpiCards` | 4 | 4 | 0 | 20 ms |
 | 13 | `labels.test.js` | `utils/labels`, `components/kanban/LabelPills`, `services/supabaseClient` | 6 | 6 | 0 | 18 ms |
 | 14 | `offlineFallback.test.js` | `services/supabaseClient`, `context/AuthContext`, `context/ProjectContext`, `components/layout/Navbar`, `services/mockData`, `utils/auditTrail`, `services/authService`, `utils/constants` | 14 | 14 | 0 | 93 ms |
-| 15 | `persistenceRecovery.test.js` | `services/mockData`, `utils/auditTrail`, `services/localPersistence` | 11 | 11 | 0 | 214 ms |
+| 15 | `persistenceRecovery.test.js` | `services/mockData`, `utils/auditTrail`, `services/localPersistence`, `services/supabaseClient` | 11 | 11 | 0 | 214 ms |
 | 16 | `projectMap.test.js` | `utils/projectMap` | 5 | 5 | 0 | 9 ms |
 | 17 | `projectMetadata.test.js` | `utils/projectMetadata`, `utils/auditTrail`, `services/supabaseClient`, `services/mockData`, `utils/constants`, `context/AuthContext`, `context/ProjectContext`, `components/settings/ProjectSettingsModal` | 20 | 20 | 0 | 46 ms |
 | 18 | `recovery.test.js` | `components/workspace/ErrorBoundary` | 1 | 1 | 0 | 6 ms |
@@ -99,7 +100,7 @@ file's own `import` statements.
 | 31 | `workflow.test.js` | `utils/constants`, `utils/kanban`, `utils/workflow`, `services/supabaseClient` | 8 | 8 | 0 | 11 ms |
 | 32 | `workload.test.js` | `utils/estimation`, `components/dashboard/WorkloadList` | 5 | 5 | 0 | 17 ms |
 | 33 | `workSignals.test.js` | `utils/workSignals`, `utils/taskExplorer`, `utils/auditTrail` | 3 | 3 | 0 | 13 ms |
-| 34 | `workspaceFeedback.test.js` | `utils/workspaceFeedback` | 5 | 5 | 0 | 12 ms |
+| 34 | `workspaceFeedback.test.js` | `utils/workspaceFeedback`, `services/feedbackStore` | 5 | 5 | 0 | 12 ms |
 | 35 | `workViews.test.js` | `utils/workViews` | 2 | 2 | 0 | 5 ms |
 | | **Total (35 files)** | | **234** | **234** | **0** | |
 
@@ -108,8 +109,9 @@ file's own `import` statements.
 ## 5. Unit-Level Coverage of the Requirements
 
 Requirement IDs follow the SRS, which is the project's requirements baseline. The Test Plan
-numbers some features differently; the mapping is in `docs/SPRINT1_DEVIATIONS.md`,
-Section 1, and both IDs are shown here.
+numbers some features differently, so both IDs are shown here. For functional requirements
+the mapping is in `docs/SPRINT1_DEVIATIONS.md`, Section 1; for the non-functional and
+security rows, the Test Plan requirement with the same subject is shown.
 
 | Feature | SRS ID | Test Plan ID | Unit test files |
 | :--- | :--- | :--- | :--- |
@@ -126,14 +128,15 @@ Section 1, and both IDs are shown here.
 | Team workload | PMS-F-013 | PMS-F-017 | `workload` |
 | Audit trail | PMS-F-014 | PMS-F-012 | `auditTrail` |
 | Supabase synchronisation and settings | PMS-F-015 | PMS-F-013, PMS-F-015 | `supabaseSync`, `configSecurity` |
-| Offline mode | PMS-F-016 | PMS-F-014 | `offlineFallback`, `persistenceRecovery`, `recovery` |
+| Offline mode | PMS-F-016 | PMS-F-014 | `offlineFallback`, `persistenceRecovery` |
 | Filtering | PMS-F-017 | PMS-F-011 | `taskFilters`, `taskExplorer`, `workViews`, `savedWorkViews` |
 | CI/CD pipeline | PMS-F-018 | -- | Enforced by the workflow itself (Section 8) |
 | In-app documentation viewer | not in SRS | PMS-F-018 | None; static content, verified by TC-DOCS-01 |
 | Performance under 50 ms | PMS-NF-001 | PMS-NF-001 | `kanbanPerformance` |
-| Zero data loss across reloads | PMS-NF-004 | PMS-NF-006 | `persistenceRecovery`, `recovery`, `offlineFallback` |
+| Zero data loss across reloads | PMS-NF-004 | PMS-NF-006 (closest: no data loss after a network disconnection) | `persistenceRecovery`, `offlineFallback`, `recovery` (its recovery actions keep saved data) |
 | Row Level Security policies | PMS-SR-001 | -- | `databaseSecurity` |
 | No hardcoded credentials; anon key only | PMS-SR-002 | -- | `configSecurity` |
+| HTTPS for cloud traffic | PMS-SR-003 | PMS-NF-004 (TLS 1.3) | `configSecurity`, `supabaseSync` |
 | Input sanitisation (XSS) | PMS-SR-004 | -- | `userText` |
 | Sprint 2 enhancements | -- | -- | `projectMap`, `flowAnalytics`, `sprintReports`, `workSignals`, `taskSignals`, `workspaceFeedback`, `commands` |
 
@@ -151,14 +154,17 @@ PMS-NF-001.
 | Board render (`renderToStaticMarkup`) | 7.6 ms | 13.6 ms | -- |
 | Combined | 7.6 ms | **13.7 ms** | 17.2 ms |
 
-Result: **pass**, with the p95 at about a quarter of the budget.
+These figures come from a standalone run of the benchmark on 6 November 2026 at 16:59 IST,
+just after the recorded run. The GitHub Actions run for `f9e0727` measured a p50 of 14.5 ms,
+a p95 of 21.4 ms and a maximum of 25.8 ms. Result: **pass** in both, well under the 50 ms
+budget.
 
 This test measures wall-clock time, so its margin depends on the machine. Under coverage
-instrumentation, which slows every statement, it measured 58--78 ms and failed. It has also
+instrumentation, which slows every statement, it measured 58 to 140 ms and failed. It has also
 failed on a local machine while other heavy processes were running. It passed in every
 completed CI run on `main` since 3 November. Pass/fail in this report comes from the
 normal, uninstrumented run. On 6 November it passed 10 out of 10 times when run on its
-own, and measured up to 94 ms in full parallel runs while the laptop was also busy with
+own, and its p95 reached up to 78 ms in full parallel runs while the laptop was also busy with
 OneDrive sync, Docker and a browser.
 
 ---
@@ -178,7 +184,8 @@ OneDrive sync, Docker and a browser.
 ## 8. Continuous Integration History
 
 The same suite runs on every push and pull request in the *CI/CD Pipeline - Team 11*
-GitHub Actions workflow (build, `npm test`, lint and a security audit).
+GitHub Actions workflow (build, `npm test` and lint). A separate *Dependency Security Audit*
+workflow runs `npm audit`.
 
 | Scope | Runs | Passed | Failed | Other |
 | :--- | ---: | ---: | ---: | ---: |
@@ -188,19 +195,20 @@ GitHub Actions workflow (build, `npm test`, lint and a security audit).
 
 Five of the seven failures on `main` happened on 2 November, when a merge left conflict
 markers in `TaskModal.jsx` and the build broke. PR #84 fixed it on 3 November, and every
-`main` run since then has passed (two runs were cancelled because a newer merge superseded
+completed `main` run since then has passed (two runs were cancelled because a newer merge superseded
 them). The other two failures date from 15 September.
 
 The STP target for CI pass rate is 95% (STP Section 14.1). The rate over the last 200
-runs is 94.0%, just under target, and all of the shortfall comes from the two incidents
-above.
+runs is 94.0%, just under target. All ten failures in that window happened on 2 November:
+the five on `main` above and five on two feature branches the same day.
 
 ---
 
 ## 9. Defects
 
-No defects were found at unit level: all 234 tests passed. Three observations, none of
-them a defect:
+The unit tests found no defects in the application code: all 234 tests passed. The build
+break of 2 November (Section 8) was caught by CI and fixed by PR #84 before the recorded
+run. Three observations about the tests themselves, none of them a defect in SprintFlow:
 
 | ID | Observation | Impact | Recommendation |
 | :--- | :--- | :--- | :--- |
@@ -209,14 +217,18 @@ them a defect:
 | OBS-03 | While rendering `BurndownChart`, React warns that an SVG `<title>` element "received an array with more than 1 element as children". | The tooltip on each burndown point is built from several text pieces; some browsers may not show it as one string. | Build the tooltip as one template string. |
 
 **Status on 6 Nov 2026:** OBS-02 and OBS-03 were fixed in PR #101. CI now runs on
-Node.js 24, and both warnings are gone from the CI log. OBS-01 remains a known
+Node.js 24, and both warnings are gone from the CI log. OBS-01 remained a known
 limitation of the timing test.
+
+**Status on 11 Nov 2026:** PR #107 leaves the timing test out of the coverage run, and the
+normal run still includes it, so OBS-01 is partly addressed.
 
 ---
 
 ## 10. Regression on the Final `main` Branch
 
-After the recorded run, four pull requests were merged on 6 November 2026: #98 (fix for
+After the recorded run, five pull requests were merged on 6 November 2026: #97 (the first
+version of these reports, with the coverage tooling and the system test script), #98 (fix for
 system test defect DEF-04, with new tests), #99 (second-machine pre-check of the system
 tests), #101 (fix for DEF-05, OBS-02 and OBS-03) and #85 (verified cloud sessions, merged
 after review fixes, with 21 new tests). The whole suite was run again on the final `main`.
@@ -225,22 +237,31 @@ after review fixes, with 21 new tests). The whole suite was run again on the fin
 | :--- | :--- | ---: | ---: | ---: | ---: |
 | Recorded run (Sections 3 to 7) | `f9e0727` | 35 | 234 | 234 | 0 |
 | Final regression, 6 Nov 2026, 23:04 IST | `2b8fdbc` | 38 | 259 | 259 | 0 |
+| Pre-submission regression, 11 Nov 2026, 12:07 IST (GitHub Actions) | `970c656` | 41 | 272 | 272 | 0 |
 
 The 25 new tests cover the board's empty filter state (3), the "1 task" wording (1), and
 cloud session verification and cache ownership (21). Lint, the production build and
 `npm audit --audit-level=high` are clean on the same commit, and the GitHub Actions
-pipeline, now on Node.js 24, passed for every merged pull request.
+pipeline, now on Node.js 24, passed for every pull request merged that day.
+
+Four more pull requests were merged before submission: #103, #104, #105 and #107. On
+11 November 2026, GitHub Actions run 42973669659 ran the whole suite on the final `main`
+(`970c656`): 272 of 272 tests passed in 41 files. The 13 new tests are in
+`analyticsReview.test.js` (6, PR #103), `schemaCompatibility.test.js` (4, PR #104) and
+`uiReview.test.js` (3, PR #105).
 
 ---
 
 ## 11. Conclusion
 
-The unit and integration suite is healthy: 234 of 234 tests pass in about two seconds.
+The unit and integration suite is healthy: 234 of 234 tests pass, in about two seconds
+locally and about three on GitHub Actions.
 Every SRS functional requirement except PMS-F-018 (CI/CD) has at least one unit test file,
 and PMS-F-018 is the pipeline that runs them. Lint reports 0 errors and 0 warnings, and
-`npm audit --audit-level=high` reports 0 vulnerabilities on the same commit. Unit-level
-evidence is complete for the Testing phase. After the fixes merged on 6 November, the
-final `main` passes all 259 tests (Section 10).
+`npm audit --audit-level=high` reports no high or critical vulnerabilities on the same
+commit. Unit-level
+evidence is complete for the Testing phase. On the final `main` (11 November)
+all 272 tests pass (Section 10).
 
 ---
 

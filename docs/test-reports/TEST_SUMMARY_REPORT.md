@@ -1,6 +1,6 @@
 # Test Summary Report — Sprint 1/2
 
-Team 11 · Executed 10 November 2026 · **Prepared for owner review; approval pending**
+Team 11 · Executed 10 November 2026 · **Approved by the Test Architect, Darshan P Pawar, in PR #107 on 11 November 2026**
 
 ## Tested revision and scope
 
