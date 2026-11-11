@@ -598,11 +598,14 @@ const caseLoad01 = async ({ page, check, note }) => {
   const renderedMs = await seedTasks(page, 100, 'TC-LOAD-01 task', i => statuses[i % 5]);
   const cards = await page.locator('.task-card').count();
   check('All seeded tasks render on the board', cards >= 106, `${cards} cards`);
-  check('Every seeded task is accessible as a control', await page.getByRole('button', { name: /^Open task: TC-LOAD-01 task/ }).count() === 100, '100 task controls');
+  // Card names now include all visible metadata for WCAG Label in Name.
+  const controls = await page.getByRole('button', { name: /^Open task:.*TC-LOAD-01 task / }).count();
+  check('Every seeded task is accessible as a control', controls === 100, controls + ' task controls');
   const timings = [];
   // Tasks 90-95 start in Backlog or To Do and are each dragged once.
   for (const i of [90, 91, 95, 96, 92, 97]) timings.push(await timedDrop(page, `TC-LOAD-01 task ${i}`, 'Code Review'));
   const p95 = percentile(timings.slice(1), 0.95);
+  console.log('KANBAN_BROWSER_LOAD ' + JSON.stringify({ cards, controls, readyMs: renderedMs, p95Ms: p95 }));
   note(`Board ready ${renderedMs.toFixed(0)} ms after navigation with ${cards} tasks; drop-to-render p95 ${p95.toFixed(1)} ms over 5 drops.`);
   check(`Drag-and-drop stays responsive (p95 under ${PERF_BUDGET_MS} ms with ${cards} tasks)`, p95 < PERF_BUDGET_MS, `${p95.toFixed(1)} ms`);
 };

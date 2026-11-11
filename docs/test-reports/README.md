@@ -1,3 +1,7 @@
+# Current repeatable testing
+
+The [latest four reports](latest/README.md) contain the fresh Sprint 1/2 automated acceptance results, exact tested revision and numeric evidence. The [Test Summary Report](TEST_SUMMARY_REPORT.md) maps requirements and records owner sign-off items. See [TESTING_PHASE.md](../TESTING_PHASE.md) for commands and CI artifacts. The reports and submitted PDFs below are preserved as the November 6 historical baseline; their blocked-cloud status is superseded only for the isolated test environment described in the latest report.
+
 # Test Reports -- Testing Phase (2--6 November 2026)
 
 ## SprintFlow -- Project Management System
@@ -34,7 +38,7 @@ Specification (`docs/TEST_CASE_SPECIFICATION.md`) against `main` at commit `f9e0
 | :---: | :--- | :--- | :--- |
 | #95 | Dhatri Shivaprasad | DEF-04: the Kanban board showed no message when filters matched nothing (TC-FILT-01, low severity) | Fixed in PR #98, retested, closed |
 | #100 | Dhatri Shivaprasad | DEF-05: the workload panel said "1 tasks" for a member with one task (cosmetic) | Fixed in PR #101, retested, closed |
-| #96 | Chandan Kumar K | Run the four cloud-dependent cases (TC-SUPA-01, TC-SET-01 steps 1--2, TC-SEC-01, SEC-RLS) on a Supabase test project, and record the results in the System Validation Report, Section 6.1 | Open |
+| #96 | Chandan Kumar K | Run the four cloud-dependent cases (TC-SUPA-01, TC-SET-01 steps 1--2, TC-SEC-01, SEC-RLS) on a Supabase test project, and record the results in the System Validation Report, Section 6.1 | Closed; isolated acceptance verification added in PR #107, hosted deployment checks remain separate |
 
 ## Contents of this folder
 

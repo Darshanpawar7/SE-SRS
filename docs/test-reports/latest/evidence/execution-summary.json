@@ -1,0 +1,311 @@
+{
+  "unit": {
+    "total": 259,
+    "passed": 259,
+    "failed": 0,
+    "pending": 0
+  },
+  "system": {
+    "summary": {
+      "total": 33,
+      "passed": 29,
+      "failed": 0,
+      "blocked": 4
+    },
+    "cases": [
+      {
+        "id": "TC-SUPA-01",
+        "status": "blocked",
+        "browser": "chrome",
+        "compat": false
+      },
+      {
+        "id": "SEC-RLS",
+        "status": "blocked",
+        "browser": "chrome",
+        "compat": false
+      },
+      {
+        "id": "TC-AUTH-01",
+        "status": "pass",
+        "browser": "chrome",
+        "compat": false
+      },
+      {
+        "id": "TC-PROJ-01",
+        "status": "pass",
+        "browser": "chrome",
+        "compat": false
+      },
+      {
+        "id": "TC-TASK-01",
+        "status": "pass",
+        "browser": "chrome",
+        "compat": false
+      },
+      {
+        "id": "TC-TASK-02",
+        "status": "pass",
+        "browser": "chrome",
+        "compat": false
+      },
+      {
+        "id": "TC-TASK-03",
+        "status": "pass",
+        "browser": "chrome",
+        "compat": false
+      },
+      {
+        "id": "TC-LABEL-01",
+        "status": "pass",
+        "browser": "chrome",
+        "compat": false
+      },
+      {
+        "id": "TC-KAN-01",
+        "status": "pass",
+        "browser": "chrome",
+        "compat": false
+      },
+      {
+        "id": "TC-KAN-02",
+        "status": "pass",
+        "browser": "chrome",
+        "compat": false
+      },
+      {
+        "id": "TC-KAN-03",
+        "status": "pass",
+        "browser": "chrome",
+        "compat": false
+      },
+      {
+        "id": "TC-KAN-04",
+        "status": "pass",
+        "browser": "chrome",
+        "compat": false
+      },
+      {
+        "id": "TC-FILT-01",
+        "status": "pass",
+        "browser": "chrome",
+        "compat": false
+      },
+      {
+        "id": "TC-EST-01",
+        "status": "pass",
+        "browser": "chrome",
+        "compat": false
+      },
+      {
+        "id": "TC-EST-02",
+        "status": "pass",
+        "browser": "chrome",
+        "compat": false
+      },
+      {
+        "id": "TC-SPR-01",
+        "status": "pass",
+        "browser": "chrome",
+        "compat": false
+      },
+      {
+        "id": "TC-BURN-01",
+        "status": "pass",
+        "browser": "chrome",
+        "compat": false
+      },
+      {
+        "id": "TC-DASH-01",
+        "status": "pass",
+        "browser": "chrome",
+        "compat": false
+      },
+      {
+        "id": "TC-WORK-01",
+        "status": "pass",
+        "browser": "chrome",
+        "compat": false
+      },
+      {
+        "id": "TC-DOCS-01",
+        "status": "pass",
+        "browser": "chrome",
+        "compat": false
+      },
+      {
+        "id": "TC-OFF-01",
+        "status": "pass",
+        "browser": "chrome",
+        "compat": false
+      },
+      {
+        "id": "TC-SET-01",
+        "status": "blocked",
+        "browser": "chrome",
+        "compat": false
+      },
+      {
+        "id": "TC-LOG-01",
+        "status": "pass",
+        "browser": "chrome",
+        "compat": false
+      },
+      {
+        "id": "TC-PERF-01",
+        "status": "pass",
+        "browser": "chrome",
+        "compat": false
+      },
+      {
+        "id": "TC-AVAIL-01",
+        "status": "pass",
+        "browser": "chrome",
+        "compat": false
+      },
+      {
+        "id": "TC-SEC-01",
+        "status": "blocked",
+        "browser": "chrome",
+        "compat": false
+      },
+      {
+        "id": "TC-LOAD-01",
+        "status": "pass",
+        "browser": "chrome",
+        "compat": false
+      },
+      {
+        "id": "TC-RECOV-01",
+        "status": "pass",
+        "browser": "chrome",
+        "compat": false
+      },
+      {
+        "id": "SEC-XSS",
+        "status": "pass",
+        "browser": "chrome",
+        "compat": false
+      },
+      {
+        "id": "SEC-TOKEN",
+        "status": "pass",
+        "browser": "chrome",
+        "compat": false
+      },
+      {
+        "id": "SEC-FUZZ",
+        "status": "pass",
+        "browser": "chrome",
+        "compat": false
+      },
+      {
+        "id": "SEC-KEYS",
+        "status": "pass",
+        "browser": "static",
+        "compat": false
+      },
+      {
+        "id": "TC-KAN-01",
+        "status": "pass",
+        "browser": "chrome",
+        "compat": true
+      },
+      {
+        "id": "TC-KAN-02",
+        "status": "pass",
+        "browser": "chrome",
+        "compat": true
+      },
+      {
+        "id": "TC-TASK-01",
+        "status": "pass",
+        "browser": "chrome",
+        "compat": true
+      },
+      {
+        "id": "TC-KAN-01",
+        "status": "pass",
+        "browser": "edge",
+        "compat": true
+      },
+      {
+        "id": "TC-KAN-02",
+        "status": "pass",
+        "browser": "edge",
+        "compat": true
+      },
+      {
+        "id": "TC-TASK-01",
+        "status": "pass",
+        "browser": "edge",
+        "compat": true
+      },
+      {
+        "id": "TC-KAN-01",
+        "status": "pass",
+        "browser": "firefox",
+        "compat": true
+      },
+      {
+        "id": "TC-KAN-02",
+        "status": "pass",
+        "browser": "firefox",
+        "compat": true
+      },
+      {
+        "id": "TC-TASK-01",
+        "status": "pass",
+        "browser": "firefox",
+        "compat": true
+      },
+      {
+        "id": "TC-COMPAT-01",
+        "status": "pass",
+        "browser": "chrome+edge+firefox",
+        "compat": false
+      }
+    ]
+  },
+  "cloud": {
+    "summary": {
+      "total": 7,
+      "passed": 7,
+      "failed": 0
+    },
+    "cases": [
+      {
+        "id": "SEC-RLS",
+        "status": "pass"
+      },
+      {
+        "id": "SEC-EXPIRED",
+        "status": "pass"
+      },
+      {
+        "id": "SEC-AUDIT",
+        "status": "pass"
+      },
+      {
+        "id": "TC-SET-01",
+        "status": "pass"
+      },
+      {
+        "id": "TC-SUPA-01",
+        "status": "pass"
+      },
+      {
+        "id": "CLOUD-RECOVERY",
+        "status": "pass"
+      },
+      {
+        "id": "TC-SEC-01",
+        "status": "pass"
+      }
+    ]
+  },
+  "simulatedSession": {
+    "passed": 4,
+    "total": 4
+  }
+}
