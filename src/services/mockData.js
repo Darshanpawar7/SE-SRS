@@ -5,6 +5,8 @@ const PROJECT_ID = '11111111-1111-1111-1111-111111111111';
 const SPRINT_1_ID = '22222222-2222-2222-2222-222222222222';
 const SPRINT_2_ID = '33333333-3333-3333-3333-333333333333';
 const taskId = (number) => `00000000-0000-4000-8000-000000000${number}`;
+// Due dates follow today, so the Overdue and Due today views always have something to show.
+const dueIn = (days) => new Date(Date.now() + days * 86400000).toISOString().slice(0, 10);
 
 export const INITIAL_PROJECT = {
   id: PROJECT_ID,
@@ -40,7 +42,7 @@ export const INITIAL_SPRINTS = [
     start_date: '2026-10-26',
     end_date: '2026-10-30',
     total_points: 21,
-    completed_points: 0
+    completed_points: 8
   }
 ];
 
@@ -90,6 +92,7 @@ export const INITIAL_TASKS = [
     assignee_name: 'Gurubelli Yekambar Eshwar Rao',
     reporter_name: 'Darshan P Pawar',
     labels: ['estimation', 'sprints', 'analytics'],
+    due_date: dueIn(0),
     created_at: '2026-09-02T09:00:00Z',
     updated_at: '2026-09-05T08:00:00Z'
   },
@@ -106,6 +109,7 @@ export const INITIAL_TASKS = [
     assignee_name: 'Gurubelli Yekambar Eshwar Rao',
     reporter_name: 'Darshan P Pawar',
     labels: ['devops', 'ci-cd', 'github-actions'],
+    blocked_reason: 'Waiting for repository secrets to be added',
     created_at: '2026-09-02T14:00:00Z',
     updated_at: '2026-09-05T09:30:00Z'
   },
@@ -122,6 +126,7 @@ export const INITIAL_TASKS = [
     assignee_name: 'Darshan P Pawar',
     reporter_name: 'Darshan P Pawar',
     labels: ['frontend', 'dashboard', 'visibility'],
+    due_date: dueIn(2),
     created_at: '2026-09-03T10:00:00Z',
     updated_at: '2026-09-05T11:00:00Z'
   },
@@ -138,6 +143,7 @@ export const INITIAL_TASKS = [
     assignee_name: 'Darshan P Pawar',
     reporter_name: 'Darshan P Pawar',
     labels: ['documentation', 'srs', 'pes-submission'],
+    due_date: dueIn(-2),
     created_at: '2026-09-04T09:00:00Z',
     updated_at: '2026-09-04T09:00:00Z'
   },
@@ -156,15 +162,320 @@ export const INITIAL_TASKS = [
     labels: ['frontend', 'ui', 'theme'],
     created_at: '2026-09-04T15:00:00Z',
     updated_at: '2026-09-04T15:00:00Z'
+  },
+  {
+    id: taskId(108),
+    project_id: PROJECT_ID,
+    sprint_id: SPRINT_2_ID,
+    title: 'Build Sprint Reports Workbench with CSV Export',
+    description: 'Add interactive sprint reports with date ranges, drill-downs and CSV export of recorded completions.',
+    status: 'done',
+    priority: 'high',
+    story_points: 5,
+    assignee_id: 'u-4',
+    assignee_name: 'Gurubelli Yekambar Eshwar Rao',
+    reporter_name: 'Darshan P Pawar',
+    labels: ['reports', 'analytics', 'export'],
+    created_at: '2026-10-24T09:00:00Z',
+    updated_at: '2026-10-28T11:00:00Z'
+  },
+  {
+    id: taskId(109),
+    project_id: PROJECT_ID,
+    sprint_id: SPRINT_2_ID,
+    title: 'Add Recorded Delivery Analytics',
+    description: 'Show throughput, cycle time and open work age from recorded status changes.',
+    status: 'done',
+    priority: 'high',
+    story_points: 3,
+    assignee_id: 'u-3',
+    assignee_name: 'Chandan Kumar K',
+    reporter_name: 'Darshan P Pawar',
+    labels: ['analytics', 'flow'],
+    created_at: '2026-10-24T09:30:00Z',
+    updated_at: '2026-10-29T10:15:00Z'
+  },
+  {
+    id: taskId(110),
+    project_id: PROJECT_ID,
+    sprint_id: SPRINT_2_ID,
+    title: 'Add Interactive Project Map',
+    description: 'Explore project, sprint and task relationships on a zoomable map with a relationship table.',
+    status: 'review',
+    priority: 'medium',
+    story_points: 3,
+    assignee_id: 'u-2',
+    assignee_name: 'Dhatri Shivaprasad',
+    reporter_name: 'Darshan P Pawar',
+    labels: ['frontend', 'ui', 'map'],
+    due_date: dueIn(0),
+    created_at: '2026-10-24T10:00:00Z',
+    updated_at: '2026-10-30T14:20:00Z'
+  },
+  {
+    id: taskId(111),
+    project_id: PROJECT_ID,
+    sprint_id: SPRINT_2_ID,
+    title: 'Add Due Dates and Saved Work Views',
+    description: 'Let members set due dates and blockers, and save their own filtered work views.',
+    status: 'in_progress',
+    priority: 'high',
+    story_points: 3,
+    assignee_id: 'u-1',
+    assignee_name: 'Darshan P Pawar',
+    reporter_name: 'Darshan P Pawar',
+    labels: ['planning', 'work-items'],
+    due_date: dueIn(-3),
+    created_at: '2026-10-24T10:30:00Z',
+    updated_at: '2026-10-29T11:00:00Z'
+  },
+  {
+    id: taskId(112),
+    project_id: PROJECT_ID,
+    sprint_id: SPRINT_2_ID,
+    title: 'Verify Cloud Sessions and Isolate Caches',
+    description: 'Confirm the signed-in account with Supabase and keep each account\'s cached work separate.',
+    status: 'in_progress',
+    priority: 'critical',
+    story_points: 2,
+    assignee_id: 'u-3',
+    assignee_name: 'Chandan Kumar K',
+    reporter_name: 'Darshan P Pawar',
+    labels: ['security', 'auth', 'supabase'],
+    blocked_reason: 'Waiting for a Supabase test project',
+    created_at: '2026-10-25T09:00:00Z',
+    updated_at: '2026-10-30T10:30:00Z'
+  },
+  {
+    id: taskId(113),
+    project_id: PROJECT_ID,
+    sprint_id: SPRINT_2_ID,
+    title: 'Run Cross-Browser System Validation',
+    description: 'Run the system test cases in Chrome, Edge and Firefox and record the results.',
+    status: 'todo',
+    priority: 'high',
+    story_points: 2,
+    assignee_id: 'u-2',
+    assignee_name: 'Dhatri Shivaprasad',
+    reporter_name: 'Darshan P Pawar',
+    labels: ['testing', 'qa'],
+    due_date: dueIn(3),
+    created_at: '2026-10-25T09:30:00Z',
+    updated_at: '2026-10-25T09:30:00Z'
+  },
+  {
+    id: taskId(114),
+    project_id: PROJECT_ID,
+    sprint_id: SPRINT_2_ID,
+    title: 'Record Sprint 2 Demo Video',
+    description: 'Record the two-minute walkthrough of the Sprint 2 features for submission.',
+    status: 'todo',
+    priority: 'medium',
+    story_points: 2,
+    assignee_id: 'u-1',
+    assignee_name: 'Darshan P Pawar',
+    reporter_name: 'Darshan P Pawar',
+    labels: ['documentation', 'pes-submission'],
+    due_date: dueIn(5),
+    created_at: '2026-10-25T10:00:00Z',
+    updated_at: '2026-10-25T10:00:00Z'
+  },
+  {
+    id: taskId(115),
+    project_id: PROJECT_ID,
+    sprint_id: SPRINT_2_ID,
+    title: 'Write Release Candidate Notes',
+    description: 'Summarise the changes, known limits and setup steps for the release candidate.',
+    status: 'backlog',
+    priority: 'low',
+    story_points: 1,
+    assignee_id: null,
+    assignee_name: null,
+    reporter_name: 'Darshan P Pawar',
+    labels: ['documentation', 'release'],
+    created_at: '2026-10-25T10:30:00Z',
+    updated_at: '2026-10-25T10:30:00Z'
+  },
+  {
+    id: taskId(116),
+    project_id: PROJECT_ID,
+    sprint_id: null,
+    title: 'Add Email Notifications for Task Assignment',
+    description: 'Notify a team member by email when a task is assigned to them.',
+    status: 'backlog',
+    priority: 'medium',
+    story_points: 3,
+    assignee_id: null,
+    assignee_name: null,
+    reporter_name: 'Darshan P Pawar',
+    labels: ['backend', 'notifications'],
+    created_at: '2026-10-25T11:00:00Z',
+    updated_at: '2026-10-25T11:00:00Z'
+  },
+  {
+    id: taskId(117),
+    project_id: PROJECT_ID,
+    sprint_id: null,
+    title: 'Export the Burndown Chart as an Image',
+    description: 'Let the team download the sprint burndown for reports and presentations.',
+    status: 'backlog',
+    priority: 'low',
+    story_points: 2,
+    assignee_id: 'u-4',
+    assignee_name: 'Gurubelli Yekambar Eshwar Rao',
+    reporter_name: 'Darshan P Pawar',
+    labels: ['analytics', 'export'],
+    created_at: '2026-10-25T11:30:00Z',
+    updated_at: '2026-10-25T11:30:00Z'
   }
 ];
 
 // Seed audit records, newest first, in the same shape createAuditRecord produces.
 export const INITIAL_ACTIVITY = [
   {
+    id: 'act-5',
+    type: 'UPDATE',
+    timestamp: '2026-10-30T14:20:00.000Z',
+    user: 'Dhatri Shivaprasad',
+    actor: 'Dhatri Shivaprasad',
+    action: 'moved task',
+    entity_type: 'task',
+    entity_id: taskId(110),
+    target: 'Add Interactive Project Map',
+    from: 'in_progress',
+    to: 'review',
+    details: null
+  },
+  {
+    id: 'act-6',
+    type: 'UPDATE',
+    timestamp: '2026-10-30T10:30:00.000Z',
+    user: 'Chandan Kumar K',
+    actor: 'Chandan Kumar K',
+    action: 'moved task',
+    entity_type: 'task',
+    entity_id: taskId(112),
+    target: 'Verify Cloud Sessions and Isolate Caches',
+    from: 'todo',
+    to: 'in_progress',
+    details: null
+  },
+  {
+    id: 'act-7',
+    type: 'UPDATE',
+    timestamp: '2026-10-29T11:00:00.000Z',
+    user: 'Darshan P Pawar',
+    actor: 'Darshan P Pawar',
+    action: 'moved task',
+    entity_type: 'task',
+    entity_id: taskId(111),
+    target: 'Add Due Dates and Saved Work Views',
+    from: 'todo',
+    to: 'in_progress',
+    details: null
+  },
+  {
+    id: 'act-8',
+    type: 'UPDATE',
+    timestamp: '2026-10-29T10:15:00.000Z',
+    user: 'Chandan Kumar K',
+    actor: 'Chandan Kumar K',
+    action: 'completed task',
+    entity_type: 'task',
+    entity_id: taskId(109),
+    target: 'Add Recorded Delivery Analytics',
+    from: 'review',
+    to: 'done',
+    details: null
+  },
+  {
+    id: 'act-9',
+    type: 'UPDATE',
+    timestamp: '2026-10-28T15:30:00.000Z',
+    user: 'Chandan Kumar K',
+    actor: 'Chandan Kumar K',
+    action: 'moved task',
+    entity_type: 'task',
+    entity_id: taskId(109),
+    target: 'Add Recorded Delivery Analytics',
+    from: 'in_progress',
+    to: 'review',
+    details: null
+  },
+  {
+    id: 'act-10',
+    type: 'UPDATE',
+    timestamp: '2026-10-28T11:00:00.000Z',
+    user: 'Gurubelli Yekambar Eshwar Rao',
+    actor: 'Gurubelli Yekambar Eshwar Rao',
+    action: 'completed task',
+    entity_type: 'task',
+    entity_id: taskId(108),
+    target: 'Build Sprint Reports Workbench with CSV Export',
+    from: 'review',
+    to: 'done',
+    details: null
+  },
+  {
+    id: 'act-11',
+    type: 'UPDATE',
+    timestamp: '2026-10-28T09:45:00.000Z',
+    user: 'Dhatri Shivaprasad',
+    actor: 'Dhatri Shivaprasad',
+    action: 'moved task',
+    entity_type: 'task',
+    entity_id: taskId(110),
+    target: 'Add Interactive Project Map',
+    from: 'todo',
+    to: 'in_progress',
+    details: null
+  },
+  {
+    id: 'act-12',
+    type: 'UPDATE',
+    timestamp: '2026-10-27T16:00:00.000Z',
+    user: 'Gurubelli Yekambar Eshwar Rao',
+    actor: 'Gurubelli Yekambar Eshwar Rao',
+    action: 'moved task',
+    entity_type: 'task',
+    entity_id: taskId(108),
+    target: 'Build Sprint Reports Workbench with CSV Export',
+    from: 'in_progress',
+    to: 'review',
+    details: null
+  },
+  {
+    id: 'act-13',
+    type: 'UPDATE',
+    timestamp: '2026-10-27T10:00:00.000Z',
+    user: 'Chandan Kumar K',
+    actor: 'Chandan Kumar K',
+    action: 'moved task',
+    entity_type: 'task',
+    entity_id: taskId(109),
+    target: 'Add Recorded Delivery Analytics',
+    from: 'todo',
+    to: 'in_progress',
+    details: null
+  },
+  {
+    id: 'act-14',
+    type: 'UPDATE',
+    timestamp: '2026-10-26T09:30:00.000Z',
+    user: 'Gurubelli Yekambar Eshwar Rao',
+    actor: 'Gurubelli Yekambar Eshwar Rao',
+    action: 'moved task',
+    entity_type: 'task',
+    entity_id: taskId(108),
+    target: 'Build Sprint Reports Workbench with CSV Export',
+    from: 'todo',
+    to: 'in_progress',
+    details: null
+  },
+  {
     id: 'act-1',
     type: 'UPDATE',
-    timestamp: '2026-09-05T10:50:00.000Z',
+    timestamp: '2026-10-23T10:50:00.000Z',
     user: 'Darshan P Pawar',
     actor: 'Darshan P Pawar',
     action: 'moved task',
@@ -178,7 +489,7 @@ export const INITIAL_ACTIVITY = [
   {
     id: 'act-2',
     type: 'UPDATE',
-    timestamp: '2026-09-05T10:15:00.000Z',
+    timestamp: '2026-10-22T10:15:00.000Z',
     user: 'Gurubelli Yekambar Eshwar Rao',
     actor: 'Gurubelli Yekambar Eshwar Rao',
     action: 'updated estimation on',
@@ -192,7 +503,7 @@ export const INITIAL_ACTIVITY = [
   {
     id: 'act-3',
     type: 'UPDATE',
-    timestamp: '2026-09-05T09:00:00.000Z',
+    timestamp: '2026-10-22T09:00:00.000Z',
     user: 'Chandan Kumar K',
     actor: 'Chandan Kumar K',
     action: 'completed task',
@@ -206,7 +517,7 @@ export const INITIAL_ACTIVITY = [
   {
     id: 'act-4',
     type: 'UPDATE',
-    timestamp: '2026-09-04T11:00:00.000Z',
+    timestamp: '2026-10-21T11:00:00.000Z',
     user: 'Dhatri Shivaprasad',
     actor: 'Dhatri Shivaprasad',
     action: 'completed task',
@@ -216,5 +527,116 @@ export const INITIAL_ACTIVITY = [
     from: 'review',
     to: 'done',
     details: null
+  },
+  {
+    id: 'act-15',
+    type: 'UPDATE',
+    timestamp: '2026-10-22T14:00:00.000Z',
+    user: 'Gurubelli Yekambar Eshwar Rao',
+    actor: 'Gurubelli Yekambar Eshwar Rao',
+    action: 'moved task',
+    entity_type: 'task',
+    entity_id: taskId(104),
+    target: 'Setup GitHub Actions CI/CD Pipeline',
+    from: 'todo',
+    to: 'in_progress',
+    details: null
+  },
+  {
+    id: 'act-16',
+    type: 'UPDATE',
+    timestamp: '2026-10-22T09:30:00.000Z',
+    user: 'Gurubelli Yekambar Eshwar Rao',
+    actor: 'Gurubelli Yekambar Eshwar Rao',
+    action: 'moved task',
+    entity_type: 'task',
+    entity_id: taskId(103),
+    target: 'Build Agile Story Point Estimation Engine',
+    from: 'todo',
+    to: 'in_progress',
+    details: null
+  },
+  {
+    id: 'act-17',
+    type: 'UPDATE',
+    timestamp: '2026-10-21T15:00:00.000Z',
+    user: 'Chandan Kumar K',
+    actor: 'Chandan Kumar K',
+    action: 'moved task',
+    entity_type: 'task',
+    entity_id: taskId(101),
+    target: 'Design Supabase PostgreSQL Database Schema',
+    from: 'in_progress',
+    to: 'review',
+    details: null
+  },
+  {
+    id: 'act-18',
+    type: 'UPDATE',
+    timestamp: '2026-10-21T09:00:00.000Z',
+    user: 'Darshan P Pawar',
+    actor: 'Darshan P Pawar',
+    action: 'moved task',
+    entity_type: 'task',
+    entity_id: taskId(105),
+    target: 'Create Executive Visibility Dashboard',
+    from: 'todo',
+    to: 'in_progress',
+    details: null
+  },
+  {
+    id: 'act-19',
+    type: 'UPDATE',
+    timestamp: '2026-10-20T16:00:00.000Z',
+    user: 'Dhatri Shivaprasad',
+    actor: 'Dhatri Shivaprasad',
+    action: 'moved task',
+    entity_type: 'task',
+    entity_id: taskId(102),
+    target: 'Implement Interactive Kanban Board with Drag & Drop',
+    from: 'in_progress',
+    to: 'review',
+    details: null
+  },
+  {
+    id: 'act-20',
+    type: 'UPDATE',
+    timestamp: '2026-10-19T11:00:00.000Z',
+    user: 'Chandan Kumar K',
+    actor: 'Chandan Kumar K',
+    action: 'moved task',
+    entity_type: 'task',
+    entity_id: taskId(101),
+    target: 'Design Supabase PostgreSQL Database Schema',
+    from: 'todo',
+    to: 'in_progress',
+    details: null
+  },
+  {
+    id: 'act-21',
+    type: 'UPDATE',
+    timestamp: '2026-10-19T09:30:00.000Z',
+    user: 'Dhatri Shivaprasad',
+    actor: 'Dhatri Shivaprasad',
+    action: 'moved task',
+    entity_type: 'task',
+    entity_id: taskId(102),
+    target: 'Implement Interactive Kanban Board with Drag & Drop',
+    from: 'todo',
+    to: 'in_progress',
+    details: null
   }
-];
+].sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+
+// Daily progress for the demo burndown charts, in the shape recordDailyProgress stores.
+const dailyProgress = (status, totalPoints, days) =>
+  days.map(([date, remainingPoints]) => ({ date, totalPoints, remainingPoints, status }));
+
+export const INITIAL_BURNDOWN_HISTORY = {
+  [SPRINT_1_ID]: dailyProgress('active', 33, [
+    ['2026-10-19', 33], ['2026-10-20', 33], ['2026-10-21', 25], ['2026-10-22', 20], ['2026-10-23', 20]
+  ]),
+  [SPRINT_2_ID]: dailyProgress('planned', 21, [
+    ['2026-10-26', 21], ['2026-10-27', 21], ['2026-10-28', 16], ['2026-10-29', 13], ['2026-10-30', 13]
+  ])
+};
