@@ -213,7 +213,7 @@ describe('PMS-F-014 immutable audit trail', () => {
   it('shows status labels for moves in the seed history', () => {
     const html = renderToStaticMarkup(React.createElement(AuditTrail, { records: INITIAL_ACTIVITY, now: new Date(T0) }));
     expect(html).toContain('In Progress → Code Review');
-    expect(html).not.toContain('Show full history');
+    expect(html).toContain(`Showing 7 of ${INITIAL_ACTIVITY.length} records`);
   });
   it('records a description-only project change', async () => {
     const { auditProjectUpdated } = await import('../utils/auditTrail');

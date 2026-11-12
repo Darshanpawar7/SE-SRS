@@ -4,7 +4,7 @@ import { recordDailyProgress } from '../utils/burndown';
 import { validateStoryPoints } from '../utils/storyPoints';
 import { isAuditRecord } from '../utils/auditTrail';
 import { createClient } from '@supabase/supabase-js';
-import { INITIAL_PROJECT, INITIAL_SPRINTS, INITIAL_TASKS, INITIAL_ACTIVITY } from './mockData';
+import { INITIAL_PROJECT, INITIAL_SPRINTS, INITIAL_TASKS, INITIAL_ACTIVITY, INITIAL_BURNDOWN_HISTORY } from './mockData';
 
 // Normalize the project root. Some dashboard instructions provide the Data API
 // endpoint ending in /rest/v1; supabase-js needs the project root and adds API
@@ -441,7 +441,9 @@ export const DataService = {
   recordBurndown(sprints, tasks, now = new Date()) {
     recoverLocalSave();
     const saved = localStorage.getItem(STORAGE_KEYS.BURNDOWN);
-    const history = recordDailyProgress(saved ? JSON.parse(saved) : {}, sprints, tasks, now);
+    // Only local demo mode starts with sample progress; a cloud project records its own.
+    const initial = getSupabase() ? {} : INITIAL_BURNDOWN_HISTORY;
+    const history = recordDailyProgress(saved ? JSON.parse(saved) : initial, sprints, tasks, now);
     localStorage.setItem(STORAGE_KEYS.BURNDOWN, JSON.stringify(history));
     return history;
   },
